@@ -1,0 +1,8 @@
+{
+  "customerCode": "customer-b",
+  "flags": {
+    "Tab.Orders": true,
+    "Tab.Reports": false,
+    "Tab.Admin": false
+  }
+}
