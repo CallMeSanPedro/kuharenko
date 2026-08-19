@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Приглашение на корпоратив | Winter Spark</title>
+  <style>
+    :root {
+      --bg: #10131f;
+      --card: rgba(255, 255, 255, 0.1);
+      --card-strong: rgba(255, 255, 255, 0.16);
+      --text: #ffffff;
+      --muted: #ccd3e6;
+      --accent: #ffcf6b;
+      --accent-2: #9be7ff;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(155, 231, 255, 0.26), transparent 30rem),
+        radial-gradient(circle at 85% 18%, rgba(255, 207, 107, 0.28), transparent 24rem),
+        linear-gradient(135deg, #10131f 0%, #1f2440 48%, #331d3a 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      border-radius: 999px;
+      filter: blur(2px);
+      opacity: 0.55;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow:
+        80px 140px 0 rgba(255, 255, 255, 0.6),
+        320px 70px 0 rgba(255, 255, 255, 0.45),
+        520px 220px 0 rgba(255, 255, 255, 0.35),
+        820px 120px 0 rgba(255, 255, 255, 0.45),
+        1080px 260px 0 rgba(255, 255, 255, 0.38);
+      width: 4px;
+      height: 4px;
+      top: 12%;
+      left: 8%;
+      animation: sparkle 9s linear infinite alternate;
+    }
+
+    body::after {
+      top: 46%;
+      left: 18%;
+      animation-duration: 13s;
+      animation-delay: -4s;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 18px;
+      margin-bottom: 68px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .logo-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 50%;
+      color: #191d2d;
+      background: linear-gradient(135deg, var(--accent), #fff2c8);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 42px;
+      align-items: center;
+      min-height: 620px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      margin: 0 0 22px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 999px;
+      color: var(--accent);
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin-bottom: 22px;
+      font-size: clamp(3rem, 8vw, 6.8rem);
+      line-height: 0.92;
+      letter-spacing: -0.08em;
+    }
+
+    .lead {
+      max-width: 650px;
+      margin-bottom: 34px;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      line-height: 1.65;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 999px;
+      color: #171a25;
+      background: var(--accent);
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 14px 34px rgba(255, 207, 107, 0.26);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 44px rgba(255, 207, 107, 0.34);
+    }
+
+    .button.secondary {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: none;
+    }
+
+    .invite-card {
+      position: relative;
+      padding: 28px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: var(--radius);
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(24px);
+      overflow: hidden;
+    }
+
+    .invite-card::before {
+      content: "";
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      right: -80px;
+      top: -80px;
+      border-radius: 50%;
+      background: rgba(255, 207, 107, 0.24);
+    }
+
+    .date {
+      position: relative;
+      display: grid;
+      min-height: 270px;
+      place-items: center;
+      margin-bottom: 24px;
+      border-radius: 24px;
+      background:
+        linear-gradient(rgba(16, 19, 31, 0.12), rgba(16, 19, 31, 0.12)),
+        radial-gradient(circle, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.06));
+    }
+
+    .date strong {
+      display: block;
+      font-size: 6.4rem;
+      line-height: 1;
+      letter-spacing: -0.08em;
+    }
+
+    .date span {
+      display: block;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .details {
+      display: grid;
+      gap: 14px;
+    }
+
+    .detail {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .detail small {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+    }
+
+    .section {
+      margin-top: 80px;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      margin-bottom: 0;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      letter-spacing: -0.05em;
+    }
+
+    .section-note {
+      max-width: 360px;
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius);
+      background: var(--card);
+      backdrop-filter: blur(16px);
+    }
+
+    .icon {
+      display: grid;
+      width: 46px;
+      height: 46px;
+      place-items: center;
+      margin-bottom: 20px;
+      border-radius: 16px;
+      color: #171a25;
+      background: var(--accent-2);
+      font-size: 1.35rem;
+    }
+
+    .card h3,
+    .timeline-item h3 {
+      margin-bottom: 10px;
+      font-size: 1.25rem;
+    }
+
+    .card p,
+    .timeline-item p {
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+      padding: 20px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .time {
+      color: var(--accent);
+      font-size: 1.2rem;
+      font-weight: 900;
+    }
+
+    .rsvp {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 22px;
+      align-items: stretch;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(255, 207, 107, 0.2), rgba(155, 231, 255, 0.08)),
+        rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow);
+    }
+
+    .rsvp-copy {
+      padding: 28px;
+      border-radius: 24px;
+      background: rgba(16, 19, 31, 0.24);
+    }
+
+    .rsvp-copy p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 15px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 16px;
+      color: var(--text);
+      background: rgba(16, 19, 31, 0.46);
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(255, 207, 107, 0.12);
+    }
+
+    select option {
+      color: #171a25;
+    }
+
+    .footer {
+      margin-top: 42px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @keyframes sparkle {
+      from {
+        transform: translate3d(0, 0, 0);
+      }
+      to {
+        transform: translate3d(24px, -18px, 0);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .nav {
+        align-items: flex-start;
+        border-radius: 26px;
+      }
+
+      .nav,
+      .hero,
+      .rsvp {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        display: grid;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        display: grid;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 20px, 1120px);
+        padding-top: 10px;
+      }
+
+      .hero {
+        gap: 28px;
+      }
+
+      .date strong {
+        font-size: 4.8rem;
+      }
+
+      .timeline-item {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .rsvp,
+      .rsvp-copy,
+      .invite-card {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="nav" aria-label="Навигация по приглашению">
+      <a class="logo" href="#top" aria-label="Winter Spark">
+        <span class="logo-mark">✦</span>
+        Winter Spark
+      </a>
+      <div class="nav-links">
+        <a href="#details">Детали</a>
+        <a href="#program">Программа</a>
+        <a href="#rsvp">RSVP</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="top">
+      <div>
+        <p class="eyebrow">Корпоратив 2026</p>
+        <h1>Вечер, где команда зажигает ярче гирлянд</h1>
+        <p class="lead">
+          Приглашаем вас на праздничный корпоратив: подведем итоги года,
+          отметим победы, послушаем музыку и проведем вечер в атмосфере
+          зимнего сияния.
+        </p>
+        <div class="actions">
+          <a class="button" href="#rsvp">Подтвердить участие</a>
+          <a class="button secondary" href="#program">Смотреть программу</a>
+        </div>
+      </div>
+
+      <aside class="invite-card" id="details" aria-label="Главные детали мероприятия">
+        <div class="date">
+          <div>
+            <strong>20</strong>
+            <span>декабря</span>
+          </div>
+        </div>
+        <div class="details">
+          <div class="detail">
+            <small>Сбор гостей</small>
+            <strong>18:30</strong>
+          </div>
+          <div class="detail">
+            <small>Локация</small>
+            <strong>Loft Aurora, зал Crystal</strong>
+          </div>
+          <div class="detail">
+            <small>Dress code</small>
+            <strong>Smart casual + один яркий акцент</strong>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" aria-labelledby="why-heading">
+      <div class="section-heading">
+        <h2 id="why-heading">Что вас ждет</h2>
+        <p class="section-note">
+          Формат вечера создан для живого общения, легкой торжественности и
+          ощущения общего праздника.
+        </p>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <div class="icon">★</div>
+          <h3>Итоги года</h3>
+          <p>Короткая церемония с главными достижениями, благодарностями и приятными сюрпризами.</p>
+        </article>
+        <article class="card">
+          <div class="icon">♫</div>
+          <h3>Музыка и танцы</h3>
+          <p>DJ-сет, живая кавер-программа и танцпол для тех, кто готов встретить вечер громко.</p>
+        </article>
+        <article class="card">
+          <div class="icon">🍸</div>
+          <h3>Фуршет</h3>
+          <p>Авторские закуски, горячие станции, безалкогольные коктейли и праздничный десерт.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="program" aria-labelledby="program-heading">
+      <div class="section-heading">
+        <h2 id="program-heading">Программа вечера</h2>
+        <p class="section-note">Тайминг примерный: приходите вовремя, чтобы не пропустить старт.</p>
+      </div>
+
+      <div class="timeline">
+        <article class="timeline-item">
+          <div class="time">18:30</div>
+          <div>
+            <h3>Welcome drink</h3>
+            <p>Встречаемся, фотографируемся и настраиваемся на праздничный вечер.</p>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="time">19:15</div>
+          <div>
+            <h3>Открытие</h3>
+            <p>Приветственное слово, итоги года и награждение командных героев.</p>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="time">20:00</div>
+          <div>
+            <h3>Ужин и интерактивы</h3>
+            <p>Фуршетные станции, легкие конкурсы и общие активности без неловких пауз.</p>
+          </div>
+        </article>
+        <article class="timeline-item">
+          <div class="time">21:30</div>
+          <div>
+            <h3>Afterparty</h3>
+            <p>Музыка, танцпол, фотозона и свободное общение до финального тоста.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section rsvp" id="rsvp" aria-labelledby="rsvp-heading">
+      <div class="rsvp-copy">
+        <h2 id="rsvp-heading">Подтвердите участие</h2>
+        <p>
+          Заполните форму до 10 декабря, чтобы организаторы точно учли гостей,
+          меню и рассадку. Это демо-форма: данные не отправляются на сервер.
+        </p>
+        <p><strong>Контакт организатора:</strong><br>events@company.example</p>
+      </div>
+
+      <form id="rsvp-form">
+        <label>
+          Ваше имя
+          <input type="text" name="name" placeholder="Например, Анна Иванова" required>
+        </label>
+        <label>
+          Участие
+          <select name="attendance" required>
+            <option value="">Выберите вариант</option>
+            <option>Буду</option>
+            <option>Буду с гостем</option>
+            <option>Не смогу прийти</option>
+          </select>
+        </label>
+        <label>
+          Пожелания по меню
+          <input type="text" name="menu" placeholder="Без ограничений / вегетарианское / другое">
+        </label>
+        <button class="button" type="submit">Отправить RSVP</button>
+      </form>
+    </section>
+
+    <p class="footer">До встречи на корпоративе Winter Spark!</p>
+  </main>
+
+  <script>
+    const form = document.querySelector("#rsvp-form");
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = new FormData(form).get("name").trim() || "Гость";
+      alert(`${name}, спасибо! Ваш ответ сохранен в демо-режиме.`);
+      form.reset();
+    });
+  </script>
+</body>
+</html>
