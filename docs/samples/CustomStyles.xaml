@@ -78,9 +78,7 @@
                     <Setter Property="Background" Value="Transparent"/>
                     <Setter Property="BorderThickness" Value="0"/>
                     <Setter Property="Foreground" Value="{StaticResource HeaderBarMuted}"/>
-                    <Setter Property="FontFamily" Value="/Store.Views;component/Fonts/CALIBRIZ.TTF#Calibri"/>
-                    <Setter Property="FontSize" Value="13"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Setter Property="FontWeight" Value="Normal"/>
                     <Setter Property="Padding" Value="14,0"/>
                     <Setter Property="MinHeight" Value="52"/>
                     <Setter Property="Cursor" Value="Hand"/>
@@ -97,7 +95,10 @@
                                                           ContentSource="Header"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center"
-                                                          RecognizesAccessKey="True"/>
+                                                          RecognizesAccessKey="True"
+                                                          TextElement.FontFamily="/Store.Views;component/Fonts/CALIBRIZ.TTF#Calibri"
+                                                          TextElement.FontSize="13"
+                                                          TextElement.FontWeight="SemiBold"/>
                                     </DockPanel>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -126,11 +127,9 @@
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="Padding" Value="12"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect BlurRadius="8" ShadowDepth="1" Direction="270" Opacity="0.06" Color="#0F172A"/>
-            </Setter.Value>
-        </Setter>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
     </Style>
 
     <Style x:Key="SubNavigationTabControlStyle" TargetType="{x:Type TabControl}" BasedOn="{StaticResource {x:Type TabControl}}">
@@ -210,7 +209,8 @@
                             <ContentPresenter x:Name="PART_SelectedContentHost"
                                               Margin="{TemplateBinding Padding}"
                                               ContentSource="SelectedContent"
-                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                              SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
+                                              TextElement.FontWeight="Normal"/>
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>

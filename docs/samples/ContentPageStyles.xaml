@@ -52,14 +52,12 @@
         <Setter Property="Padding" Value="0"/>
     </Style>
 
-    <!-- Контентные вкладки: текст + синяя линия, без серого хрома -->
+    <!-- Контентные вкладки: жирность только у заголовка, не наследуется гридом -->
     <Style TargetType="TabItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-        <Setter Property="FontFamily" Value="{StaticResource TabItemFontFamily}"/>
-        <Setter Property="FontSize" Value="{StaticResource NavigationFontSize}"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="14,8"/>
         <Setter Property="MinHeight" Value="36"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -77,7 +75,10 @@
                             <ContentPresenter ContentSource="Header"
                                               HorizontalAlignment="Left"
                                               VerticalAlignment="Center"
-                                              RecognizesAccessKey="True"/>
+                                              RecognizesAccessKey="True"
+                                              TextElement.FontFamily="{StaticResource TabItemFontFamily}"
+                                              TextElement.FontSize="{StaticResource NavigationFontSize}"
+                                              TextElement.FontWeight="SemiBold"/>
                         </DockPanel>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -124,9 +125,7 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Foreground" Value="{StaticResource HeaderBarMuted}"/>
-        <Setter Property="FontFamily" Value="{StaticResource TabItemFontFamily}"/>
-        <Setter Property="FontSize" Value="{StaticResource NavigationFontSize}"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="14,0"/>
         <Setter Property="MinHeight" Value="52"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -143,7 +142,10 @@
                             <ContentPresenter ContentSource="Header"
                                               HorizontalAlignment="Center"
                                               VerticalAlignment="Center"
-                                              RecognizesAccessKey="True"/>
+                                              RecognizesAccessKey="True"
+                                              TextElement.FontFamily="{StaticResource TabItemFontFamily}"
+                                              TextElement.FontSize="{StaticResource NavigationFontSize}"
+                                              TextElement.FontWeight="SemiBold"/>
                         </DockPanel>
                     </Border>
                     <ControlTemplate.Triggers>
