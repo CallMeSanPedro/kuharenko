@@ -1,9 +1,0 @@
-<!-- Вставить в правый StackPanel шапки MainView, перед иконкой пользователя -->
-<ComboBox x:Name="StyleTemplateCombo"
-          Style="{StaticResource HeaderStylePicker}"
-          SelectedIndex="0"
-          SelectionChanged="StyleTemplateCombo_OnSelectionChanged">
-    <ComboBoxItem Content="Спокойный" Tag="Calm"/>
-    <ComboBoxItem Content="Контрастный" Tag="Contrast"/>
-    <ComboBoxItem Content="Классический" Tag="Classic"/>
-</ComboBox>

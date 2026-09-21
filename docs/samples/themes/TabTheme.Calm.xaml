@@ -2,7 +2,37 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=System.Runtime">
     <system:String x:Key="Store.UiTheme">Calm</system:String>
+
+    <!-- Шапка -->
+    <SolidColorBrush x:Key="HeaderBarBg" Color="#0F2D5B"/>
+    <SolidColorBrush x:Key="HeaderBarText" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HeaderBarMuted" Color="#C7D2E8"/>
+
+    <!-- Страница и карточки -->
+    <SolidColorBrush x:Key="PageBg" Color="#F4F7FB"/>
+    <SolidColorBrush x:Key="CardBg" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="CardBorder" Color="#E2E8F0"/>
+
+    <!-- Тексты -->
+    <SolidColorBrush x:Key="TextPrimary" Color="#0F172A"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#64748B"/>
+
+    <!-- Акценты -->
+    <SolidColorBrush x:Key="Accent" Color="#1B3F6F"/>
+    <SolidColorBrush x:Key="AccentSoft" Color="#E8F1FB"/>
+    <SolidColorBrush x:Key="InputBorder" Color="#CBD5E1"/>
+
+    <!-- Вкладки контента -->
     <SolidColorBrush x:Key="Tab.IdleForeground" Color="#64748B"/>
     <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#1B3F6F"/>
     <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#1B3F6F"/>
+
+    <!-- Таблицы -->
+    <SolidColorBrush x:Key="DataGrid.HeaderBg" Color="#F8FAFC"/>
+    <SolidColorBrush x:Key="DataGrid.SelectedRowBg" Color="#E8F1FB"/>
+    <SolidColorBrush x:Key="DataGrid.HoverRowBg" Color="#F1F5F9"/>
+
+    <!-- Дерево навигации -->
+    <SolidColorBrush x:Key="Tree.SelectedBg" Color="#E8F1FB"/>
+    <SolidColorBrush x:Key="Tree.SelectedText" Color="#1B3F6F"/>
 </ResourceDictionary>
