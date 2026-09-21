@@ -5,6 +5,10 @@
     <MenuItem Style="{StaticResource HeaderHamburgerItem}">
         <MenuItem Header="Выбор стиля"
                   Style="{StaticResource HeaderDropdownMenuItem}">
+            <MenuItem Header="По умолчанию (Default)"
+                      Tag="Default"
+                      Click="ThemeMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
             <MenuItem Header="Современный (Modern)"
                       Tag="Modern"
                       Click="ThemeMenuItem_OnClick"

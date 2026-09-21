@@ -9,7 +9,7 @@ namespace Store.Views.Theming
         private const string ThemePrefix = "Theme.";
 
         /// <summary>
-        /// Переключает активную тему всего приложения ("Modern", "Legacy", "Contrast").
+        /// Переключает активную тему всего приложения ("Default", "Modern", "Legacy", "Contrast").
         /// Заменяет целый ResourceDictionary темы: обновляются цвета, форма табов, скругления рамок.
         /// </summary>
         public static void Apply(string themeName)
