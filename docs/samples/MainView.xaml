@@ -7,46 +7,32 @@
                    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
                    xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
                    xmlns:input="clr-namespace:System.Windows.Input;assembly=DatumNode.Controls"
-
                    xmlns:viewModels1="clr-namespace:Store.Main.ViewModels;assembly=Store.ViewModels"
                    xmlns:oebs="clr-namespace:Store.ViewModels.Oebs;assembly=Store.ViewModels"
                    xmlns:main="clr-namespace:Store.ViewModels.Main;assembly=Store.ViewModels"
                    xmlns:initUzel3="clr-namespace:Store.ViewModels.InitUzel;assembly=Store.ViewModels"
                    xmlns:viewModels="clr-namespace:Store.ViewModels;assembly=Store.ViewModels"
                    xmlns:audit="clr-namespace:Store.ViewModels.Audit;assembly=Store.ViewModels"
-
                    mc:Ignorable="d"
                    d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
-                   x:Name="View"
-                   >
+                   x:Name="View">
 
     <controls:UserView.Resources>
         <initUzel3:UzelsViewModel x:Key="UzelsViewModel"/>
         <controls:DataContextProxy x:Key="DataContextProxy"/>
         <controls:DialogDirector x:Key="Uzel" Margin="0,0,20,0" VerticalAlignment="Center"
                                  Refresh="False"
-
                                  Title="Выберите узел"
                                  Operation="Select"
                                  OKButtonContent="Выбрать"
                                  CancelButtonContent="Закрыть"
                                  ApplyCommand="{Binding Source={StaticResource UzelsViewModel}, Path=SaveCurUzelCommand}"
                                  ViewModel="{StaticResource UzelsViewModel}"
-
-                                 TargetViewModel="{Binding Path=UzelsMasterViewModel.MasterViewModel}"
-            >
-
+                                 TargetViewModel="{Binding Path=UzelsMasterViewModel.MasterViewModel}">
             <controls:DialogDirector.Properties>
                 <controls:PropertyBinding
-                                            SourceProperty="{
-                                                                     Binding Source={StaticResource UzelsViewModel},
-                                                                     Path=CurrentContainer.Item}"
-                                            TargetProperty="{
-                                                                     Binding Source={StaticResource DataContextProxy},
-                                                                     Path=DataSource.UzelsMasterViewModel.MasterViewModel.CurrentItem,
-                                                                     Mode=TwoWay
-                                                                }"/>
-
+                    SourceProperty="{Binding Source={StaticResource UzelsViewModel}, Path=CurrentContainer.Item}"
+                    TargetProperty="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.UzelsMasterViewModel.MasterViewModel.CurrentItem, Mode=TwoWay}"/>
             </controls:DialogDirector.Properties>
         </controls:DialogDirector>
 
@@ -83,94 +69,144 @@
         <SolidColorBrush x:Key="HeaderBarBg" Color="#0F2D5B"/>
         <SolidColorBrush x:Key="HeaderBarText" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="HeaderBarMuted" Color="#C7D2E8"/>
+
+        <!-- Полоса меню без контентной области TabControl — иначе MainTabControl рисует вторую строку -->
+        <Style x:Key="HeaderMenuTabControl" TargetType="TabControl">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <TabPanel IsItemsHost="True"
+                                  Background="Transparent"
+                                  VerticalAlignment="Stretch"
+                                  Margin="0"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="HeaderMenuTabItem" TargetType="TabItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource HeaderBarMuted}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="MinHeight" Value="52"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <DockPanel LastChildFill="True">
+                                <Rectangle x:Name="Underline"
+                                           DockPanel.Dock="Bottom"
+                                           Height="2"
+                                           Fill="Transparent"/>
+                                <ContentPresenter ContentSource="Header"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True"/>
+                            </DockPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Underline" Property="Fill" Value="{StaticResource HeaderBarText}"/>
+                                <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </controls:UserView.Resources>
 
-
-    <Grid Background="{StaticResource HeaderBarBg}">
+    <Grid Background="{StaticResource HeaderBarBg}" Height="52">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-        </Grid.RowDefinitions>
 
-
-        <Grid Grid.Row="0" Grid.ColumnSpan="3" Margin="0" MinHeight="36" Background="{StaticResource HeaderBarBg}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock x:Name="AppLogotype" HorizontalAlignment="Left" Grid.Column="0" Grid.Row="0" Style="{StaticResource AppLogotypeStyle}" Foreground="{StaticResource HeaderBarText}" Margin="12,0,6,0" Text="{Binding AppLogotype}" ToolTipService.ToolTip="{Binding Path=AppConfig.ProgramTitle}"></TextBlock>
-            <TextBlock x:Name="AppText" Text="{Binding CurrentVersion}" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="3,0,10,0" Style="{StaticResource LinksMainMenuStyle}" Foreground="{StaticResource HeaderBarMuted}"></TextBlock>
-            <Button
-
-            VerticalAlignment="Center"
-
-            HorizontalAlignment="Left"
-            x:Name="BtnUzel"
-            Background="Transparent"
-            BorderBrush="Transparent"
-            Style="{StaticResource MainMenuButton}"
-            Command="{Binding Path=DialogCommand}"
-            CommandParameter="{StaticResource Uzel}" Grid.Column="2" Grid.Row="0" Margin="10,3,3,3" >
-
-                <TextBlock Foreground="{StaticResource HeaderBarText}" Text="{Binding Path=UzelsMasterViewModel.MasterViewModel.CurrentItem}"
-                       ToolTipService.ToolTip="{Binding Path=UzelsMasterViewModel.MasterViewModel.CurrentItem.RightInfo}"/>
+        <StackPanel Grid.Column="0"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Margin="12,0,8,0">
+            <TextBlock x:Name="AppLogotype"
+                       Style="{StaticResource AppLogotypeStyle}"
+                       Foreground="{StaticResource HeaderBarText}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,8,0"
+                       Text="{Binding AppLogotype}"
+                       ToolTipService.ToolTip="{Binding Path=AppConfig.ProgramTitle}"/>
+            <TextBlock x:Name="AppText"
+                       Text="{Binding CurrentVersion}"
+                       Style="{StaticResource LinksMainMenuStyle}"
+                       Foreground="{StaticResource HeaderBarMuted}"
+                       VerticalAlignment="Center"
+                       Margin="0,0,16,0"/>
+            <Button x:Name="BtnUzel"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    BorderThickness="0"
+                    Style="{StaticResource MainMenuButton}"
+                    Command="{Binding Path=DialogCommand}"
+                    CommandParameter="{StaticResource Uzel}"
+                    Margin="0,0,12,0"
+                    Cursor="Hand">
+                <TextBlock Foreground="{StaticResource HeaderBarText}"
+                           FontSize="13"
+                           Text="{Binding Path=UzelsMasterViewModel.MasterViewModel.CurrentItem}"
+                           ToolTipService.ToolTip="{Binding Path=UzelsMasterViewModel.MasterViewModel.CurrentItem.RightInfo}"/>
             </Button>
-            <Grid Grid.Row="0" Grid.Column="3" HorizontalAlignment="Left">
-                <ContentControl Background="Transparent" MouseRightButtonUp="ContentControl_MouseRightButtonUp" IsTabStop="False" Margin="3" HorizontalAlignment="Left">
-                    <StackPanel Margin="0,0,0,0" Orientation="Horizontal">
-                        <Button Style="{StaticResource ButtonBlackStyle}" Padding="0" Foreground="{StaticResource HeaderBarMuted}" Opacity="0.9" VerticalAlignment="Center" IsTabStop="False" Margin="10,0,0,0" Background="Transparent" BorderThickness="0" HorizontalAlignment="Left" Width="auto" Command="{Binding Path=CloseAllRequestsCommand}" Content="{Binding Path=StatusText, Mode=OneWay}" ToolTipService.ToolTip="{Binding Path=Requests}"/>
-                        <controls:LoadingIndicator Padding="0" VerticalAlignment="Center" Foreground="{StaticResource HeaderBarText}" Visibility="{Binding Path=Status, Converter={x:Static controls:StatusToVisibilityConverter.Instance}}"/>
+            <ContentControl Background="Transparent"
+                            MouseRightButtonUp="ContentControl_MouseRightButtonUp"
+                            IsTabStop="False"
+                            VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Button Style="{StaticResource ButtonBlackStyle}"
+                            Padding="0"
+                            Foreground="{StaticResource HeaderBarMuted}"
+                            Opacity="0.9"
+                            VerticalAlignment="Center"
+                            IsTabStop="False"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Command="{Binding Path=CloseAllRequestsCommand}"
+                            Content="{Binding Path=StatusText, Mode=OneWay}"
+                            ToolTipService.ToolTip="{Binding Path=Requests}"/>
+                    <controls:LoadingIndicator Padding="0"
+                                               VerticalAlignment="Center"
+                                               Foreground="{StaticResource HeaderBarText}"
+                                               Visibility="{Binding Path=Status, Converter={x:Static controls:StatusToVisibilityConverter.Instance}}"/>
+                </StackPanel>
+            </ContentControl>
+        </StackPanel>
 
-
-
-                    </StackPanel>
-                </ContentControl>
-            </Grid>
-            <StackPanel Grid.Row="0" Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,12,0">
-                <Button Style="{StaticResource ButtonAccentStyle}"
-                        Content="{StaticResource IconUser}"
-                        ContentTemplate="{StaticResource IconTemplate}"
+        <StackPanel x:Name="StackPanel"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Stretch">
+            <TabControl x:Name="LinksBorder"
+                        Style="{StaticResource HeaderMenuTabControl}"
+                        ItemContainerStyle="{StaticResource HeaderMenuTabItem}"
                         Background="Transparent"
                         BorderThickness="0"
-                        IsEnabled="False"/>
-                <TextBlock VerticalAlignment="Center" x:Name="UserLabel" Style="{StaticResource LinksMainMenuStyle}" Foreground="{StaticResource HeaderBarText}" Text="{Binding Path=User, TargetNullValue=Не авторизован}"/>
-                <Button Style="{StaticResource ButtonAccentStyle}"
-                        Content="{StaticResource IconHelps}"
-                        ContentTemplate="{StaticResource IconTemplate}"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        IsEnabled="False" Margin="10,0,0,0" VerticalAlignment="Center"/>
-                <TextBlock Margin="0,0,0,0" Name="label1" Style="{StaticResource LinksMainMenuStyle}">
-                    <Hyperlink x:Name="HbInstrBtn" FontWeight="Normal" TextDecorations="none" TargetName="_blank" Foreground="{StaticResource HeaderBarText}" Click="Hyperlink1_OnClick">Помощь</Hyperlink>
-                </TextBlock>
-                <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Opacity="0.8" Foreground="{StaticResource HeaderBarText}" x:Name="InfoLabel" Margin="10,0,0,0" Visibility="Hidden" ToolTipService.ToolTip="{Binding Path=LastRequests}" MouseLeftButtonUp="InfoLabel_MouseLeftButtonUp"/>
-                <TextBlock Margin="10,0,0,0" Name="label2" Style="{StaticResource LinksMainMenuStyle}">
-                    <Hyperlink Foreground="{StaticResource HeaderBarMuted}" FontWeight="Normal" TextDecorations="none" Click="Hyperlink_OnClick">© ООО &quot;Техноград плюс&quot;</Hyperlink>
-                </TextBlock>
-            </StackPanel>
-
-         </Grid>
-        <StackPanel Name="StackPanel" Grid.Row="1" HorizontalAlignment="Stretch" Orientation="Horizontal" Grid.ColumnSpan="3" VerticalAlignment="Center" Background="{StaticResource HeaderBarBg}">
-            <TabControl Style="{StaticResource MainTabControl}"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Margin="8,0,0,0"
                         Padding="0"
+                        Margin="8,0,0,0"
                         Foreground="{StaticResource HeaderBarMuted}"
-                        VerticalAlignment="Center"
-                        Grid.Column="2"
-                        x:Name="LinksBorder"
-                        mah:TabControlHelper.UnderlineBrush="White"
-                        mah:TabControlHelper.UnderlinePlacement="Bottom"
-                        mah:TabControlHelper.Underlined="SelectedTabItem">
+                        VerticalAlignment="Stretch"
+                        mah:TabControlHelper.Underlined="None">
                 <b:Interaction.Triggers>
                     <b:EventTrigger EventName="SelectionChanged">
                         <input:EventToCommand x:Name="EventToCommand"
@@ -178,17 +214,63 @@
                                               CommandParameter="{Binding ElementName=LinksBorder, Path=SelectedItem.Tag}"/>
                     </b:EventTrigger>
                 </b:Interaction.Triggers>
-                <TabItem Header="Склад" Tag="{StaticResource EquipMasterViewModel}" />
-                <TabItem Header="Справочники" Tag="{StaticResource StoreReferenceListMasterDetailViewModel}" />
-                <TabItem Header="Отчёты" Tag="{StaticResource StoreReportsListViewModel}" />
-                <TabItem Header="Интеграция" Tag="{StaticResource OebsCommandsViewModel}" Visibility="{Binding Path=CanMenuOebs, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
-                <TabItem Header="Аудит" Tag="{StaticResource AuditViewModel}" Visibility="{Binding Path=CanMenuAudit, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}" />
-
-
+                <TabItem Header="Склад" Tag="{StaticResource EquipMasterViewModel}"/>
+                <TabItem Header="Справочники" Tag="{StaticResource StoreReferenceListMasterDetailViewModel}"/>
+                <TabItem Header="Отчёты" Tag="{StaticResource StoreReportsListViewModel}"/>
+                <TabItem Header="Интеграция"
+                         Tag="{StaticResource OebsCommandsViewModel}"
+                         Visibility="{Binding Path=CanMenuOebs, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
+                <TabItem Header="Аудит"
+                         Tag="{StaticResource AuditViewModel}"
+                         Visibility="{Binding Path=CanMenuAudit, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
             </TabControl>
+        </StackPanel>
 
+        <StackPanel Grid.Column="2"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center"
+                    Margin="12,0,16,0">
+            <Button Style="{StaticResource ButtonAccentStyle}"
+                    Content="{StaticResource IconUser}"
+                    ContentTemplate="{StaticResource IconTemplate}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    IsEnabled="False"/>
+            <TextBlock x:Name="UserLabel"
+                       VerticalAlignment="Center"
+                       Style="{StaticResource LinksMainMenuStyle}"
+                       Foreground="{StaticResource HeaderBarText}"
+                       Text="{Binding Path=User, TargetNullValue=Не авторизован}"/>
+            <Button Style="{StaticResource ButtonAccentStyle}"
+                    Content="{StaticResource IconHelps}"
+                    ContentTemplate="{StaticResource IconTemplate}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    IsEnabled="False"
+                    Margin="10,0,0,0"
+                    VerticalAlignment="Center"/>
+            <TextBlock x:Name="label1" Style="{StaticResource LinksMainMenuStyle}">
+                <Hyperlink x:Name="HbInstrBtn"
+                           FontWeight="Normal"
+                           TextDecorations="None"
+                           TargetName="_blank"
+                           Foreground="{StaticResource HeaderBarText}"
+                           Click="Hyperlink1_OnClick">Помощь</Hyperlink>
+            </TextBlock>
+            <TextBlock x:Name="InfoLabel"
+                       FontSize="11"
+                       Opacity="0.8"
+                       Foreground="{StaticResource HeaderBarText}"
+                       Margin="10,0,0,0"
+                       Visibility="Hidden"
+                       ToolTipService.ToolTip="{Binding Path=LastRequests}"
+                       MouseLeftButtonUp="InfoLabel_MouseLeftButtonUp"/>
+            <TextBlock x:Name="label2" Margin="16,0,0,0" Style="{StaticResource LinksMainMenuStyle}">
+                <Hyperlink Foreground="{StaticResource HeaderBarMuted}"
+                           FontWeight="Normal"
+                           TextDecorations="None"
+                           Click="Hyperlink_OnClick">© ООО &quot;Техноград плюс&quot;</Hyperlink>
+            </TextBlock>
         </StackPanel>
     </Grid>
-
-
 </controls:UserView>
