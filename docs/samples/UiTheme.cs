@@ -148,6 +148,24 @@ namespace Store.Views.Theming
             res["Tab.IdleForeground"] = tabIdle;
             res["Tab.SelectedForeground"] = tabSelected;
             res["Tab.SelectedUnderline"] = tabUnderline;
+
+            // Переключение геометрии и формы (Border, TabItem)
+            if (name == "Legacy")
+            {
+                res["CardCornerRadius"] = new CornerRadius(0);
+                res["ButtonCornerRadius"] = new CornerRadius(2);
+                res["CardBorderThickness"] = new Thickness(1);
+                if (res["TabItem.Template.Classic"] != null)
+                    res["TabItem.CurrentTemplate"] = res["TabItem.Template.Classic"];
+            }
+            else
+            {
+                res["CardCornerRadius"] = new CornerRadius(12);
+                res["ButtonCornerRadius"] = new CornerRadius(8);
+                res["CardBorderThickness"] = new Thickness(1);
+                if (res["TabItem.Template.Modern"] != null)
+                    res["TabItem.CurrentTemplate"] = res["TabItem.Template.Modern"];
+            }
         }
     }
 }
