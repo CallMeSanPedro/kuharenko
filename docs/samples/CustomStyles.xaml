@@ -66,9 +66,18 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabControl">
-                    <TabPanel IsItemsHost="True"
-                              Background="Transparent"
-                              VerticalAlignment="Stretch"/>
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  CanContentScroll="False"
+                                  PanningMode="HorizontalOnly"
+                                  Background="Transparent"
+                                  Padding="0"
+                                  BorderThickness="0">
+                        <TabPanel IsItemsHost="True"
+                                  Background="Transparent"
+                                  VerticalAlignment="Stretch"
+                                  HorizontalAlignment="Center"/>
+                    </ScrollViewer>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
