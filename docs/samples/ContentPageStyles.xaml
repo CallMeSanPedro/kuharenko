@@ -24,6 +24,11 @@
     <SolidColorBrush x:Key="AccentSoft" Color="#E8F1FB"/>
     <SolidColorBrush x:Key="InputBorder" Color="#CBD5E1"/>
 
+    <!-- Цвета вкладок контента. Меняются шаблоном стиля из шапки. -->
+    <SolidColorBrush x:Key="Tab.IdleForeground" Color="#64748B"/>
+    <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#1B3F6F"/>
+    <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#1B3F6F"/>
+
     <!-- ******CONTENT PAGE STYLES****** -->
     <!-- ******************************* -->
 
@@ -56,7 +61,7 @@
     <Style TargetType="TabItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="Foreground" Value="{DynamicResource Tab.IdleForeground}"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="14,8"/>
         <Setter Property="MinHeight" Value="36"/>
@@ -83,18 +88,18 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Underline" Property="Fill" Value="{StaticResource Accent}"/>
-                            <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                            <Setter TargetName="Underline" Property="Fill" Value="{DynamicResource Tab.SelectedUnderline}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsMouseOver" Value="True"/>
                                 <Condition Property="IsSelected" Value="True"/>
                             </MultiTrigger.Conditions>
-                            <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

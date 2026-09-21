@@ -1,0 +1,45 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls">
+    <system:String x:Key="Store.UiTheme">Classic</system:String>
+    <SolidColorBrush x:Key="Tab.IdleForeground" Color="#4A5568"/>
+    <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#1A202C"/>
+    <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#CBD5E1"/>
+
+    <Style TargetType="TabItem" BasedOn="{StaticResource MahApps.Styles.TabItem}">
+        <Setter Property="BorderBrush" Value="#CBD5E1"/>
+        <Setter Property="Background" Value="#F7FAFC"/>
+        <Setter Property="Foreground" Value="{DynamicResource Tab.IdleForeground}"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="BorderThickness" Value="1,1,1,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3,3,0,0"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter ContentSource="Header"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="White"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
+                            <Setter Property="BorderBrush" Value="#A0AEC0"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#EDF2F7"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
