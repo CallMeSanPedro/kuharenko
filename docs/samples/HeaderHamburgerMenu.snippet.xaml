@@ -17,6 +17,10 @@
                       Tag="Classic"
                       Click="ThemeMenuItem_OnClick"
                       Style="{StaticResource HeaderDropdownMenuItem}"/>
+            <MenuItem Header="Старый (Legacy)"
+                      Tag="Legacy"
+                      Click="ThemeMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
         </MenuItem>
     </MenuItem>
 </Menu>

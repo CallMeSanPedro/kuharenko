@@ -87,6 +87,27 @@ namespace Store.Views.Theming
                     tabUnderline = new SolidColorBrush(Color.FromRgb(0x37, 0x41, 0x51));
                     break;
 
+                case "Legacy":
+                    headerBg = new SolidColorBrush(Color.FromRgb(0x1F, 0x28, 0x33));
+                    headerText = Brushes.White;
+                    headerMuted = new SolidColorBrush(Color.FromRgb(0xD1, 0xD5, 0xDB));
+
+                    pageBg = new SolidColorBrush(Color.FromRgb(0xEF, 0xEF, 0xEF));
+                    cardBg = Brushes.White;
+                    cardBorder = new SolidColorBrush(Color.FromRgb(0x99, 0x99, 0x99));
+
+                    textPrimary = Brushes.Black;
+                    textSecondary = new SolidColorBrush(Color.FromRgb(0x33, 0x33, 0x33));
+
+                    accent = new SolidColorBrush(Color.FromRgb(0x00, 0x72, 0xC6));
+                    accentSoft = new SolidColorBrush(Color.FromRgb(0xCD, 0xE6, 0xF7));
+                    inputBorder = new SolidColorBrush(Color.FromRgb(0xAB, 0xAD, 0xB3));
+
+                    tabIdle = Brushes.Black;
+                    tabSelected = new SolidColorBrush(Color.FromRgb(0x00, 0x66, 0xCC));
+                    tabUnderline = new SolidColorBrush(Color.FromRgb(0x00, 0x66, 0xCC));
+                    break;
+
                 default: // Calm
                     headerBg = new SolidColorBrush(Color.FromRgb(0x0F, 0x2D, 0x5B));
                     headerText = Brushes.White;
