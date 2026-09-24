@@ -30,6 +30,17 @@
     <SolidColorBrush x:Key="DataGrid.HeaderBg" Color="#F8FAFC"/>
     <SolidColorBrush x:Key="DataGrid.SelectedRowBg" Color="#E8F1FB"/>
     <SolidColorBrush x:Key="DataGrid.HoverRowBg" Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="DataGrid.Line" Color="#E2E8F0"/>
+
+    <!-- Бейджи значений. Неизвестное значение остаётся нейтральным. -->
+    <SolidColorBrush x:Key="Badge.SuccessBg" Color="#DCFCE7"/>
+    <SolidColorBrush x:Key="Badge.SuccessFg" Color="#166534"/>
+    <SolidColorBrush x:Key="Badge.NeutralBg" Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Badge.NeutralFg" Color="#475569"/>
+    <SolidColorBrush x:Key="Badge.InfoBg" Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="Badge.InfoFg" Color="#1D4ED8"/>
+    <SolidColorBrush x:Key="Badge.WarningBg" Color="#FEF3C7"/>
+    <SolidColorBrush x:Key="Badge.WarningFg" Color="#92400E"/>
 
     <!-- Дерево навигации -->
     <SolidColorBrush x:Key="Tree.SelectedBg" Color="#E8F1FB"/>
@@ -105,4 +116,126 @@
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FontWeight" Value="Normal"/>
     </Style>
+
+    <!-- 5. Таблица: шапка без вертикальных линий, выбранная строка мягким фоном -->
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="{DynamicResource DataGrid.HeaderBg}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Height" Value="36"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Line}"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="SeparatorBrush" Value="Transparent"/>
+        <Setter Property="SeparatorVisibility" Value="Collapsed"/>
+    </Style>
+
+    <Style TargetType="DataGridCell">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="12,0"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="DataGridRow">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="MinHeight" Value="38"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource DataGrid.HoverRowBg}"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource DataGrid.SelectedRowBg}"/>
+            </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="True"/>
+                    <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{DynamicResource DataGrid.SelectedRowBg}"/>
+            </MultiTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="DataGrid">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Line}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="RowBackground" Value="White"/>
+        <Setter Property="AlternatingRowBackground" Value="White"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGrid.Line}"/>
+        <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="HeadersVisibility" Value="Column"/>
+        <Setter Property="RowHeight" Value="38"/>
+        <Setter Property="ColumnHeaderHeight" Value="36"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="EnableRowVirtualization" Value="True"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+    </Style>
+
+    <!-- Подсветка текстового значения. Content шаблона — сама строка статуса. -->
+    <DataTemplate x:Key="StatusBadgeTemplate">
+        <Border x:Name="Badge"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Background="{DynamicResource Badge.NeutralBg}"
+                CornerRadius="999"
+                Padding="8,2"
+                SnapsToDevicePixels="True">
+            <TextBlock x:Name="BadgeText"
+                       Text="{Binding}"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource Badge.NeutralFg}"/>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                <Setter TargetName="Badge" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="">
+                <Setter TargetName="Badge" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="в работе">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.SuccessBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.SuccessFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="новое">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.SuccessBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.SuccessFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="на складе">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.NeutralBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.NeutralFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="на ремонте">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.WarningBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.WarningFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="новый">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.InfoBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.InfoFg}"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
 </ResourceDictionary>

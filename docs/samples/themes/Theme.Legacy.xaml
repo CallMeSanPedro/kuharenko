@@ -94,4 +94,9 @@
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FontWeight" Value="Normal"/>
     </Style>
+
+    <!-- В Legacy значение остаётся обычным текстом. -->
+    <DataTemplate x:Key="StatusBadgeTemplate">
+        <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+    </DataTemplate>
 </ResourceDictionary>

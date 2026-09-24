@@ -105,4 +105,56 @@
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FontWeight" Value="Normal"/>
     </Style>
+
+    <SolidColorBrush x:Key="Badge.SuccessBg" Color="#DCFCE7"/>
+    <SolidColorBrush x:Key="Badge.SuccessFg" Color="#166534"/>
+    <SolidColorBrush x:Key="Badge.NeutralBg" Color="#F1F5F9"/>
+    <SolidColorBrush x:Key="Badge.NeutralFg" Color="#334155"/>
+    <SolidColorBrush x:Key="Badge.InfoBg" Color="#DBEAFE"/>
+    <SolidColorBrush x:Key="Badge.InfoFg" Color="#1D4ED8"/>
+    <SolidColorBrush x:Key="Badge.WarningBg" Color="#FEF3C7"/>
+    <SolidColorBrush x:Key="Badge.WarningFg" Color="#92400E"/>
+
+    <DataTemplate x:Key="StatusBadgeTemplate">
+        <Border x:Name="Badge"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center"
+                Background="{DynamicResource Badge.NeutralBg}"
+                CornerRadius="999"
+                Padding="8,2">
+            <TextBlock x:Name="BadgeText"
+                       Text="{Binding}"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource Badge.NeutralFg}"/>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding}" Value="{x:Null}">
+                <Setter TargetName="Badge" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="">
+                <Setter TargetName="Badge" Property="Visibility" Value="Collapsed"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="в работе">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.SuccessBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.SuccessFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="новое">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.SuccessBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.SuccessFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="на складе">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.NeutralBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.NeutralFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="на ремонте">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.WarningBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.WarningFg}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding}" Value="новый">
+                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.InfoBg}"/>
+                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.InfoFg}"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
 </ResourceDictionary>
