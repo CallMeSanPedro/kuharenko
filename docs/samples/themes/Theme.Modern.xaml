@@ -30,7 +30,7 @@
     <SolidColorBrush x:Key="DataGrid.HeaderBg" Color="#F8FAFC"/>
     <SolidColorBrush x:Key="DataGrid.SelectedRowBg" Color="#E8F1FB"/>
     <SolidColorBrush x:Key="DataGrid.HoverRowBg" Color="#F1F5F9"/>
-    <SolidColorBrush x:Key="DataGrid.Line" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="DataGrid.Line" Color="#D5DEE9"/>
 
     <!-- Бейджи значений. Неизвестное значение остаётся нейтральным. -->
     <SolidColorBrush x:Key="Badge.SuccessBg" Color="#DCFCE7"/>
@@ -117,8 +117,8 @@
         <Setter Property="FontWeight" Value="Normal"/>
     </Style>
 
-    <!-- 5. Таблица: шапка без вертикальных линий, выбранная строка мягким фоном -->
-    <Style TargetType="DataGridColumnHeader">
+    <!-- 5. Таблица: без вертикальных линий между ячейками, строка отделена нижней границей -->
+    <Style x:Key="ModernDataGridColumnHeader" TargetType="DataGridColumnHeader">
         <Setter Property="Background" Value="{DynamicResource DataGrid.HeaderBg}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
         <Setter Property="FontSize" Value="12"/>
@@ -131,9 +131,37 @@
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="SeparatorBrush" Value="Transparent"/>
         <Setter Property="SeparatorVisibility" Value="Collapsed"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeader">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <Thumb x:Name="PART_LeftHeaderGripper"
+                               HorizontalAlignment="Left"
+                               Width="8"
+                               Background="Transparent"
+                               Opacity="0"/>
+                        <Thumb x:Name="PART_RightHeaderGripper"
+                               HorizontalAlignment="Right"
+                               Width="8"
+                               Background="Transparent"
+                               Opacity="0"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
+    <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource ModernDataGridColumnHeader}"/>
 
-    <Style TargetType="DataGridCell">
+    <Style x:Key="ModernDataGridCell" TargetType="DataGridCell">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -143,17 +171,31 @@
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderThickness="0"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderBrush" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
+    <Style TargetType="DataGridCell" BasedOn="{StaticResource ModernDataGridCell}"/>
 
-    <Style TargetType="DataGridRow">
+    <Style x:Key="ModernDataGridRow" TargetType="DataGridRow">
         <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Line}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
         <Setter Property="MinHeight" Value="38"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Validation.ErrorTemplate" Value="{x:Null}"/>
@@ -173,17 +215,17 @@
             </MultiTrigger>
         </Style.Triggers>
     </Style>
+    <Style TargetType="DataGridRow" BasedOn="{StaticResource ModernDataGridRow}"/>
 
     <Style TargetType="DataGrid">
         <Setter Property="Background" Value="White"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource DataGrid.Line}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="RowBackground" Value="White"/>
         <Setter Property="AlternatingRowBackground" Value="White"/>
-        <Setter Property="HorizontalGridLinesBrush" Value="{DynamicResource DataGrid.Line}"/>
+        <Setter Property="GridLinesVisibility" Value="None"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="Transparent"/>
         <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
-        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
         <Setter Property="HeadersVisibility" Value="Column"/>
         <Setter Property="RowHeight" Value="38"/>
         <Setter Property="ColumnHeaderHeight" Value="36"/>
@@ -192,6 +234,9 @@
         <Setter Property="EnableRowVirtualization" Value="True"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="ColumnHeaderStyle" Value="{StaticResource ModernDataGridColumnHeader}"/>
+        <Setter Property="CellStyle" Value="{StaticResource ModernDataGridCell}"/>
+        <Setter Property="RowStyle" Value="{StaticResource ModernDataGridRow}"/>
     </Style>
 
     <!-- Плашка красится по тону (Tag: Success, Neutral, Warning, Info), не по тексту ячейки. -->
