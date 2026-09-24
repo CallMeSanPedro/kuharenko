@@ -95,8 +95,11 @@
         <Setter Property="FontWeight" Value="Normal"/>
     </Style>
 
-    <!-- В Legacy значение остаётся обычным текстом. -->
-    <DataTemplate x:Key="StatusBadgeTemplate">
-        <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
-    </DataTemplate>
+    <!-- Тот же ключ, без цветной плашки: текст статуса как раньше. -->
+    <Style x:Key="StatusBadge" TargetType="Border">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
 </ResourceDictionary>

@@ -194,48 +194,34 @@
         <Setter Property="UseLayoutRounding" Value="True"/>
     </Style>
 
-    <!-- Подсветка текстового значения. Content шаблона — сама строка статуса. -->
-    <DataTemplate x:Key="StatusBadgeTemplate">
-        <Border x:Name="Badge"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Background="{DynamicResource Badge.NeutralBg}"
-                CornerRadius="999"
-                Padding="8,2"
-                SnapsToDevicePixels="True">
-            <TextBlock x:Name="BadgeText"
-                       Text="{Binding}"
-                       FontSize="12"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource Badge.NeutralFg}"/>
-        </Border>
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding}" Value="{x:Null}">
-                <Setter TargetName="Badge" Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding}" Value="">
-                <Setter TargetName="Badge" Property="Visibility" Value="Collapsed"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding}" Value="в работе">
-                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.SuccessBg}"/>
-                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.SuccessFg}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding}" Value="новое">
-                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.SuccessBg}"/>
-                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.SuccessFg}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding}" Value="на складе">
-                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.NeutralBg}"/>
-                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.NeutralFg}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding}" Value="на ремонте">
-                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.WarningBg}"/>
-                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.WarningFg}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding}" Value="новый">
-                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource Badge.InfoBg}"/>
-                <Setter TargetName="BadgeText" Property="Foreground" Value="{DynamicResource Badge.InfoFg}"/>
-            </DataTrigger>
-        </DataTemplate.Triggers>
-    </DataTemplate>
+    <!-- Плашка красится по тону (Tag: Success, Neutral, Warning, Info), не по тексту ячейки. -->
+    <Style x:Key="StatusBadge" TargetType="Border">
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Background" Value="{DynamicResource Badge.NeutralBg}"/>
+        <Setter Property="CornerRadius" Value="999"/>
+        <Setter Property="Padding" Value="8,2"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="TextElement.FontSize" Value="12"/>
+        <Setter Property="TextElement.FontWeight" Value="SemiBold"/>
+        <Setter Property="TextElement.Foreground" Value="{DynamicResource Badge.NeutralFg}"/>
+        <Style.Triggers>
+            <Trigger Property="Tag" Value="Success">
+                <Setter Property="Background" Value="{DynamicResource Badge.SuccessBg}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Badge.SuccessFg}"/>
+            </Trigger>
+            <Trigger Property="Tag" Value="Neutral">
+                <Setter Property="Background" Value="{DynamicResource Badge.NeutralBg}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Badge.NeutralFg}"/>
+            </Trigger>
+            <Trigger Property="Tag" Value="Warning">
+                <Setter Property="Background" Value="{DynamicResource Badge.WarningBg}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Badge.WarningFg}"/>
+            </Trigger>
+            <Trigger Property="Tag" Value="Info">
+                <Setter Property="Background" Value="{DynamicResource Badge.InfoBg}"/>
+                <Setter Property="TextElement.Foreground" Value="{DynamicResource Badge.InfoFg}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

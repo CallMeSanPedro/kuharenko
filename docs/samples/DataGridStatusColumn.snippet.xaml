@@ -1,15 +1,16 @@
 <!--
-Колонки «Состояние» и «Статус эксплуатации».
-Binding замените на фактическое свойство строки.
-Остальные колонки оставьте DataGridTextColumn.
+Подпись и тон разделены.
+Text — то, что видит пользователь.
+Tag — результат конвертера по коду статуса, не по строке на экране.
+Коды в StatusToneConverter замените на фактические значения поля.
 -->
 <DataGridTemplateColumn Header="Состояние" Width="120">
     <DataGridTemplateColumn.CellTemplate>
         <DataTemplate>
-            <ContentControl Content="{Binding Condition}"
-                            ContentTemplate="{DynamicResource StatusBadgeTemplate}"
-                            Focusable="False"
-                            VerticalAlignment="Center"/>
+            <Border Style="{DynamicResource StatusBadge}"
+                    Tag="{Binding ConditionCode, Converter={StaticResource StatusToneConverter}}">
+                <TextBlock Text="{Binding ConditionName}"/>
+            </Border>
         </DataTemplate>
     </DataGridTemplateColumn.CellTemplate>
 </DataGridTemplateColumn>
@@ -17,10 +18,10 @@ Binding замените на фактическое свойство строк
 <DataGridTemplateColumn Header="Статус эксплуатации" Width="150">
     <DataGridTemplateColumn.CellTemplate>
         <DataTemplate>
-            <ContentControl Content="{Binding Status}"
-                            ContentTemplate="{DynamicResource StatusBadgeTemplate}"
-                            Focusable="False"
-                            VerticalAlignment="Center"/>
+            <Border Style="{DynamicResource StatusBadge}"
+                    Tag="{Binding ExploitationStatusCode, Converter={StaticResource StatusToneConverter}}">
+                <TextBlock Text="{Binding ExploitationStatusName}"/>
+            </Border>
         </DataTemplate>
     </DataGridTemplateColumn.CellTemplate>
 </DataGridTemplateColumn>
