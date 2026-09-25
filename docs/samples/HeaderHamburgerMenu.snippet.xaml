@@ -1,0 +1,26 @@
+<!-- 
+Вставить в левый StackPanel шапки MainView.xaml САМЫМ ПЕРВЫМ элементом (перед AppLogotype)
+-->
+<Menu Style="{StaticResource HeaderHamburgerMenu}">
+    <MenuItem Style="{StaticResource HeaderHamburgerItem}">
+        <MenuItem Header="Выбор стиля"
+                  Style="{StaticResource HeaderDropdownMenuItem}">
+            <MenuItem Header="По умолчанию (Default)"
+                      Tag="Default"
+                      Click="ThemeMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
+            <MenuItem Header="Современный (Modern)"
+                      Tag="Modern"
+                      Click="ThemeMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
+            <MenuItem Header="Контрастный (Contrast)"
+                      Tag="Contrast"
+                      Click="ThemeMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
+            <MenuItem Header="Старый исходный (Legacy)"
+                      Tag="Legacy"
+                      Click="ThemeMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
+        </MenuItem>
+    </MenuItem>
+</Menu>
