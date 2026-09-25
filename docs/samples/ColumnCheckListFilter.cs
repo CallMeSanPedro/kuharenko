@@ -172,9 +172,9 @@ namespace Store.Views.Filtering
                 BorderThickness = new Thickness(0),
                 Background = Brushes.Transparent,
                 VerticalAlignment = VerticalAlignment.Center,
-                Cursor = System.Windows.Input.Cursors.Hand,
-                Content = CreateIcon(button)
+                Cursor = System.Windows.Input.Cursors.Hand
             };
+            button.Content = CreateIcon(button);
             button.SetBinding(Control.ForegroundProperty, new Binding(nameof(IsActive))
             {
                 Converter = ActiveBrushConverter.Instance
