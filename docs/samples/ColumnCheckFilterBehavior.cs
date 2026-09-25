@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Reflection;
 using System.Windows;
@@ -38,6 +39,21 @@ namespace Store.Views.Filtering
             typeof(ColumnCheckFilterBehavior),
             new PropertyMetadata(null));
 
+        private static readonly DependencyProperty OriginalHeaderProperty = DependencyProperty.RegisterAttached(
+            "OriginalHeader",
+            typeof(object),
+            typeof(ColumnCheckFilterBehavior),
+            new PropertyMetadata(null));
+
+        private static readonly DependencyProperty OriginalHeaderHeightProperty = DependencyProperty.RegisterAttached(
+            "OriginalHeaderHeight",
+            typeof(double),
+            typeof(ColumnCheckFilterBehavior),
+            new PropertyMetadata(double.NaN));
+
+        private static readonly List<WeakReference> Grids = new List<WeakReference>();
+        private static bool _watchingThemes;
+
         private static void OnIsEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var grid = d as DataGrid;
@@ -52,6 +68,8 @@ namespace Store.Views.Filtering
                 var handler = new NotifyCollectionChangedEventHandler((sender, args) => Schedule(grid));
                 grid.SetValue(ColumnsHandlerProperty, handler);
                 grid.Columns.CollectionChanged += handler;
+                Remember(grid);
+                WatchThemes();
                 Schedule(grid);
             }
             else
@@ -89,6 +107,14 @@ namespace Store.Views.Filtering
             if (template == null || filters == null)
                 return;
 
+            if (!IsModernTheme(grid))
+            {
+                RestoreHeaders(grid);
+                return;
+            }
+
+            if (double.IsNaN((double)grid.GetValue(OriginalHeaderHeightProperty)))
+                grid.SetValue(OriginalHeaderHeightProperty, grid.ColumnHeaderHeight);
             if (double.IsNaN(grid.ColumnHeaderHeight) || grid.ColumnHeaderHeight < 64)
                 grid.ColumnHeaderHeight = 64;
 
@@ -103,6 +129,9 @@ namespace Store.Views.Filtering
                 if (filter == null)
                     continue;
 
+                if (!(column.Header is ContentControl))
+                    column.SetValue(OriginalHeaderProperty, column.Header);
+
                 column.HeaderTemplate = null;
                 column.Header = new ContentControl
                 {
@@ -112,6 +141,57 @@ namespace Store.Views.Filtering
                     VerticalAlignment = VerticalAlignment.Top
                 };
             }
+        }
+
+        private static void RestoreHeaders(DataGrid grid)
+        {
+            foreach (var column in grid.Columns)
+            {
+                var control = column.Header as ContentControl;
+                if (control == null || !(control.Content is ColumnHeaderFilter))
+                    continue;
+
+                var original = column.GetValue(OriginalHeaderProperty);
+                column.Header = original ?? ((ColumnHeaderFilter)control.Content).Title;
+            }
+
+            var height = (double)grid.GetValue(OriginalHeaderHeightProperty);
+            if (!double.IsNaN(height))
+                grid.ColumnHeaderHeight = height;
+        }
+
+        private static bool IsModernTheme(FrameworkElement element)
+        {
+            return string.Equals(element.TryFindResource("Store.CurrentTheme") as string, "Modern", StringComparison.Ordinal);
+        }
+
+        private static void Remember(DataGrid grid)
+        {
+            for (var i = Grids.Count - 1; i >= 0; i--)
+            {
+                var existing = Grids[i].Target as DataGrid;
+                if (existing == null || ReferenceEquals(existing, grid))
+                    Grids.RemoveAt(i);
+            }
+
+            Grids.Add(new WeakReference(grid));
+        }
+
+        private static void WatchThemes()
+        {
+            if (_watchingThemes || Application.Current == null)
+                return;
+
+            _watchingThemes = true;
+            Application.Current.Resources.MergedDictionaries.CollectionChanged += (sender, args) =>
+            {
+                foreach (var reference in Grids.ToArray())
+                {
+                    var grid = reference.Target as DataGrid;
+                    if (grid != null)
+                        Schedule(grid);
+                }
+            };
         }
 
         private static ColumnHeaderFilterSet ResolveFilters(object dataContext)
