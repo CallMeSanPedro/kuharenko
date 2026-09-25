@@ -1,7 +1,20 @@
-<!-- Рядом с остальными фильтрами над таблицей, не в заголовке колонки. -->
-<Controls3:MultiSelectComboBox MinWidth="180" Margin="3"
-    VerticalAlignment="Center"
-    EmptyText="Состояние"
-    AddAllItem="True"
-    ItemsSource="{Binding ConditionOptions}"
-    SelectedItems="{Binding Filter.Conditions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+<!--
+xmlns:Controls3 — тот же, что уже используется для MultiSelectComboBox.
+xmlns:filtering="clr-namespace:Store.Views.Filtering"
+-->
+<DataTemplate x:Key="ColumnFilterHeaderTemplate">
+    <StackPanel Margin="0,4,8,4">
+        <TextBlock Text="{Binding Title}" Margin="0,0,0,4"/>
+        <Controls3:MultiSelectComboBox MinWidth="120"
+            VerticalAlignment="Center"
+            EmptyText="Все"
+            AddAllItem="True"
+            ItemsSource="{Binding Options}"
+            SelectedItems="{Binding SelectedItems, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+    </StackPanel>
+</DataTemplate>
+
+<controls2:DataGrid filtering:ColumnCheckFilterBehavior.IsEnabled="True"
+                    filtering:ColumnCheckFilterBehavior.HeaderTemplate="{StaticResource ColumnFilterHeaderTemplate}"
+                    ItemsSource="{Binding Path=ItemsView}"
+                    AutoGenerateColumns="True" />
