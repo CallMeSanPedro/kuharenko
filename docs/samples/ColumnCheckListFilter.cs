@@ -155,30 +155,14 @@ namespace Store.Views.Filtering
             root.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             root.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            var title = new TextBlock
-            {
-                Text = Title,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 6, 0)
-            };
+            var title = new TextBlock { Text = Title };
+            title.SetResourceReference(FrameworkElement.StyleProperty, "ColumnFilter.Title");
             Grid.SetColumn(title, 0);
             root.Children.Add(title);
 
-            var button = new ToggleButton
-            {
-                Width = 16,
-                Height = 16,
-                Padding = new Thickness(0),
-                BorderThickness = new Thickness(0),
-                Background = Brushes.Transparent,
-                VerticalAlignment = VerticalAlignment.Center,
-                Cursor = System.Windows.Input.Cursors.Hand
-            };
+            var button = new ToggleButton();
+            button.SetResourceReference(FrameworkElement.StyleProperty, "ColumnFilter.Button");
             button.Content = CreateIcon(button);
-            button.SetBinding(Control.ForegroundProperty, new Binding(nameof(IsActive))
-            {
-                Converter = ActiveBrushConverter.Instance
-            });
             Grid.SetColumn(button, 1);
             root.Children.Add(button);
 
@@ -201,19 +185,12 @@ namespace Store.Views.Filtering
 
         private UIElement CreatePopup()
         {
-            var card = new Border
-            {
-                Background = Brushes.White,
-                BorderBrush = new SolidColorBrush(Color.FromRgb(0xD5, 0xDE, 0xE9)),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(8),
-                Padding = new Thickness(8),
-                Width = 240,
-                MaxHeight = 320
-            };
+            var card = new Border();
+            card.SetResourceReference(FrameworkElement.StyleProperty, "ColumnFilter.Popup");
 
             var panel = new DockPanel();
-            var search = new TextBox { Height = 32, Margin = new Thickness(0, 0, 0, 8) };
+            var search = new TextBox();
+            search.SetResourceReference(FrameworkElement.StyleProperty, "ColumnFilter.Search");
             search.SetBinding(TextBox.TextProperty, new Binding(nameof(SearchText))
             {
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
@@ -221,19 +198,14 @@ namespace Store.Views.Filtering
             DockPanel.SetDock(search, Dock.Top);
             panel.Children.Add(search);
 
-            var reset = new Button
-            {
-                Content = "Сбросить",
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Margin = new Thickness(0, 8, 0, 0),
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0)
-            };
+            var reset = new Button { Content = "Сбросить" };
+            reset.SetResourceReference(FrameworkElement.StyleProperty, "ColumnFilter.Reset");
             reset.Click += (_, _) => AllChecked = true;
             DockPanel.SetDock(reset, Dock.Bottom);
             panel.Children.Add(reset);
 
-            var all = new CheckBox { Content = "Выбрать все", Margin = new Thickness(0, 0, 0, 6) };
+            var all = new CheckBox { Content = "Выбрать все" };
+            all.SetResourceReference(FrameworkElement.StyleProperty, "ColumnFilter.SelectAll");
             all.SetBinding(ToggleButton.IsCheckedProperty, new Binding(nameof(AllChecked)) { Mode = BindingMode.TwoWay });
             DockPanel.SetDock(all, Dock.Top);
             panel.Children.Add(all);
@@ -242,7 +214,7 @@ namespace Store.Views.Filtering
             list.SetBinding(ItemsControl.ItemsSourceProperty, new Binding(nameof(VisibleOptions)));
             var itemTemplate = new DataTemplate();
             var check = new FrameworkElementFactory(typeof(CheckBox));
-            check.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 2, 0, 2));
+            check.SetResourceReference(FrameworkElement.StyleProperty, "ColumnFilter.Option");
             check.SetBinding(ContentControl.ContentProperty, new Binding(nameof(ColumnFilterOption.Text)));
             check.SetBinding(ToggleButton.IsCheckedProperty, new Binding(nameof(ColumnFilterOption.IsChecked))
             {
@@ -304,23 +276,6 @@ namespace Store.Views.Filtering
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
         }
 
-        private sealed class ActiveBrushConverter : IValueConverter
-        {
-            public static readonly ActiveBrushConverter Instance = new ActiveBrushConverter();
-
-            public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            {
-                var active = value is bool flag && flag;
-                return active
-                    ? new SolidColorBrush(Color.FromRgb(0x1B, 0x3F, 0x6F))
-                    : new SolidColorBrush(Color.FromRgb(0x94, 0xA3, 0xB8));
-            }
-
-            public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-            {
-                return Binding.DoNothing;
-            }
-        }
     }
 
     public sealed class ColumnCheckFilterSet
