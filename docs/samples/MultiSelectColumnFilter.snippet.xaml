@@ -1,0 +1,7 @@
+<!-- Рядом с остальными фильтрами над таблицей, не в заголовке колонки. -->
+<Controls3:MultiSelectComboBox MinWidth="180" Margin="3"
+    VerticalAlignment="Center"
+    EmptyText="Состояние"
+    AddAllItem="True"
+    ItemsSource="{Binding ConditionOptions}"
+    SelectedItems="{Binding Filter.Conditions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
