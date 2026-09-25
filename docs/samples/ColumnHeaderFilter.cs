@@ -145,6 +145,20 @@ namespace Store.Views.Filtering
             return propertyName != null && _filters.TryGetValue(propertyName, out filter) ? filter : null;
         }
 
+        public ColumnHeaderFilter FindByTitle(string title)
+        {
+            if (string.IsNullOrEmpty(title))
+                return null;
+
+            foreach (var filter in _filters.Values)
+            {
+                if (string.Equals(filter.Title, title, StringComparison.CurrentCulture))
+                    return filter;
+            }
+
+            return null;
+        }
+
         public bool Passes(object item)
         {
             foreach (var filter in _filters.Values)
