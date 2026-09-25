@@ -5,12 +5,17 @@ xmlns:filtering="clr-namespace:Store.Views.Filtering"
 <DataTemplate x:Key="ColumnFilterHeaderTemplate">
     <StackPanel Margin="0,4,8,4">
         <TextBlock Text="{Binding Title}" Margin="0,0,0,4"/>
-        <Controls3:MultiSelectComboBox MinWidth="120"
+        <controls3:MultiSelectComboBox MinWidth="120"
             VerticalAlignment="Center"
             EmptyText="Все"
             AddAllItem="True"
             ItemsSource="{Binding Options}"
-            SelectedItems="{Binding SelectedItems, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            SelectedItems="{Binding SelectedItems, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+            Visibility="{Binding IsCheckList, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
+        <TextBox MinWidth="120"
+            Height="28"
+            Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+            Visibility="{Binding IsText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
     </StackPanel>
 </DataTemplate>
 

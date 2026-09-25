@@ -25,21 +25,29 @@ namespace Store.Views.Filtering
         public override string ToString() => Name ?? string.Empty;
     }
 
+    public enum ColumnFilterMode
+    {
+        CheckList,
+        Text
+    }
+
     /// <summary>
     /// Данные одного фильтра в шапке колонки.
-    /// Пустой выбор не скрывает строки, как GisNames.
+    /// Пустой выбор и пустая строка поиска не скрывают строки.
     /// </summary>
     public sealed class ColumnHeaderFilter : INotifyPropertyChanged
     {
         private readonly Func<object, string> _read;
         private IEnumerable<object> _selectedItems;
         private HashSet<string> _selected;
+        private string _text = string.Empty;
         private bool _updating;
 
-        public ColumnHeaderFilter(string propertyName, string title, Func<object, string> read)
+        public ColumnHeaderFilter(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
         {
             PropertyName = propertyName;
             Title = title;
+            Mode = mode;
             _read = read;
             Options = new ObservableCollection<object>();
         }
@@ -47,6 +55,26 @@ namespace Store.Views.Filtering
         public string PropertyName { get; }
 
         public string Title { get; }
+
+        public ColumnFilterMode Mode { get; }
+
+        public bool IsCheckList => Mode == ColumnFilterMode.CheckList;
+
+        public bool IsText => Mode == ColumnFilterMode.Text;
+
+        public string Text
+        {
+            get => _text;
+            set
+            {
+                var next = value ?? string.Empty;
+                if (_text == next)
+                    return;
+                _text = next;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         public ObservableCollection<object> Options { get; }
 
@@ -68,13 +96,24 @@ namespace Store.Views.Filtering
 
         public bool Passes(object item)
         {
+            var value = _read(item) ?? string.Empty;
+            if (Mode == ColumnFilterMode.Text)
+            {
+                if (string.IsNullOrWhiteSpace(_text))
+                    return true;
+                return value.IndexOf(_text.Trim(), StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+
             if (_selected == null || _selected.Count == 0)
                 return true;
-            return _selected.Contains(_read(item) ?? string.Empty);
+            return _selected.Contains(value);
         }
 
         public void Reload(IEnumerable source)
         {
+            if (Mode == ColumnFilterMode.Text)
+                return;
+
             var selected = new HashSet<string>(
                 (_selectedItems ?? Enumerable.Empty<object>())
                     .Select(x => x?.ToString())
@@ -139,7 +178,17 @@ namespace Store.Views.Filtering
 
         public ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read)
         {
-            var filter = new ColumnHeaderFilter(propertyName, title, read);
+            return Add(propertyName, title, read, ColumnFilterMode.CheckList);
+        }
+
+        public ColumnHeaderFilter AddText(string propertyName, string title, Func<object, string> read)
+        {
+            return Add(propertyName, title, read, ColumnFilterMode.Text);
+        }
+
+        private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
+        {
+            var filter = new ColumnHeaderFilter(propertyName, title, read, mode);
             filter.Changed += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
             _filters[propertyName] = filter;
             return filter;

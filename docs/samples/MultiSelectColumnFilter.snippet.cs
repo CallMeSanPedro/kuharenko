@@ -12,6 +12,7 @@ public TechReservViewModel()
     : base(MainViewModel.Resolve<IRepository<TechReserv, TechReservFilter>>())
 {
     HeaderFilters.Add(nameof(TechReserv.MarkacommName), "Модель", item => ((TechReserv)item).MarkacommName);
+    HeaderFilters.AddText(nameof(TechReserv.SerialNumber), "Серийный номер", item => ((TechReserv)item).SerialNumber);
     HeaderFilters.Changed += (s, e) => ItemsView?.Refresh();
 
     // Одна лямбда. Второй ViewFilter += затрёт результат первой.
