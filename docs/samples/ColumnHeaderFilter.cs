@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using DatumNode.Models;
 
 namespace Store.Views.Filtering
 {
@@ -12,8 +13,13 @@ namespace Store.Views.Filtering
         ColumnHeaderFilter Find(string propertyName);
     }
 
-    public sealed class ColumnFilterValue
+    public sealed class ColumnFilterValue : Entity
     {
+        public ColumnFilterValue()
+        {
+            TrackChanges = false;
+        }
+
         public string Name { get; set; }
 
         public override string ToString() => Name ?? string.Empty;
