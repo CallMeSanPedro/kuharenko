@@ -26,8 +26,18 @@ xmlns:controls3 — тот же, что у MultiSelectComboBox.
             <Path Data="M 0,0 L 10,0 L 6.2,4.6 L 6.2,9 L 3.8,9 L 3.8,4.6 Z"
                   Width="10"
                   Height="9"
-                  Stretch="Uniform"
-                  Style="{StaticResource ColumnFilterIcon}"/>
+                  Stretch="Uniform">
+                <Path.Style>
+                    <Style TargetType="Path">
+                        <Setter Property="Fill" Value="#94A3B8"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                <Setter Property="Fill" Value="#1B3F6F"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Path.Style>
+            </Path>
         </ToggleButton>
 
         <Popup PlacementTarget="{Binding ElementName=FilterButton}"
@@ -56,14 +66,4 @@ xmlns:controls3 — тот же, что у MultiSelectComboBox.
             </Border>
         </Popup>
     </Grid>
-    <DataTemplate.Resources>
-        <Style x:Key="ColumnFilterIcon" TargetType="Path">
-            <Setter Property="Fill" Value="#94A3B8"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsActive}" Value="True">
-                    <Setter Property="Fill" Value="#1B3F6F"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </DataTemplate.Resources>
 </DataTemplate>
