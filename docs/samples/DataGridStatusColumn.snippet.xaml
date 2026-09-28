@@ -1,0 +1,27 @@
+<!--
+Подпись и тон разделены.
+Text — то, что видит пользователь.
+Tag — результат конвертера по коду статуса, не по строке на экране.
+Коды в StatusToneConverter замените на фактические значения поля.
+-->
+<DataGridTemplateColumn Header="Состояние" Width="120">
+    <DataGridTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <Border Style="{DynamicResource StatusBadge}"
+                    Tag="{Binding ConditionCode, Converter={StaticResource StatusToneConverter}}">
+                <TextBlock Text="{Binding ConditionName}"/>
+            </Border>
+        </DataTemplate>
+    </DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+
+<DataGridTemplateColumn Header="Статус эксплуатации" Width="150">
+    <DataGridTemplateColumn.CellTemplate>
+        <DataTemplate>
+            <Border Style="{DynamicResource StatusBadge}"
+                    Tag="{Binding ExploitationStatusCode, Converter={StaticResource StatusToneConverter}}">
+                <TextBlock Text="{Binding ExploitationStatusName}"/>
+            </Border>
+        </DataTemplate>
+    </DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>

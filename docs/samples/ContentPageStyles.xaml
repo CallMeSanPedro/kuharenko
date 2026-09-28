@@ -1,0 +1,138 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                    xmlns:controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls">
+    <system:Double x:Key="MahApps.Font.Size.TabItem">13</system:Double>
+    <system:Double x:Key="NavigationFontSize">13</system:Double>
+    <system:Double x:Key="MahApps.Font.Size.Button">12</system:Double>
+
+    <FontFamily x:Key="ExpanderFontFamily">CALIBRIZ.TTF#Calibri</FontFamily>
+    <FontFamily x:Key="TabItemFontFamily">CALIBRIZ.TTF#Calibri</FontFamily>
+    <FontFamily x:Key="DefaultFontFamily">CALIBRIZ.TTF#Calibri</FontFamily>
+    <FontFamily x:Key="MahApps.Fonts.Family.Control">CALIBRIZ.TTF#Calibri</FontFamily>
+
+    <SolidColorBrush x:Key="HeaderBarBg" Color="#0F2D5B"/>
+    <SolidColorBrush x:Key="HeaderBarText" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HeaderBarMuted" Color="#C7D2E8"/>
+    <SolidColorBrush x:Key="PageBg" Color="#F4F7FB"/>
+    <SolidColorBrush x:Key="CardBg" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="CardBorder" Color="#E2E8F0"/>
+    <SolidColorBrush x:Key="TextPrimary" Color="#0F172A"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="#64748B"/>
+    <SolidColorBrush x:Key="Accent" Color="#1B3F6F"/>
+    <SolidColorBrush x:Key="AccentSoft" Color="#E8F1FB"/>
+    <SolidColorBrush x:Key="InputBorder" Color="#CBD5E1"/>
+
+    <!-- Цвета вкладок контента. Меняются шаблоном стиля из шапки. -->
+    <SolidColorBrush x:Key="Tab.IdleForeground" Color="#64748B"/>
+    <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#1B3F6F"/>
+    <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#1B3F6F"/>
+
+    <!-- ******CONTENT PAGE STYLES****** -->
+    <!-- ******************************* -->
+
+    <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+    </Style>
+    <Style TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style TargetType="ToolBar" BasedOn="{StaticResource {x:Type ToolBar}}">
+        <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+
+    <Style TargetType="TabControl" BasedOn="{StaticResource MahApps.Styles.TabControl}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource CardBorder}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="mah:TabControlHelper.Underlined" Value="None"/>
+    </Style>
+
+    <Style TargetType="controls:TabControl" BasedOn="{StaticResource {x:Type TabControl}}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <!-- Шапка приложения: одна полоса без контентной области TabControl -->
+    <Style x:Key="HeaderMenuTabControl" TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="mah:TabControlHelper.Underlined" Value="None"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                                  VerticalScrollBarVisibility="Disabled"
+                                  CanContentScroll="False"
+                                  PanningMode="HorizontalOnly"
+                                  Background="Transparent"
+                                  Padding="0"
+                                  BorderThickness="0">
+                        <TabPanel IsItemsHost="True"
+                                  Background="Transparent"
+                                  VerticalAlignment="Stretch"
+                                  HorizontalAlignment="Center"/>
+                    </ScrollViewer>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="HeaderMenuTabItem" TargetType="TabItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{StaticResource HeaderBarMuted}"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Padding" Value="14,0"/>
+        <Setter Property="MinHeight" Value="52"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                        <DockPanel LastChildFill="True">
+                            <Rectangle x:Name="Underline"
+                                       DockPanel.Dock="Bottom"
+                                       Height="2"
+                                       Fill="Transparent"/>
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              TextElement.FontFamily="{StaticResource TabItemFontFamily}"
+                                              TextElement.FontSize="{StaticResource NavigationFontSize}"
+                                              TextElement.FontWeight="SemiBold"/>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Underline" Property="Fill" Value="{StaticResource HeaderBarText}"/>
+                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Separator" BasedOn="{StaticResource {x:Type Separator}}">
+        <Setter Property="Margin" Value="0"/>
+    </Style>
+
+    <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource MahApps.Styles.MenuItem}">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="FontSize" Value="11.5"/>
+    </Style>
+</ResourceDictionary>
