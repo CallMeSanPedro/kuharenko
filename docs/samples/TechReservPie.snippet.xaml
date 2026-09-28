@@ -1,0 +1,56 @@
+<!-- TechReservView: строка 3 грида Main.
+     Было: DataGrid сразу в Grid.Row="3".
+     Стало: 7* таблица, 3* круговая диаграмма.
+     В корень UserView добавить
+     xmlns:charts="clr-namespace:Store.Views.Controls"
+     Диаграмма: ShareChart, данные: ShareDiagram.Shares -->
+
+<Grid Grid.Row="3">
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="7*"/>
+        <ColumnDefinition Width="4"/>
+        <ColumnDefinition Width="3*"/>
+    </Grid.ColumnDefinitions>
+
+    <controls3:DataGrid Grid.Column="0"
+                        IsReadOnly="True"
+                        AutoGenerateColumns="True"
+                        filtering:ColumnCheckFilterBehavior.IsEnabled="True"
+                        filtering:ColumnCheckFilterBehavior.HeaderTemplate="{StaticResource ColumnFilterHeaderTemplate}"
+                        ItemsSource="{Binding Path=ItemsView}"
+                        SelectionMode="Single"
+                        HiddenColumns="{Binding Path=IgoreParamList}"
+                        SelectedItem="{Binding Path=CurrentItem, Mode=TwoWay}"
+                        Name="cdgTechologicReserv">
+        <b:Interaction.Triggers>
+            <b:EventTrigger EventName="AutoGeneratingColumn">
+                <input:EventToCommand PassEventArgsToCommand="True"
+                                       Command="{Binding Path=AutoGenerateColumnCommand}"/>
+            </b:EventTrigger>
+        </b:Interaction.Triggers>
+    </controls3:DataGrid>
+
+    <GridSplitter Grid.Column="1"
+                  Width="4"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Stretch"
+                  Background="#E2E8F0"/>
+
+    <Border Grid.Column="2"
+            Margin="8,0,0,0"
+            Padding="12"
+            Background="White"
+            BorderBrush="#E2E8F0"
+            BorderThickness="1"
+            CornerRadius="12">
+        <DockPanel>
+            <TextBlock DockPanel.Dock="Top"
+                       Text="Модель"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="#0F172A"
+                       Margin="0,0,0,8"/>
+            <charts:ShareChart ItemsSource="{Binding ModelDiagram.Shares}"/>
+        </DockPanel>
+    </Border>
+</Grid>
