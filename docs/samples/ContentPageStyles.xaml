@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:system="clr-namespace:System;assembly=System.Runtime"
                     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-                    xmlns:controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls">
+                    xmlns:controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
+                    xmlns:views="clr-namespace:Store.Views">
     <system:Double x:Key="MahApps.Font.Size.TabItem">13</system:Double>
     <system:Double x:Key="NavigationFontSize">13</system:Double>
     <system:Double x:Key="MahApps.Font.Size.Button">12</system:Double>
@@ -57,7 +58,7 @@
         <Setter Property="Padding" Value="0"/>
     </Style>
 
-    <!-- Шапка: полоса вкладок. Родитель обязан дать конечную ширину (колонка *), иначе скролл не включается. -->
+    <!-- Шапка: вкладки в одну линию. Не влезшие переносятся в меню «Ещё» (HeaderOverflowPanel). -->
     <Style x:Key="HeaderMenuTabControl" TargetType="TabControl">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -70,67 +71,80 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabControl">
-                    <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                  VerticalScrollBarVisibility="Disabled"
-                                  CanContentScroll="False"
-                                  PanningMode="HorizontalOnly"
-                                  Focusable="False"
-                                  Background="Transparent"
-                                  Padding="0"
-                                  BorderThickness="0"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Stretch">
-                        <ScrollViewer.Template>
-                            <ControlTemplate TargetType="ScrollViewer">
-                                <Grid Background="{TemplateBinding Background}" ClipToBounds="True">
-                                    <ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
-                                                            CanContentScroll="{TemplateBinding CanContentScroll}"
-                                                            Content="{TemplateBinding Content}"
-                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                                                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                                            Margin="{TemplateBinding Padding}"
-                                                            KeyboardNavigation.DirectionalNavigation="Local"/>
-                                    <ScrollBar x:Name="PART_HorizontalScrollBar"
-                                               Orientation="Horizontal"
-                                               Height="10"
-                                               MinHeight="0"
-                                               VerticalAlignment="Bottom"
+                    <views:HeaderOverflowPanel IsItemsHost="True"
                                                HorizontalAlignment="Stretch"
-                                               Background="Transparent"
-                                               Maximum="{TemplateBinding ScrollableWidth}"
-                                               Minimum="0"
-                                               ViewportSize="{TemplateBinding ViewportWidth}"
-                                               Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
-                                               Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}">
-                                        <ScrollBar.Template>
-                                            <ControlTemplate TargetType="ScrollBar">
-                                                <Track x:Name="PART_Track" IsDirectionReversed="False">
-                                                    <Track.Thumb>
-                                                        <Thumb>
-                                                            <Thumb.Template>
-                                                                <ControlTemplate TargetType="Thumb">
-                                                                    <Border Background="Transparent">
-                                                                        <Border Height="3"
-                                                                                VerticalAlignment="Bottom"
-                                                                                Background="#B3FFFFFF"
-                                                                                CornerRadius="1"/>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Thumb.Template>
-                                                        </Thumb>
-                                                    </Track.Thumb>
-                                                </Track>
-                                            </ControlTemplate>
-                                        </ScrollBar.Template>
-                                    </ScrollBar>
-                                </Grid>
-                            </ControlTemplate>
-                        </ScrollViewer.Template>
-                        <TabPanel IsItemsHost="True"
-                                  Background="Transparent"
-                                  VerticalAlignment="Stretch"
-                                  HorizontalAlignment="Center"/>
-                    </ScrollViewer>
+                                               VerticalAlignment="Stretch"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="HeaderOverflowMenu" TargetType="Menu">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource HeaderBarText}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,4,0"/>
+    </Style>
+
+    <Style x:Key="HeaderOverflowItem" TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource HeaderBarMuted}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="14,0"/>
+        <Setter Property="MinHeight" Value="52"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Grid Background="Transparent">
+                        <Border x:Name="Bg" Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <DockPanel LastChildFill="True">
+                                <Rectangle x:Name="Underline" DockPanel.Dock="Bottom" Height="2" Fill="Transparent"/>
+                                <ContentPresenter ContentSource="Header"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True"/>
+                            </DockPanel>
+                        </Border>
+                        <Popup x:Name="PART_Popup"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                               Placement="Bottom"
+                               PopupAnimation="Fade"
+                               VerticalOffset="4">
+                            <Border Background="White"
+                                    BorderBrush="{DynamicResource CardBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="4"
+                                    SnapsToDevicePixels="True">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="12"
+                                                      ShadowDepth="3"
+                                                      Direction="270"
+                                                      Opacity="0.12"
+                                                      Color="#0F172A"/>
+                                </Border.Effect>
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+                        </Trigger>
+                        <Trigger Property="IsSubmenuOpen" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="#30FFFFFF"/>
+                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+                        </Trigger>
+                        <Trigger Property="views:HeaderOverflowPanel.ContainsSelection" Value="True">
+                            <Setter TargetName="Underline" Property="Fill" Value="{StaticResource HeaderBarText}"/>
+                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
