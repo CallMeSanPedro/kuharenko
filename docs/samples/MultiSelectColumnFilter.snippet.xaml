@@ -1,25 +1,69 @@
 <!--
-xmlns:Controls3 — тот же, что уже используется для MultiSelectComboBox.
-xmlns:filtering="clr-namespace:Store.Views.Filtering"
+В шапке только значок. По нажатию открывается список или поле поиска.
+xmlns:controls3 — тот же, что у MultiSelectComboBox.
 -->
 <DataTemplate x:Key="ColumnFilterHeaderTemplate">
-    <StackPanel Margin="0,4,8,4">
-        <TextBlock Text="{Binding Title}" Margin="0,0,0,4"/>
-        <controls3:MultiSelectComboBox MinWidth="120"
-            VerticalAlignment="Center"
-            EmptyText="Все"
-            AddAllItem="True"
-            ItemsSource="{Binding Options}"
-            SelectedItems="{Binding SelectedItems, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-            Visibility="{Binding IsCheckList, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
-        <TextBox MinWidth="120"
-            Height="28"
-            Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-            Visibility="{Binding IsText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
-    </StackPanel>
-</DataTemplate>
+    <Grid MinHeight="28">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
-<controls2:DataGrid filtering:ColumnCheckFilterBehavior.IsEnabled="True"
-                    filtering:ColumnCheckFilterBehavior.HeaderTemplate="{StaticResource ColumnFilterHeaderTemplate}"
-                    ItemsSource="{Binding Path=ItemsView}"
-                    AutoGenerateColumns="True" />
+        <TextBlock Text="{Binding Title}"
+                   VerticalAlignment="Center"
+                   Margin="0,0,6,0"/>
+
+        <ToggleButton x:Name="FilterButton"
+                      Grid.Column="1"
+                      Width="16"
+                      Height="16"
+                      Padding="0"
+                      BorderThickness="0"
+                      Background="Transparent"
+                      Cursor="Hand"
+                      VerticalAlignment="Center"
+                      ToolTip="Фильтр">
+            <Path Data="M 0,0 L 10,0 L 6.2,4.6 L 6.2,9 L 3.8,9 L 3.8,4.6 Z"
+                  Width="10"
+                  Height="9"
+                  Stretch="Uniform"
+                  Style="{StaticResource ColumnFilterIcon}"/>
+        </ToggleButton>
+
+        <Popup PlacementTarget="{Binding ElementName=FilterButton}"
+               Placement="Bottom"
+               StaysOpen="True"
+               AllowsTransparency="True"
+               IsOpen="{Binding IsChecked, ElementName=FilterButton, Mode=TwoWay}">
+            <Border Background="White"
+                    BorderBrush="#D5DEE9"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="8"
+                    Margin="0,4,0,0">
+                <StackPanel>
+                    <controls3:MultiSelectComboBox MinWidth="180"
+                        EmptyText="Все"
+                        AddAllItem="True"
+                        ItemsSource="{Binding Options}"
+                        SelectedItems="{Binding SelectedItems, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Visibility="{Binding IsCheckList, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
+                    <TextBox MinWidth="180"
+                        Height="28"
+                        Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                        Visibility="{Binding IsText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+    <DataTemplate.Resources>
+        <Style x:Key="ColumnFilterIcon" TargetType="Path">
+            <Setter Property="Fill" Value="#94A3B8"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                    <Setter Property="Fill" Value="#1B3F6F"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </DataTemplate.Resources>
+</DataTemplate>

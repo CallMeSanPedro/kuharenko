@@ -72,6 +72,7 @@ namespace Store.Views.Filtering
                     return;
                 _text = next;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -86,6 +87,7 @@ namespace Store.Views.Filtering
                 _selectedItems = value;
                 RebuildSelected();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItems)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
                 if (!_updating)
                     Changed?.Invoke(this, EventArgs.Empty);
             }
@@ -93,6 +95,16 @@ namespace Store.Views.Filtering
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event EventHandler Changed;
+
+        public bool IsActive
+        {
+            get
+            {
+                if (Mode == ColumnFilterMode.Text)
+                    return !string.IsNullOrWhiteSpace(_text);
+                return _selected != null && _selected.Count > 0;
+            }
+        }
 
         public bool Passes(object item)
         {

@@ -89,9 +89,6 @@ namespace Store.Views.Filtering
             if (template == null || filters == null)
                 return;
 
-            if (double.IsNaN(grid.ColumnHeaderHeight) || grid.ColumnHeaderHeight < 64)
-                grid.ColumnHeaderHeight = 64;
-
             foreach (var column in grid.Columns)
             {
                 if (column.Header is ContentControl existing && existing.Content is ColumnHeaderFilter)
