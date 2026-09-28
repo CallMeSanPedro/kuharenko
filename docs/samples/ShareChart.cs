@@ -7,11 +7,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Store.ViewModels.Device.TechnoReserv;
+using Store.ViewModels.Charts;
 
 namespace Store.Views.Controls
 {
-    public partial class ModelShareChart : UserControl
+    public partial class ShareChart : UserControl
     {
         static readonly Color[] Palette =
         {
@@ -27,7 +27,7 @@ namespace Store.Views.Controls
 
         INotifyCollectionChanged _source;
 
-        public ModelShareChart()
+        public ShareChart()
         {
             InitializeComponent();
             Unloaded += (s, e) => Watch(null);
@@ -36,18 +36,18 @@ namespace Store.Views.Controls
         public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
             nameof(ItemsSource),
             typeof(IEnumerable),
-            typeof(ModelShareChart),
+            typeof(ShareChart),
             new PropertyMetadata(null, OnItemsSourceChanged));
 
         public IEnumerable ItemsSource
         {
-            get => (IEnumerable)GetValue(ItemsSourceProperty);
-            set => SetValue(ItemsSourceProperty, value);
+            get { return (IEnumerable)GetValue(ItemsSourceProperty); }
+            set { SetValue(ItemsSourceProperty, value); }
         }
 
         static void OnItemsSourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
         {
-            var chart = (ModelShareChart)sender;
+            var chart = (ShareChart)sender;
             chart.Watch(args.NewValue as INotifyCollectionChanged);
             chart.Redraw();
         }
@@ -72,11 +72,11 @@ namespace Store.Views.Controls
             Legend.Children.Clear();
 
             var shares = (ItemsSource == null
-                    ? Enumerable.Empty<ModelShare>()
-                    : ItemsSource.OfType<ModelShare>())
-                .Where(x => x != null && x.Value > 0)
+                    ? Enumerable.Empty<DiagramShare>()
+                    : ItemsSource.OfType<DiagramShare>())
+                .Where(share => share != null && share.Quantity > 0)
                 .ToList();
-            var total = shares.Sum(x => x.Value);
+            var total = shares.Sum(share => share.Quantity);
             if (shares.Count == 0 || total <= 0)
             {
                 Empty.Visibility = Visibility.Visible;
@@ -90,27 +90,27 @@ namespace Store.Views.Controls
                 var share = shares[i];
                 var sweep = i == shares.Count - 1
                     ? Math.Max(0, 270 - angle)
-                    : share.Value / total * 360.0;
-                var brush = BrushFor(i, share.Label);
+                    : share.Quantity / total * 360.0;
+                var brush = BrushFor(i, share.IsOther);
                 Pie.Children.Add(new Path
                 {
                     Fill = brush,
                     Data = Slice(100, 100, 96, angle, sweep),
-                    ToolTip = share.Label + "  " + FormatValue(share.Value) + "  " + share.Percent.ToString("P0")
+                    ToolTip = share.Name + "  " + FormatQuantity(share.Quantity) + "  " + share.Percent.ToString("P0")
                 });
                 Legend.Children.Add(LegendRow(share, brush));
                 angle += sweep;
             }
         }
 
-        static string FormatValue(double value)
+        static string FormatQuantity(double quantity)
         {
-            return value.ToString("0.##", CultureInfo.CurrentCulture);
+            return quantity.ToString("0.##", CultureInfo.CurrentCulture);
         }
 
-        static Brush BrushFor(int index, string label)
+        static Brush BrushFor(int index, bool isOther)
         {
-            var color = string.Equals(label, "Прочие", StringComparison.Ordinal)
+            var color = isOther
                 ? Palette[Palette.Length - 1]
                 : Palette[index % Palette.Length];
             var brush = new SolidColorBrush(color);
@@ -150,7 +150,7 @@ namespace Store.Views.Controls
             return new Point(cx + radius * Math.Cos(radians), cy + radius * Math.Sin(radians));
         }
 
-        static UIElement LegendRow(ModelShare share, Brush brush)
+        static UIElement LegendRow(DiagramShare share, Brush brush)
         {
             var row = new Grid { Margin = new Thickness(0, 3, 0, 3) };
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -169,14 +169,14 @@ namespace Store.Views.Controls
             };
             var label = new TextBlock
             {
-                Text = share.Label,
+                Text = share.Name,
                 Foreground = Frozen(0x0F, 0x17, 0x2A),
                 TextTrimming = TextTrimming.CharacterEllipsis,
                 VerticalAlignment = VerticalAlignment.Center
             };
-            var value = new TextBlock
+            var quantity = new TextBlock
             {
-                Text = FormatValue(share.Value),
+                Text = FormatQuantity(share.Quantity),
                 Margin = new Thickness(8, 0, 0, 0),
                 Foreground = Frozen(0x64, 0x74, 0x8B),
                 VerticalAlignment = VerticalAlignment.Center
@@ -191,11 +191,11 @@ namespace Store.Views.Controls
 
             Grid.SetColumn(mark, 0);
             Grid.SetColumn(label, 1);
-            Grid.SetColumn(value, 2);
+            Grid.SetColumn(quantity, 2);
             Grid.SetColumn(percent, 3);
             row.Children.Add(mark);
             row.Children.Add(label);
-            row.Children.Add(value);
+            row.Children.Add(quantity);
             row.Children.Add(percent);
             return row;
         }

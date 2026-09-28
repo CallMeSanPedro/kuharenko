@@ -1,22 +1,31 @@
-// Добавки к Store.ViewModels.Device.TechnoReserv.TechReservViewModel.
-// ItemsViewModel, фильтр колонок и привилегии не меняются.
-// ModelShare.cs положить в сборку Store.ViewModels.
-// Перед сборкой вписать имя свойства колонки «На складе» в ModelShareBuilder.OnStorePropertyName.
+// using Store.ViewModels.Charts;
+// ShareDiagram.cs — в сборку Store.ViewModels.
+// Класс не знает про TechReserv: на вход сущность и два её свойства, имя и количество.
 
-public ObservableCollection<ModelShare> ModelShares { get; } = new ObservableCollection<ModelShare>();
+// Свойство колонки «На складе». Из «2 (1/1)» в количество попадает 2.
+const string StoreQuantityProperty = "";
+
+public ShareDiagram ModelDiagram { get; } = new ShareDiagram();
 
 // Заменить существующую строку
 // HeaderFilters.Changed += (s, e) => ItemsView?.Refresh();
 HeaderFilters.Changed += (s, e) =>
 {
     ItemsView?.Refresh();
-    ModelShareBuilder.Fill(ModelShares, ItemsView);
+    LoadModelDiagram();
 };
 
-// Заменить существующий OnRefreshed целиком.
-protected override void OnRefreshed(EventArgs e)
+// В конец существующего OnRefreshed, после HeaderFilters.Reload(Items):
+LoadModelDiagram();
+
+void LoadModelDiagram()
 {
-    base.OnRefreshed(e);
-    HeaderFilters.Reload(Items);
-    ModelShareBuilder.Fill(ModelShares, ItemsView);
+    // Свойства сущности по имени.
+    ModelDiagram.Load(ItemsView, nameof(TechReserv.MarkacommName), StoreQuantityProperty);
+
+    // Либо сами свойства:
+    // ModelDiagram.Load(
+    //     ItemsView.OfType<TechReserv>(),
+    //     item => item.MarkacommName,
+    //     item => item.<количество>);
 }

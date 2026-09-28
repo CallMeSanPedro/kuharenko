@@ -2,7 +2,8 @@
      Было: DataGrid сразу в Grid.Row="3".
      Стало: 7* таблица, 3* круговая диаграмма.
      В корень UserView добавить
-     xmlns:charts="clr-namespace:Store.Views.Controls" -->
+     xmlns:charts="clr-namespace:Store.Views.Controls"
+     Диаграмма: ShareChart, данные: ShareDiagram.Shares -->
 
 <Grid Grid.Row="3">
     <Grid.ColumnDefinitions>
@@ -49,7 +50,7 @@
                        FontWeight="SemiBold"
                        Foreground="#0F172A"
                        Margin="0,0,0,8"/>
-            <charts:ModelShareChart ItemsSource="{Binding ModelShares}"/>
+            <charts:ShareChart ItemsSource="{Binding ModelDiagram.Shares}"/>
         </DockPanel>
     </Border>
 </Grid>
