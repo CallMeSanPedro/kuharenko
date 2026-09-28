@@ -57,12 +57,14 @@
         <Setter Property="Padding" Value="0"/>
     </Style>
 
-    <!-- Шапка приложения: одна полоса без контентной области TabControl -->
+    <!-- Шапка: полоса вкладок. Родитель обязан дать конечную ширину (колонка *), иначе скролл не включается. -->
     <Style x:Key="HeaderMenuTabControl" TargetType="TabControl">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Margin" Value="0"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="mah:TabControlHelper.Underlined" Value="None"/>
         <Setter Property="Template">
@@ -72,9 +74,58 @@
                                   VerticalScrollBarVisibility="Disabled"
                                   CanContentScroll="False"
                                   PanningMode="HorizontalOnly"
+                                  Focusable="False"
                                   Background="Transparent"
                                   Padding="0"
-                                  BorderThickness="0">
+                                  BorderThickness="0"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch">
+                        <ScrollViewer.Template>
+                            <ControlTemplate TargetType="ScrollViewer">
+                                <Grid Background="{TemplateBinding Background}" ClipToBounds="True">
+                                    <ScrollContentPresenter x:Name="PART_ScrollContentPresenter"
+                                                            CanContentScroll="{TemplateBinding CanContentScroll}"
+                                                            Content="{TemplateBinding Content}"
+                                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                                            Margin="{TemplateBinding Padding}"
+                                                            KeyboardNavigation.DirectionalNavigation="Local"/>
+                                    <ScrollBar x:Name="PART_HorizontalScrollBar"
+                                               Orientation="Horizontal"
+                                               Height="10"
+                                               MinHeight="0"
+                                               VerticalAlignment="Bottom"
+                                               HorizontalAlignment="Stretch"
+                                               Background="Transparent"
+                                               Maximum="{TemplateBinding ScrollableWidth}"
+                                               Minimum="0"
+                                               ViewportSize="{TemplateBinding ViewportWidth}"
+                                               Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                                               Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <ScrollBar.Template>
+                                            <ControlTemplate TargetType="ScrollBar">
+                                                <Track x:Name="PART_Track" IsDirectionReversed="False">
+                                                    <Track.Thumb>
+                                                        <Thumb>
+                                                            <Thumb.Template>
+                                                                <ControlTemplate TargetType="Thumb">
+                                                                    <Border Background="Transparent">
+                                                                        <Border Height="3"
+                                                                                VerticalAlignment="Bottom"
+                                                                                Background="#B3FFFFFF"
+                                                                                CornerRadius="1"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Thumb.Template>
+                                                        </Thumb>
+                                                    </Track.Thumb>
+                                                </Track>
+                                            </ControlTemplate>
+                                        </ScrollBar.Template>
+                                    </ScrollBar>
+                                </Grid>
+                            </ControlTemplate>
+                        </ScrollViewer.Template>
                         <TabPanel IsItemsHost="True"
                                   Background="Transparent"
                                   VerticalAlignment="Stretch"

@@ -1,7 +1,14 @@
-<!-- 
-Вставить в левый StackPanel шапки MainView.xaml САМЫМ ПЕРВЫМ элементом (перед AppLogotype)
+<!--
+Кнопка меню шапки. Не класть внутрь левого или правого StackPanel:
+при узком окне колонка Auto обрезается справа и кнопка уходит с экрана.
+
+Вставить последним соседом корневого Grid шапки (поверх внутренней сетки с Margin="0,0,48,0").
+Полная разметка: MainView.Header.snippet.xaml
 -->
-<Menu Style="{StaticResource HeaderHamburgerMenu}">
+<Menu Style="{StaticResource HeaderHamburgerMenu}"
+      HorizontalAlignment="Right"
+      VerticalAlignment="Center"
+      Panel.ZIndex="1">
     <MenuItem Style="{StaticResource HeaderHamburgerItem}">
         <MenuItem Header="Выбор стиля"
                   Style="{StaticResource HeaderDropdownMenuItem}">
