@@ -1,8 +1,12 @@
 <!--
-Кнопка меню шапки. Стоит в правой док-панели HeaderTools, сразу после «Ещё».
+Кнопка меню шапки. Колонка 3 первой строки, не внутри левого или правого StackPanel.
+Когда вкладки не влезают, они уходят на вторую строку, кнопка остаётся сверху.
 Полная разметка: MainView.Header.snippet.xaml
 -->
-<Menu Style="{StaticResource HeaderHamburgerMenu}">
+<Menu Grid.Row="0"
+      Grid.Column="3"
+      Style="{StaticResource HeaderHamburgerMenu}"
+      VerticalAlignment="Center">
     <MenuItem Style="{StaticResource HeaderHamburgerItem}">
         <MenuItem Header="Выбор стиля"
                   Style="{StaticResource HeaderDropdownMenuItem}">

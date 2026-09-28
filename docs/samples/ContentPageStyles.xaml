@@ -58,7 +58,7 @@
         <Setter Property="Padding" Value="0"/>
     </Style>
 
-    <!-- Шапка: вкладки в одну линию. Не влезшие переносятся в меню «Ещё» (HeaderOverflowPanel). -->
+    <!-- Шапка: одна линия вкладок. Если не влезает, HeaderMenuRows опускает весь ряд на вторую строку. -->
     <Style x:Key="HeaderMenuTabControl" TargetType="TabControl">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -71,80 +71,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabControl">
-                    <views:HeaderOverflowPanel IsItemsHost="True"
-                                               HorizontalAlignment="Stretch"
-                                               VerticalAlignment="Stretch"/>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="HeaderOverflowMenu" TargetType="Menu">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{DynamicResource HeaderBarText}"/>
-        <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="0,0,4,0"/>
-    </Style>
-
-    <Style x:Key="HeaderOverflowItem" TargetType="MenuItem">
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource HeaderBarMuted}"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="14,0"/>
-        <Setter Property="MinHeight" Value="52"/>
-        <Setter Property="FontSize" Value="13"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="MenuItem">
-                    <Grid Background="Transparent">
-                        <Border x:Name="Bg" Background="Transparent" Padding="{TemplateBinding Padding}">
-                            <DockPanel LastChildFill="True">
-                                <Rectangle x:Name="Underline" DockPanel.Dock="Bottom" Height="2" Fill="Transparent"/>
-                                <ContentPresenter ContentSource="Header"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"
-                                                  RecognizesAccessKey="True"/>
-                            </DockPanel>
-                        </Border>
-                        <Popup x:Name="PART_Popup"
-                               AllowsTransparency="True"
-                               Focusable="False"
-                               IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
-                               Placement="Bottom"
-                               PopupAnimation="Fade"
-                               VerticalOffset="4">
-                            <Border Background="White"
-                                    BorderBrush="{DynamicResource CardBorder}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="4"
-                                    SnapsToDevicePixels="True">
-                                <Border.Effect>
-                                    <DropShadowEffect BlurRadius="12"
-                                                      ShadowDepth="3"
-                                                      Direction="270"
-                                                      Opacity="0.12"
-                                                      Color="#0F172A"/>
-                                </Border.Effect>
-                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
-                            </Border>
-                        </Popup>
-                    </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsHighlighted" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
-                        </Trigger>
-                        <Trigger Property="IsSubmenuOpen" Value="True">
-                            <Setter TargetName="Bg" Property="Background" Value="#30FFFFFF"/>
-                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
-                        </Trigger>
-                        <Trigger Property="views:HeaderOverflowPanel.ContainsSelection" Value="True">
-                            <Setter TargetName="Underline" Property="Fill" Value="{StaticResource HeaderBarText}"/>
-                            <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
+                    <views:HeaderTabStrip IsItemsHost="True"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"/>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
