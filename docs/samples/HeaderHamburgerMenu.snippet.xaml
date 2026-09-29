@@ -1,7 +1,11 @@
-<!-- 
-Вставить в левый StackPanel шапки MainView.xaml САМЫМ ПЕРВЫМ элементом (перед AppLogotype)
+<!--
+Кнопка меню шапки. Колонка 3, не внутри левого или правого StackPanel.
+Вкладки, которым не хватает места, листаются стрелками внутри своей колонки.
+Полная разметка: MainView.Header.snippet.xaml
 -->
-<Menu Style="{StaticResource HeaderHamburgerMenu}">
+<Menu Grid.Column="3"
+      Style="{StaticResource HeaderHamburgerMenu}"
+      VerticalAlignment="Center">
     <MenuItem Style="{StaticResource HeaderHamburgerItem}">
         <MenuItem Header="Выбор стиля"
                   Style="{StaticResource HeaderDropdownMenuItem}">
