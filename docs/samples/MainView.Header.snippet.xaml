@@ -1,13 +1,12 @@
 <!--
 MainView.xaml, шапка. Вставить вместо корневого Grid.
 
-Локальный Style HeaderMenuTabControl удалить.
-Нужны ContentPageStyles.xaml и HeaderMenuRows.cs (сборка Store.Views).
+Локальный Style HeaderMenuTabControl удалить: его голый TabPanel перекрывает стрелки.
+Нужны ContentPageStyles.xaml и HeaderTabScroll.cs (сборка Store.Views).
 
-Пока меню влезает между левым и правым блоком, оно в первой строке по центру.
-Если не влезает, весь ряд вкладок опускается на вторую строку на всю ширину.
-Фиксированную высоту 52 у шапки и у родительской строки код на это время снимает, иначе вторая строка обрезается.
-Гамбургер остаётся в первой строке справа.
+Пока вкладки влезают, они по центру и без стрелок.
+Если не влезают, слева и справа появляются стрелки и листают пункты по одному.
+Высота шапки остаётся 52. TabControl стоит в колонке *, не внутри горизонтального StackPanel.
 -->
 <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,16 +14,9 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
       xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
       xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
       xmlns:input="clr-namespace:System.Windows.Input;assembly=DatumNode.Controls"
-      xmlns:views="clr-namespace:Store.Views"
       x:Name="StackPanel"
-      views:HeaderMenuRows.IsEnabled="True"
       Background="{StaticResource HeaderBarBg}"
-      MinHeight="52"
-      VerticalAlignment="Top">
-    <Grid.RowDefinitions>
-        <RowDefinition Height="52"/>
-        <RowDefinition Height="0"/>
-    </Grid.RowDefinitions>
+      Height="52">
     <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="*"/>
@@ -32,7 +24,7 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
         <ColumnDefinition Width="Auto"/>
     </Grid.ColumnDefinitions>
 
-    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,8,0">
+    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,8,0">
         <TextBlock x:Name="AppLogotype" Style="{StaticResource AppLogotypeStyle}" Foreground="{StaticResource HeaderBarText}" VerticalAlignment="Center" Margin="0,0,8,0" Text="{Binding AppLogotype}" ToolTipService.ToolTip="{Binding Path=AppConfig.ProgramTitle}"/>
         <TextBlock x:Name="AppText" Text="{Binding CurrentVersion}" Style="{StaticResource LinksMainMenuStyle}" Foreground="{StaticResource HeaderBarMuted}" VerticalAlignment="Center" Margin="0,0,16,0"/>
         <Button x:Name="BtnUzel" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Style="{StaticResource MainMenuButton}" Command="{Binding Path=DialogCommand}" CommandParameter="{StaticResource Uzel}" Margin="0,0,12,0" Cursor="Hand">
@@ -47,7 +39,6 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
     </StackPanel>
 
     <TabControl x:Name="LinksBorder"
-                Grid.Row="0"
                 Grid.Column="1"
                 Style="{StaticResource HeaderMenuTabControl}"
                 ItemContainerStyle="{StaticResource HeaderMenuTabItem}"
@@ -70,7 +61,7 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
         <TabItem Header="Аудит" Tag="{StaticResource AuditViewModel}" Visibility="{Binding Path=CanMenuAudit, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
     </TabControl>
 
-    <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,8,0">
+    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,8,0">
         <Button Style="{StaticResource ButtonAccentStyle}" Content="{StaticResource IconUser}" ContentTemplate="{StaticResource IconTemplate}" Background="Transparent" BorderThickness="0" IsEnabled="False"/>
         <TextBlock x:Name="UserLabel" VerticalAlignment="Center" Style="{StaticResource LinksMainMenuStyle}" Foreground="{StaticResource HeaderBarText}" Text="{Binding Path=User, TargetNullValue=Не авторизован}"/>
         <Button Style="{StaticResource ButtonAccentStyle}" Content="{StaticResource IconHelps}" ContentTemplate="{StaticResource IconTemplate}" Background="Transparent" BorderThickness="0" IsEnabled="False" Margin="10,0,0,0" VerticalAlignment="Center"/>
@@ -83,8 +74,7 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
         </TextBlock>
     </StackPanel>
 
-    <Menu Grid.Row="0"
-          Grid.Column="3"
+    <Menu Grid.Column="3"
           Style="{StaticResource HeaderHamburgerMenu}"
           VerticalAlignment="Center">
         <MenuItem Style="{StaticResource HeaderHamburgerItem}">

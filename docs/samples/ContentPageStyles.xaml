@@ -58,7 +58,35 @@
         <Setter Property="Padding" Value="0"/>
     </Style>
 
-    <!-- Шапка: одна линия вкладок. Если не влезает, HeaderMenuRows опускает весь ряд на вторую строку. -->
+    <Style x:Key="HeaderTabScrollButton" TargetType="RepeatButton">
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{StaticResource HeaderBarText}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="IsTabStop" Value="False"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border x:Name="Bg" Background="Transparent">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="#20FFFFFF"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bg" Property="Background" Value="#33FFFFFF"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Шапка: одна линия вкладок. Если не влезает, слева и справа появляются стрелки, как у обычного TabControl. -->
     <Style x:Key="HeaderMenuTabControl" TargetType="TabControl">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -68,12 +96,57 @@
         <Setter Property="VerticalAlignment" Value="Stretch"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="mah:TabControlHelper.Underlined" Value="None"/>
+        <Setter Property="views:HeaderTabScroll.IsEnabled" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabControl">
-                    <views:HeaderTabStrip IsItemsHost="True"
-                                          HorizontalAlignment="Stretch"
-                                          VerticalAlignment="Stretch"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <RepeatButton x:Name="PART_ScrollLeft"
+                                      Grid.Column="0"
+                                      Style="{StaticResource HeaderTabScrollButton}"
+                                      Visibility="Collapsed">
+                            <Path Data="M 6,1 L 1,7 L 6,13"
+                                  Stroke="{StaticResource HeaderBarText}"
+                                  StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Width="7"
+                                  Height="14"/>
+                        </RepeatButton>
+                        <ScrollViewer x:Name="PART_HeaderScroll"
+                                      Grid.Column="1"
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Disabled"
+                                      CanContentScroll="False"
+                                      Focusable="False"
+                                      Background="Transparent"
+                                      Padding="0"
+                                      BorderThickness="0">
+                            <TabPanel IsItemsHost="True"
+                                      Background="Transparent"
+                                      VerticalAlignment="Stretch"
+                                      HorizontalAlignment="Center"/>
+                        </ScrollViewer>
+                        <RepeatButton x:Name="PART_ScrollRight"
+                                      Grid.Column="2"
+                                      Style="{StaticResource HeaderTabScrollButton}"
+                                      Visibility="Collapsed">
+                            <Path Data="M 1,1 L 6,7 L 1,13"
+                                  Stroke="{StaticResource HeaderBarText}"
+                                  StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"
+                                  Width="7"
+                                  Height="14"/>
+                        </RepeatButton>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

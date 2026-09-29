@@ -1,10 +1,9 @@
 <!--
-Кнопка меню шапки. Колонка 3 первой строки, не внутри левого или правого StackPanel.
-Когда вкладки не влезают, они уходят на вторую строку, кнопка остаётся сверху.
+Кнопка меню шапки. Колонка 3, не внутри левого или правого StackPanel.
+Вкладки, которым не хватает места, листаются стрелками внутри своей колонки.
 Полная разметка: MainView.Header.snippet.xaml
 -->
-<Menu Grid.Row="0"
-      Grid.Column="3"
+<Menu Grid.Column="3"
       Style="{StaticResource HeaderHamburgerMenu}"
       VerticalAlignment="Center">
     <MenuItem Style="{StaticResource HeaderHamburgerItem}">
