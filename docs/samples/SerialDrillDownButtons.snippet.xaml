@@ -1,0 +1,85 @@
+<!--
+  Компактные кнопки перехода. Высота как у поля «Поиск» и переключателя Остатки | Серийные.
+  Стили положить рядом с ModeButtonStyle.
+  «Показать серийные» стоит сразу после переключателя, до поля поиска.
+  «К остатку» стоит сразу после переключателя на вьюхе серийных.
+-->
+
+<Style x:Key="ShowSerialsButtonStyle" TargetType="Button">
+    <Setter Property="Foreground" Value="White"/>
+    <Setter Property="Background" Value="#FF5B2C83"/>
+    <Setter Property="BorderBrush" Value="#FF5B2C83"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="Padding" Value="10,2"/>
+    <Setter Property="MinHeight" Value="26"/>
+    <Setter Property="Margin" Value="0,3,0,3"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="Button">
+                <Border x:Name="Bd"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="1"
+                        Padding="{TemplateBinding Padding}"
+                        SnapsToDevicePixels="True">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="Bd" Property="Background" Value="#FF4A2270"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="Bd" Property="Background" Value="#FFE5E7EB"/>
+                        <Setter TargetName="Bd" Property="BorderBrush" Value="#FFE5E7EB"/>
+                        <Setter Property="Foreground" Value="#FF94A3B8"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+<Style x:Key="BackToBalanceButtonStyle" TargetType="Button">
+    <Setter Property="Foreground" Value="#FF5B2C83"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="Padding" Value="8,2"/>
+    <Setter Property="MinHeight" Value="26"/>
+    <Setter Property="Margin" Value="4,3,0,3"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="HorizontalAlignment" Value="Left"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="Button">
+                <Border x:Name="Bd"
+                        Background="{TemplateBinding Background}"
+                        Padding="{TemplateBinding Padding}"
+                        SnapsToDevicePixels="True">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="Bd" Property="Background" Value="#FFF3E8F8"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+<!-- Остатки, сразу после переключателя и до «Поиск» -->
+<Button Content="Показать серийные"
+        Style="{StaticResource ShowSerialsButtonStyle}"
+        Command="{Binding ShowSerialsCommand}"/>
+<Border Style="{StaticResource SeparatorStyle}"/>
+
+<!-- Серийные, сразу после переключателя -->
+<Button Content="← К остатку"
+        Style="{StaticResource BackToBalanceButtonStyle}"
+        Visibility="{Binding ListMode.HasSerialFilter, Converter={StaticResource BooleanToVisibilityConverter}}"
+        Command="{Binding ListMode.ShowBalanceCommand}"/>
