@@ -156,3 +156,123 @@
         Style="{StaticResource BackToBalanceButtonStyle}"
         Visibility="{Binding ListMode.HasSerialFilter, Converter={StaticResource BooleanToVisibilityConverter}}"
         Command="{Binding ListMode.ShowBalanceCommand}"/>
+
+<!-- Серийные: кнопка-воронка в тулбаре открывает панель фильтров -->
+<Style x:Key="SerialFilterToggleStyle" TargetType="ToggleButton">
+    <Setter Property="Width" Value="26"/>
+    <Setter Property="Height" Value="26"/>
+    <Setter Property="MinHeight" Value="26"/>
+    <Setter Property="Margin" Value="0,3,0,3"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="ToolTip" Value="Фильтры"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="ToggleButton">
+                <Border x:Name="Bd"
+                        Background="White"
+                        BorderBrush="#FFC5C5C5"
+                        BorderThickness="1"
+                        SnapsToDevicePixels="True">
+                    <Path x:Name="Icon"
+                          Width="12"
+                          Height="12"
+                          Stretch="Uniform"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Fill="#FF6B7280"
+                          Data="M 0,0 L 10,0 L 6.2,4.6 L 6.2,9 L 3.8,9 L 3.8,4.6 Z"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsMouseOver" Value="True"/>
+                            <Condition Property="IsChecked" Value="False"/>
+                            <Condition Property="IsEnabled" Value="True"/>
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="Bd" Property="Background" Value="#FFF3E8F8"/>
+                    </MultiTrigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsChecked" Value="True"/>
+                            <Condition Property="IsEnabled" Value="True"/>
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="Bd" Property="Background" Value="#FF5B2C83"/>
+                        <Setter TargetName="Bd" Property="BorderBrush" Value="#FF5B2C83"/>
+                        <Setter TargetName="Icon" Property="Fill" Value="White"/>
+                    </MultiTrigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="Bd" Property="Background" Value="#FFF3F4F6"/>
+                        <Setter TargetName="Bd" Property="BorderBrush" Value="#FFE5E7EB"/>
+                        <Setter TargetName="Icon" Property="Fill" Value="#FF94A3B8"/>
+                        <Setter Property="Cursor" Value="Arrow"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+<Style x:Key="SerialFilterExpanderStyle" TargetType="Expander">
+    <Setter Property="BorderThickness" Value="0"/>
+    <Setter Property="Padding" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="Expander">
+                <ContentPresenter x:Name="Body" Visibility="Collapsed" ContentSource="Content"/>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsExpanded" Value="True">
+                        <Setter TargetName="Body" Property="Visibility" Value="Visible"/>
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
+
+<Style x:Key="SerialFilterCaptionStyle" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="#FF6B7280"/>
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="Margin" Value="0,0,0,2"/>
+</Style>
+
+<!-- В StackPanel тулбара серийных -->
+<ToggleButton x:Name="SerialFilterToggle" Style="{StaticResource SerialFilterToggleStyle}"/>
+
+<!-- Строка между тулбаром и таблицей. IsExpanded связан с кнопкой, шапка экспандера скрыта. -->
+<Expander Grid.Row="1"
+          Style="{StaticResource SerialFilterExpanderStyle}"
+          IsExpanded="{Binding IsChecked, ElementName=SerialFilterToggle, Mode=TwoWay}">
+    <Border Margin="0,0,0,4"
+            Padding="8,6"
+            Background="White"
+            BorderBrush="#FFC5C5C5"
+            BorderThickness="1">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Margin="0,0,8,0" Width="160">
+                <TextBlock Text="Модель" Style="{StaticResource SerialFilterCaptionStyle}"/>
+                <TextBox Height="26"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding Filter.EquipMarkaName, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,8,0" Width="160">
+                <TextBlock Text="МОЛ" Style="{StaticResource SerialFilterCaptionStyle}"/>
+                <TextBox Height="26"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding Filter.ResponsibleName, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <StackPanel Margin="0,0,8,0" Width="140">
+                <TextBlock Text="Номер" Style="{StaticResource SerialFilterCaptionStyle}"/>
+                <TextBox Height="26"
+                         VerticalContentAlignment="Center"
+                         Text="{Binding Filter.Number, UpdateSourceTrigger=PropertyChanged}"/>
+            </StackPanel>
+            <Button Content="Найти"
+                    VerticalAlignment="Bottom"
+                    Style="{StaticResource ShowSerialsButtonStyle}"
+                    Command="{Binding RefreshCommand}"/>
+        </StackPanel>
+    </Border>
+</Expander>
