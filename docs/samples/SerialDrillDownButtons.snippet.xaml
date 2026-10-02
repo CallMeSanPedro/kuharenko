@@ -1,9 +1,52 @@
 <!--
-  Компактные кнопки перехода. Высота как у поля «Поиск» и переключателя Остатки | Серийные.
-  Стили положить рядом с ModeButtonStyle.
-  «Показать серийные» стоит сразу после переключателя, до поля поиска.
-  «К остатку» стоит сразу после переключателя на вьюхе серийных.
+  Переключатель как на макете: выбранный сегмент #5B2C83 с белым текстом,
+  второй белый с серым текстом. Оба внутри общей рамки.
+  «Показать серийные» и «К остатку» в выключенном состоянии серые, без реакции на наведение.
 -->
+
+<Style x:Key="ModeButtonStyle" TargetType="RadioButton">
+    <Setter Property="Foreground" Value="#FF6B7280"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="Padding" Value="14,4"/>
+    <Setter Property="MinHeight" Value="26"/>
+    <Setter Property="MinWidth" Value="76"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Template">
+        <Setter.Value>
+            <ControlTemplate TargetType="RadioButton">
+                <Border x:Name="Bd"
+                        Background="White"
+                        Padding="{TemplateBinding Padding}"
+                        SnapsToDevicePixels="True">
+                    <ContentPresenter x:Name="Content"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      TextElement.Foreground="{TemplateBinding Foreground}"/>
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter TargetName="Bd" Property="Background" Value="#FF5B2C83"/>
+                        <Setter TargetName="Content" Property="TextElement.Foreground" Value="White"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="Bd" Property="Background" Value="#FFF3F4F6"/>
+                        <Setter TargetName="Content" Property="TextElement.Foreground" Value="#FF94A3B8"/>
+                        <Setter Property="Cursor" Value="Arrow"/>
+                    </Trigger>
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsChecked" Value="True"/>
+                            <Condition Property="IsEnabled" Value="False"/>
+                        </MultiTrigger.Conditions>
+                        <Setter TargetName="Bd" Property="Background" Value="#FFD8C8E4"/>
+                        <Setter TargetName="Content" Property="TextElement.Foreground" Value="#FFF8F5FA"/>
+                    </MultiTrigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+        </Setter.Value>
+    </Setter>
+</Style>
 
 <Style x:Key="ShowSerialsButtonStyle" TargetType="Button">
     <Setter Property="Foreground" Value="White"/>
@@ -25,16 +68,25 @@
                         BorderThickness="1"
                         Padding="{TemplateBinding Padding}"
                         SnapsToDevicePixels="True">
-                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ContentPresenter x:Name="Content"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      TextElement.Foreground="{TemplateBinding Foreground}"/>
                 </Border>
                 <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsMouseOver" Value="True"/>
+                            <Condition Property="IsEnabled" Value="True"/>
+                        </MultiTrigger.Conditions>
                         <Setter TargetName="Bd" Property="Background" Value="#FF4A2270"/>
-                    </Trigger>
+                        <Setter TargetName="Bd" Property="BorderBrush" Value="#FF4A2270"/>
+                    </MultiTrigger>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter TargetName="Bd" Property="Background" Value="#FFE5E7EB"/>
                         <Setter TargetName="Bd" Property="BorderBrush" Value="#FFE5E7EB"/>
-                        <Setter Property="Foreground" Value="#FF94A3B8"/>
+                        <Setter TargetName="Content" Property="TextElement.Foreground" Value="#FF94A3B8"/>
+                        <Setter Property="Cursor" Value="Arrow"/>
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
@@ -45,7 +97,6 @@
 <Style x:Key="BackToBalanceButtonStyle" TargetType="Button">
     <Setter Property="Foreground" Value="#FF5B2C83"/>
     <Setter Property="Background" Value="Transparent"/>
-    <Setter Property="BorderBrush" Value="Transparent"/>
     <Setter Property="FontSize" Value="12"/>
     <Setter Property="Padding" Value="8,2"/>
     <Setter Property="MinHeight" Value="26"/>
@@ -57,14 +108,26 @@
         <Setter.Value>
             <ControlTemplate TargetType="Button">
                 <Border x:Name="Bd"
-                        Background="{TemplateBinding Background}"
+                        Background="Transparent"
                         Padding="{TemplateBinding Padding}"
                         SnapsToDevicePixels="True">
-                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <ContentPresenter x:Name="Content"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      TextElement.Foreground="{TemplateBinding Foreground}"/>
                 </Border>
                 <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
+                    <MultiTrigger>
+                        <MultiTrigger.Conditions>
+                            <Condition Property="IsMouseOver" Value="True"/>
+                            <Condition Property="IsEnabled" Value="True"/>
+                        </MultiTrigger.Conditions>
                         <Setter TargetName="Bd" Property="Background" Value="#FFF3E8F8"/>
+                    </MultiTrigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+                        <Setter TargetName="Content" Property="TextElement.Foreground" Value="#FF94A3B8"/>
+                        <Setter Property="Cursor" Value="Arrow"/>
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
@@ -72,13 +135,23 @@
     </Setter>
 </Style>
 
-<!-- Остатки, сразу после переключателя и до «Поиск» -->
+<!-- Общая рамка переключателя -->
+<Border BorderBrush="#FFC5C5C5" BorderThickness="1" Margin="0,3,0,3" VerticalAlignment="Center">
+    <StackPanel Orientation="Horizontal">
+        <RadioButton Content="Остатки"
+                     Style="{StaticResource ModeButtonStyle}"
+                     IsChecked="{Binding ListMode.ShowBalance, Mode=TwoWay}"/>
+        <Border Width="1" Background="#FFC5C5C5"/>
+        <RadioButton Content="Серийные"
+                     Style="{StaticResource ModeButtonStyle}"
+                     IsChecked="{Binding ListMode.ShowSerials, Mode=TwoWay}"/>
+    </StackPanel>
+</Border>
+
 <Button Content="Показать серийные"
         Style="{StaticResource ShowSerialsButtonStyle}"
         Command="{Binding ShowSerialsCommand}"/>
-<Border Style="{StaticResource SeparatorStyle}"/>
 
-<!-- Серийные, сразу после переключателя -->
 <Button Content="← К остатку"
         Style="{StaticResource BackToBalanceButtonStyle}"
         Visibility="{Binding ListMode.HasSerialFilter, Converter={StaticResource BooleanToVisibilityConverter}}"
