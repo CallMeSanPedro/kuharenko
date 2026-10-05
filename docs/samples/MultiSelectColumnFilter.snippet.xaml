@@ -1,6 +1,10 @@
 <!--
 В шапке только значок. По нажатию открывается список или поле поиска.
 xmlns:controls3 — тот же, что у MultiSelectComboBox.
+xmlns:filtering="clr-namespace:Store.Views.Filtering"
+
+StaysOpen остаётся True: иначе клик по выпадающему списку MultiSelectComboBox
+закрывает сам фильтр. Скрытие по клику снаружи делает ColumnFilterPopup.
 -->
 <DataTemplate x:Key="ColumnFilterHeaderTemplate">
     <Grid MinHeight="28">
@@ -44,6 +48,7 @@ xmlns:controls3 — тот же, что у MultiSelectComboBox.
                Placement="Bottom"
                StaysOpen="True"
                AllowsTransparency="True"
+               filtering:ColumnFilterPopup.ClosesOnOutsideClick="True"
                IsOpen="{Binding IsChecked, ElementName=FilterButton, Mode=TwoWay}">
             <Border Background="White"
                     BorderBrush="#D5DEE9"
