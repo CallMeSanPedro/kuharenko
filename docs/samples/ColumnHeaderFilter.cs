@@ -51,7 +51,10 @@ namespace Store.Views.Filtering
             Mode = mode;
             _read = read;
             Options = new ObservableCollection<object>();
+            ClearCommand = new ClearOneCommand(this);
         }
+
+        public ICommand ClearCommand { get; }
 
         public string PropertyName { get; }
 
@@ -74,6 +77,8 @@ namespace Store.Views.Filtering
                 _text = next;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullSummary)));
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -89,6 +94,8 @@ namespace Store.Views.Filtering
                 RebuildSelected();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItems)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullSummary)));
                 if (!_updating)
                     Changed?.Invoke(this, EventArgs.Empty);
             }
@@ -121,6 +128,10 @@ namespace Store.Views.Filtering
                 return true;
             return _selected.Contains(value);
         }
+
+        public string Summary => BuildSummary(2);
+
+        public string FullSummary => BuildSummary(int.MaxValue);
 
         public void Reload(IEnumerable source)
         {
@@ -199,7 +210,15 @@ namespace Store.Views.Filtering
             }
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullSummary)));
             return true;
+        }
+
+        public void ClearSingle()
+        {
+            if (Clear())
+                Changed?.Invoke(this, EventArgs.Empty);
         }
 
         private void RebuildSelected()
@@ -214,17 +233,58 @@ namespace Store.Views.Filtering
                 _selectedItems.Select(x => x?.ToString()).Where(x => !string.IsNullOrWhiteSpace(x)),
                 StringComparer.OrdinalIgnoreCase);
         }
+
+        private string BuildSummary(int limit)
+        {
+            if (Mode == ColumnFilterMode.Text)
+                return _text.Trim();
+            if (_selected == null || _selected.Count == 0)
+                return string.Empty;
+
+            var names = new List<string>(_selected);
+            names.Sort(StringComparer.CurrentCultureIgnoreCase);
+            if (names.Count <= limit)
+                return string.Join(", ", names);
+
+            return names[0] + ", " + names[1] + " +" + (names.Count - 2);
+        }
+
+        private sealed class ClearOneCommand : ICommand
+        {
+            private readonly ColumnHeaderFilter _filter;
+
+            public ClearOneCommand(ColumnHeaderFilter filter)
+            {
+                _filter = filter;
+            }
+
+            public event EventHandler CanExecuteChanged
+            {
+                add { }
+                remove { }
+            }
+
+            public bool CanExecute(object parameter) => true;
+
+            public void Execute(object parameter) => _filter.ClearSingle();
+        }
     }
 
     public sealed class ColumnHeaderFilterSet : IColumnHeaderFilterHost, INotifyPropertyChanged
     {
         private readonly Dictionary<string, ColumnHeaderFilter> _filters = new Dictionary<string, ColumnHeaderFilter>(StringComparer.Ordinal);
+        private readonly List<ColumnHeaderFilter> _order = new List<ColumnHeaderFilter>();
         private readonly ClearHeaderFiltersCommand _clearCommand;
 
         public ColumnHeaderFilterSet()
         {
             _clearCommand = new ClearHeaderFiltersCommand(this);
+            Active = new ObservableCollection<ColumnHeaderFilter>();
         }
+
+        public ObservableCollection<ColumnHeaderFilter> Active { get; }
+
+        public bool HasMultiple => Active.Count > 1;
 
         public event EventHandler Changed;
         public event PropertyChangedEventHandler PropertyChanged;
@@ -257,9 +317,7 @@ namespace Store.Views.Filtering
             if (!any)
                 return;
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
-            Changed?.Invoke(this, EventArgs.Empty);
-            _clearCommand.RaiseCanExecuteChanged();
+            Publish();
         }
 
         public ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read)
@@ -275,14 +333,29 @@ namespace Store.Views.Filtering
         private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
         {
             var filter = new ColumnHeaderFilter(propertyName, title, read, mode);
-            filter.Changed += (_, _) =>
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
-                Changed?.Invoke(this, EventArgs.Empty);
-                _clearCommand.RaiseCanExecuteChanged();
-            };
+            filter.Changed += (_, _) => Publish();
             _filters[propertyName] = filter;
+            _order.Add(filter);
             return filter;
+        }
+
+        private void Publish()
+        {
+            SyncActive();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasMultiple)));
+            Changed?.Invoke(this, EventArgs.Empty);
+            _clearCommand.RaiseCanExecuteChanged();
+        }
+
+        private void SyncActive()
+        {
+            Active.Clear();
+            foreach (var filter in _order)
+            {
+                if (filter.IsActive)
+                    Active.Add(filter);
+            }
         }
 
         public ColumnHeaderFilter Find(string propertyName)
