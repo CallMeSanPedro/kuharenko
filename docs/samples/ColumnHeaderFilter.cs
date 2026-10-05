@@ -29,7 +29,8 @@ namespace Store.Views.Filtering
     public enum ColumnFilterMode
     {
         CheckList,
-        Text
+        Text,
+        ServerText
     }
 
     /// <summary>
@@ -39,22 +40,33 @@ namespace Store.Views.Filtering
     public sealed class ColumnHeaderFilter : INotifyPropertyChanged
     {
         private readonly Func<object, string> _read;
+        private readonly Action<string> _write;
         private IEnumerable<object> _selectedItems;
         private HashSet<string> _selected;
         private string _text = string.Empty;
+        private string _applied = string.Empty;
         private bool _updating;
 
         public ColumnHeaderFilter(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
+            : this(propertyName, title, read, mode, null)
+        {
+        }
+
+        public ColumnHeaderFilter(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode, Action<string> write)
         {
             PropertyName = propertyName;
             Title = title;
             Mode = mode;
             _read = read;
+            _write = write;
             Options = new ObservableCollection<object>();
             ClearCommand = new ClearOneCommand(this);
+            ApplyCommand = new ApplyServerFilterCommand(this);
         }
 
         public ICommand ClearCommand { get; }
+
+        public ICommand ApplyCommand { get; }
 
         public string PropertyName { get; }
 
@@ -66,6 +78,10 @@ namespace Store.Views.Filtering
 
         public bool IsText => Mode == ColumnFilterMode.Text;
 
+        public bool IsServerText => Mode == ColumnFilterMode.ServerText;
+
+        public bool ShowsText => IsText || IsServerText;
+
         public string Text
         {
             get => _text;
@@ -76,6 +92,9 @@ namespace Store.Views.Filtering
                     return;
                 _text = next;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+                if (Mode == ColumnFilterMode.ServerText)
+                    return;
+
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullSummary)));
@@ -108,6 +127,8 @@ namespace Store.Views.Filtering
         {
             get
             {
+                if (Mode == ColumnFilterMode.ServerText)
+                    return !string.IsNullOrWhiteSpace(_applied);
                 if (Mode == ColumnFilterMode.Text)
                     return !string.IsNullOrWhiteSpace(_text);
                 return _selected != null && _selected.Count > 0;
@@ -116,6 +137,9 @@ namespace Store.Views.Filtering
 
         public bool Passes(object item)
         {
+            if (Mode == ColumnFilterMode.ServerText)
+                return true;
+
             var value = _read(item) ?? string.Empty;
             if (Mode == ColumnFilterMode.Text)
             {
@@ -133,9 +157,41 @@ namespace Store.Views.Filtering
 
         public string FullSummary => BuildSummary(int.MaxValue);
 
+        public void Apply()
+        {
+            if (Mode != ColumnFilterMode.ServerText)
+                return;
+
+            var next = _text.Trim();
+            if (string.Equals(_applied, next, StringComparison.Ordinal))
+                return;
+
+            _applied = next;
+            _write?.Invoke(_applied.Length == 0 ? null : _applied);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullSummary)));
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Показывает уже заданное серверное значение в поле и в чипе.
+        /// Запрос не отправляет: им пользуется переход со строки остатка.
+        /// </summary>
+        public void ShowApplied(string value)
+        {
+            var next = (value ?? string.Empty).Trim();
+            _text = next;
+            _applied = next;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Summary)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FullSummary)));
+        }
+
         public void Reload(IEnumerable source)
         {
-            if (Mode == ColumnFilterMode.Text)
+            if (Mode == ColumnFilterMode.Text || Mode == ColumnFilterMode.ServerText)
                 return;
 
             var selected = new HashSet<string>(
@@ -191,10 +247,13 @@ namespace Store.Views.Filtering
             _updating = true;
             try
             {
-                if (_text.Length != 0)
+                if (_text.Length != 0 || _applied.Length != 0)
                 {
                     _text = string.Empty;
+                    _applied = string.Empty;
                     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+                    if (Mode == ColumnFilterMode.ServerText)
+                        _write?.Invoke(null);
                 }
 
                 if (_selected != null || (_selectedItems != null && _selectedItems.Any()))
@@ -238,6 +297,8 @@ namespace Store.Views.Filtering
         {
             if (Mode == ColumnFilterMode.Text)
                 return _text.Trim();
+            if (Mode == ColumnFilterMode.ServerText)
+                return _applied.Trim();
             if (_selected == null || _selected.Count == 0)
                 return string.Empty;
 
@@ -267,6 +328,26 @@ namespace Store.Views.Filtering
             public bool CanExecute(object parameter) => true;
 
             public void Execute(object parameter) => _filter.ClearSingle();
+        }
+
+        private sealed class ApplyServerFilterCommand : ICommand
+        {
+            private readonly ColumnHeaderFilter _filter;
+
+            public ApplyServerFilterCommand(ColumnHeaderFilter filter)
+            {
+                _filter = filter;
+            }
+
+            public event EventHandler CanExecuteChanged
+            {
+                add { }
+                remove { }
+            }
+
+            public bool CanExecute(object parameter) => true;
+
+            public void Execute(object parameter) => _filter.Apply();
         }
     }
 
@@ -330,9 +411,19 @@ namespace Store.Views.Filtering
             return Add(propertyName, title, read, ColumnFilterMode.Text);
         }
 
+        public ColumnHeaderFilter AddServerText(string propertyName, string title, Func<object, string> read, Action<string> write)
+        {
+            return Add(propertyName, title, read, ColumnFilterMode.ServerText, write);
+        }
+
         private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
         {
-            var filter = new ColumnHeaderFilter(propertyName, title, read, mode);
+            return Add(propertyName, title, read, mode, null);
+        }
+
+        private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode, Action<string> write)
+        {
+            var filter = new ColumnHeaderFilter(propertyName, title, read, mode, write);
             filter.Changed += (_, _) => Publish();
             _filters[propertyName] = filter;
             _order.Add(filter);
@@ -356,6 +447,19 @@ namespace Store.Views.Filtering
                 if (filter.IsActive)
                     Active.Add(filter);
             }
+        }
+
+        public void ShowApplied(string propertyName, string value)
+        {
+            var filter = Find(propertyName);
+            if (filter == null)
+                return;
+
+            filter.ShowApplied(value);
+            SyncActive();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasMultiple)));
+            _clearCommand.RaiseCanExecuteChanged();
         }
 
         public ColumnHeaderFilter Find(string propertyName)

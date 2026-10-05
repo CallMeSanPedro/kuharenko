@@ -66,7 +66,18 @@ StaysOpen остаётся True: иначе клик по выпадающему
                     <TextBox MinWidth="180"
                         Height="28"
                         Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                        Visibility="{Binding IsText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
+                        Visibility="{Binding ShowsText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding ApplyCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button Content="Найти"
+                            Margin="0,8,0,0"
+                            MinHeight="26"
+                            HorizontalAlignment="Left"
+                            Padding="10,2"
+                            Command="{Binding ApplyCommand}"
+                            Visibility="{Binding IsServerText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}"/>
                 </StackPanel>
             </Border>
         </Popup>
