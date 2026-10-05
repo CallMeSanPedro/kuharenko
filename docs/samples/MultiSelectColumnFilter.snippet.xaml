@@ -141,6 +141,7 @@ StaysOpen остаётся True: иначе клик по выпадающему
     </Style.Triggers>
 </Style>
 
+<DataTemplate x:Key="HeaderFilterSummaryTemplate">
 <DockPanel Margin="0,0,0,4">
     <DockPanel.Style>
         <Style TargetType="DockPanel">
@@ -181,3 +182,4 @@ StaysOpen остаётся True: иначе клик по выпадающему
         </ItemsControl.ItemTemplate>
     </ItemsControl>
 </DockPanel>
+</DataTemplate>
