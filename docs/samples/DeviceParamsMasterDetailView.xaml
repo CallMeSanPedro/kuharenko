@@ -7,25 +7,52 @@
     d:DesignHeight="480" d:DesignWidth="600"
     xmlns:converters="clr-namespace:Store.Reference.Converters"
     xmlns:controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
-    xmlns:layout="clr-namespace:Store.Views.Reference.AdditionalAttributes"
     xmlns:additionalAttributes="clr-namespace:Store.ViewModels.Reference.AdditionalAttributes;assembly=Store.ViewModels"
     d:DataContext="{d:DesignInstance additionalAttributes:DeviceParamsMasterDetailViewModel}">
     <controls:UserView.Resources>
         <converters:StoreAttrTypeToBool x:Key="StoreAttrTypeToBool"/>
+
+        <Style x:Key="MasterPaneStyle" TargetType="Grid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Grid.RowSpan" Value="10"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}" Value="Visible">
+                    <Setter Property="Grid.RowSpan" Value="7"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}" Value="True">
+                    <Setter Property="Grid.RowSpan" Value="7"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DetailPaneStyle" TargetType="Grid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}" Value="Visible">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </controls:UserView.Resources>
-    <Grid x:Name="LayoutRoot"
-          Background="White"
-          layout:MasterDetailRowLayout.IsDetailOpen="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}"
-          layout:MasterDetailRowLayout.MaxRatio="0.3"
-          layout:MasterDetailRowLayout.SplitterRow="1"
-          layout:MasterDetailRowLayout.DetailRow="2"
-          layout:MasterDetailRowLayout.SplitterHeight="7">
+    <Grid x:Name="LayoutRoot" Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="0"/>
-            <RowDefinition Height="0"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="gMaster" Background="White" Grid.Row="0">
+
+        <Grid x:Name="gMaster" Grid.Row="0" Style="{StaticResource MasterPaneStyle}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
@@ -40,16 +67,9 @@
             </Border>
         </Grid>
 
-        <GridSplitter Grid.Row="1"
-                      x:Name="GridSplitter"
-                      HorizontalAlignment="Stretch"
-                      ResizeDirection="Rows"
-                      ResizeBehavior="PreviousAndNext"
-                      ShowsPreview="True"
-                      Background="GhostWhite"
-                      Height="7" />
+        <GridSplitter x:Name="GridSplitter" Grid.Row="0" Height="0" Visibility="Collapsed" IsHitTestVisible="False"/>
 
-        <Grid x:Name="gDetail" Background="White" Grid.Row="2">
+        <Grid x:Name="gDetail" Grid.Row="7" Grid.RowSpan="3" Style="{StaticResource DetailPaneStyle}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
