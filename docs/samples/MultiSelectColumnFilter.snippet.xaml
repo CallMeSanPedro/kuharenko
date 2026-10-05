@@ -72,3 +72,9 @@ StaysOpen остаётся True: иначе клик по выпадающему
         </Popup>
     </Grid>
 </DataTemplate>
+
+<!-- Над таблицей. Активна, только когда задан хотя бы один фильтр шапки. -->
+<Button Content="Сбросить фильтры"
+        Command="{Binding HeaderFilters.ClearCommand}"
+        Style="{StaticResource ColumnFilter.Reset}"
+        ToolTip="Сбросить фильтры колонок"/>

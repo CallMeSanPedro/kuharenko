@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows.Input;
 using DatumNode.Models;
 
 namespace Store.Views.Filtering
@@ -168,6 +169,39 @@ namespace Store.Views.Filtering
             }
         }
 
+        /// <summary>
+        /// Снимает выбор и текст. Событие Changed не поднимает: его один раз поднимает набор.
+        /// </summary>
+        public bool Clear()
+        {
+            if (!IsActive)
+                return false;
+
+            _updating = true;
+            try
+            {
+                if (_text.Length != 0)
+                {
+                    _text = string.Empty;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Text)));
+                }
+
+                if (_selected != null || (_selectedItems != null && _selectedItems.Any()))
+                {
+                    _selectedItems = null;
+                    _selected = null;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItems)));
+                }
+            }
+            finally
+            {
+                _updating = false;
+            }
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            return true;
+        }
+
         private void RebuildSelected()
         {
             if (_selectedItems == null || !_selectedItems.Any())
@@ -182,11 +216,51 @@ namespace Store.Views.Filtering
         }
     }
 
-    public sealed class ColumnHeaderFilterSet : IColumnHeaderFilterHost
+    public sealed class ColumnHeaderFilterSet : IColumnHeaderFilterHost, INotifyPropertyChanged
     {
         private readonly Dictionary<string, ColumnHeaderFilter> _filters = new Dictionary<string, ColumnHeaderFilter>(StringComparer.Ordinal);
+        private readonly ClearHeaderFiltersCommand _clearCommand;
+
+        public ColumnHeaderFilterSet()
+        {
+            _clearCommand = new ClearHeaderFiltersCommand(this);
+        }
 
         public event EventHandler Changed;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool IsActive
+        {
+            get
+            {
+                foreach (var filter in _filters.Values)
+                {
+                    if (filter.IsActive)
+                        return true;
+                }
+
+                return false;
+            }
+        }
+
+        public ICommand ClearCommand => _clearCommand;
+
+        public void Clear()
+        {
+            var any = false;
+            foreach (var filter in _filters.Values)
+            {
+                if (filter.Clear())
+                    any = true;
+            }
+
+            if (!any)
+                return;
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+            Changed?.Invoke(this, EventArgs.Empty);
+            _clearCommand.RaiseCanExecuteChanged();
+        }
 
         public ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read)
         {
@@ -201,7 +275,12 @@ namespace Store.Views.Filtering
         private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
         {
             var filter = new ColumnHeaderFilter(propertyName, title, read, mode);
-            filter.Changed += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+            filter.Changed += (_, _) =>
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsActive)));
+                Changed?.Invoke(this, EventArgs.Empty);
+                _clearCommand.RaiseCanExecuteChanged();
+            };
             _filters[propertyName] = filter;
             return filter;
         }
@@ -240,6 +319,24 @@ namespace Store.Views.Filtering
         {
             foreach (var filter in _filters.Values)
                 filter.Reload(source);
+        }
+
+        private sealed class ClearHeaderFiltersCommand : ICommand
+        {
+            private readonly ColumnHeaderFilterSet _set;
+
+            public ClearHeaderFiltersCommand(ColumnHeaderFilterSet set)
+            {
+                _set = set;
+            }
+
+            public event EventHandler CanExecuteChanged;
+
+            public bool CanExecute(object parameter) => _set.IsActive;
+
+            public void Execute(object parameter) => _set.Clear();
+
+            public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 }
