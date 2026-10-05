@@ -1,0 +1,66 @@
+<controls:UserView x:Class="Store.Views.Reference.AdditionalAttributes.DeviceParamsMasterDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="480" d:DesignWidth="600"
+    xmlns:converters="clr-namespace:Store.Reference.Converters"
+    xmlns:controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
+    xmlns:layout="clr-namespace:Store.Views.Reference.AdditionalAttributes"
+    xmlns:additionalAttributes="clr-namespace:Store.ViewModels.Reference.AdditionalAttributes;assembly=Store.ViewModels"
+    d:DataContext="{d:DesignInstance additionalAttributes:DeviceParamsMasterDetailViewModel}">
+    <controls:UserView.Resources>
+        <converters:StoreAttrTypeToBool x:Key="StoreAttrTypeToBool"/>
+    </controls:UserView.Resources>
+    <Grid x:Name="LayoutRoot"
+          Background="White"
+          layout:MasterDetailRowLayout.IsDetailOpen="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}"
+          layout:MasterDetailRowLayout.MaxRatio="0.3"
+          layout:MasterDetailRowLayout.SplitterRow="1"
+          layout:MasterDetailRowLayout.DetailRow="2"
+          layout:MasterDetailRowLayout.SplitterHeight="7">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="0"/>
+            <RowDefinition Height="0"/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="gMaster" Background="White" Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <TextBlock Text="{Binding Path=MasterViewModel.Title}" FontWeight="SemiBold"/>
+                <Grid Height="Auto" HorizontalAlignment="Stretch" Name="grid1" VerticalAlignment="Stretch" Width="Auto" />
+            </StackPanel>
+            <Border Style="{StaticResource MainContentBorders}" x:Name="Master" Grid.Column="0" Grid.Row="1" Margin="5" VerticalAlignment="Stretch">
+                <controls:DataContentPresenter Content="{Binding Path=MasterViewModel}" Grid.Row="1"/>
+            </Border>
+        </Grid>
+
+        <GridSplitter Grid.Row="1"
+                      x:Name="GridSplitter"
+                      HorizontalAlignment="Stretch"
+                      ResizeDirection="Rows"
+                      ResizeBehavior="PreviousAndNext"
+                      ShowsPreview="True"
+                      Background="GhostWhite"
+                      Height="7" />
+
+        <Grid x:Name="gDetail" Background="White" Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <WrapPanel Grid.Row="0" Orientation="Horizontal">
+                <TextBlock Text="{Binding Path=DetailViewModel.Title}" FontWeight="SemiBold" Visibility="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}"/>
+            </WrapPanel>
+            <Border Style="{StaticResource MainContentBorders}" x:Name="Detail" Grid.Column="0" Grid.Row="1" Margin="5" VerticalAlignment="Stretch" Visibility="{Binding Path=MasterViewModel.CurrentItem.TypVar, Converter={StaticResource StoreAttrTypeToBool}}">
+                <controls:DataContentPresenter Content="{Binding Path=DetailViewModel}" Grid.Row="1"/>
+            </Border>
+        </Grid>
+    </Grid>
+</controls:UserView>
