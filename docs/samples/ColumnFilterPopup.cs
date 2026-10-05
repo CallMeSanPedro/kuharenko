@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -150,7 +151,7 @@ namespace Store.Views.Filtering
 
             private void OnMouseDown(object sender, MouseButtonEventArgs e)
             {
-                if (!_popup.IsOpen || IsPlacementTarget(e.OriginalSource as DependencyObject))
+                if (!_popup.IsOpen || IsInside(e.OriginalSource as DependencyObject))
                     return;
 
                 _popup.IsOpen = false;
@@ -158,8 +159,10 @@ namespace Store.Views.Filtering
 
             private void OnMouseWheel(object sender, MouseWheelEventArgs e)
             {
-                if (_popup.IsOpen)
-                    _popup.IsOpen = false;
+                if (!_popup.IsOpen || IsInside(e.OriginalSource as DependencyObject))
+                    return;
+
+                _popup.IsOpen = false;
             }
 
             private void OnKeyDown(object sender, KeyEventArgs e)
@@ -173,8 +176,22 @@ namespace Store.Views.Filtering
 
             private void OnDeactivated(object sender, EventArgs e)
             {
-                if (_popup.IsOpen)
-                    _popup.IsOpen = false;
+                if (!_popup.IsOpen)
+                    return;
+
+                // Клик по Popup активирует его окно и снимает активацию с основного.
+                // Закрывать можно только если фокус и курсор уже не внутри фильтра.
+                _popup.Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(CloseIfLeft));
+            }
+
+            private void CloseIfLeft()
+            {
+                if (!_popup.IsOpen)
+                    return;
+                if (IsInside(Mouse.DirectlyOver as DependencyObject) || IsInside(Keyboard.FocusedElement as DependencyObject))
+                    return;
+
+                _popup.IsOpen = false;
             }
 
             private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -185,36 +202,46 @@ namespace Store.Views.Filtering
                     EndSession(_popup);
             }
 
-            private bool IsPlacementTarget(DependencyObject source)
+            private bool IsInside(DependencyObject source)
             {
-                var target = _popup.PlacementTarget as DependencyObject;
-                if (target == null || source == null)
-                    return false;
+                var seen = new HashSet<DependencyObject>();
+                var pending = new Stack<DependencyObject>();
+                if (source != null)
+                    pending.Push(source);
 
-                for (var node = source; node != null; node = Parent(node))
+                while (pending.Count > 0)
                 {
-                    if (node == target)
+                    var node = pending.Pop();
+                    if (node == null || !seen.Add(node))
+                        continue;
+                    if (node == _popup || node == _popup.Child || node == _popup.PlacementTarget)
                         return true;
+
+                    var nested = node as Popup;
+                    if (nested != null && nested != _popup && nested.PlacementTarget is DependencyObject target)
+                        pending.Push(target);
+
+                    if (node is Visual || node is System.Windows.Media.Media3D.Visual3D)
+                    {
+                        var visualParent = VisualTreeHelper.GetParent(node);
+                        if (visualParent != null)
+                            pending.Push(visualParent);
+                    }
+
+                    var logicalParent = LogicalTreeHelper.GetParent(node);
+                    if (logicalParent != null)
+                        pending.Push(logicalParent);
+
+                    var element = node as FrameworkElement;
+                    if (element?.Parent != null)
+                        pending.Push(element.Parent);
+
+                    var content = node as FrameworkContentElement;
+                    if (content?.Parent != null)
+                        pending.Push(content.Parent);
                 }
 
                 return false;
-            }
-
-            private static DependencyObject Parent(DependencyObject node)
-            {
-                if (node is Visual || node is System.Windows.Media.Media3D.Visual3D)
-                {
-                    var visualParent = VisualTreeHelper.GetParent(node);
-                    if (visualParent != null)
-                        return visualParent;
-                }
-
-                var element = node as FrameworkElement;
-                if (element?.Parent != null)
-                    return element.Parent;
-
-                var content = node as FrameworkContentElement;
-                return content?.Parent;
             }
         }
     }
