@@ -18,19 +18,32 @@ private void RegisterHeaderFilters()
         _ => string.Empty,
         value => Filter.ResponsibleName = value);
 
-    // CreateSelectCommand читает DeviceTypeNum.TypnumKod, когда Number не пустой.
-    // Если тип номера не задан, перед записью Number его нужно выставить, иначе селектор упадёт.
-    HeaderFilters.AddServerText(
-        "Number",
-        "Номер",
-        _ => string.Empty,
-        value => Filter.Number = value);
+    // Последний аргумент — общая группа. «Найти» в одной колонке само снимает чипы остальных.
+    // serialType и macType — элементы справочника, тот же тип, что у Filter.DeviceTypeNum.
+    HeaderFilters.AddServerText("SerialNumber", "Серийный №", _ => string.Empty, value => ApplyNumber(value, serialType), "Number");
+    HeaderFilters.AddServerText("Mac", "MAC", _ => string.Empty, value => ApplyNumber(value, macType), "Number");
 
     HeaderFilters.Changed += (s, e) =>
     {
         Filter.AcceptChanges();
         Refresh();
     };
+}
+
+private void ApplyNumber(string value, DeviceTypeNum type)
+{
+    if (string.IsNullOrEmpty(value))
+    {
+        if (Filter.DeviceTypeNum != null && Filter.DeviceTypeNum.TypnumKod == type.TypnumKod)
+        {
+            Filter.Number = null;
+            Filter.DeviceTypeNum = null;
+        }
+        return;
+    }
+
+    Filter.Number = value;
+    Filter.DeviceTypeNum = type;
 }
 
 // В FillFromBalanceRow, после записи в Filter и до Refresh:

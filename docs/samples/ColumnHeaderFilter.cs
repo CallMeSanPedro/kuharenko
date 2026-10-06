@@ -53,12 +53,18 @@ namespace Store.Views.Filtering
         }
 
         public ColumnHeaderFilter(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode, Action<string> write)
+            : this(propertyName, title, read, mode, write, null)
+        {
+        }
+
+        public ColumnHeaderFilter(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode, Action<string> write, string exclusiveGroup)
         {
             PropertyName = propertyName;
             Title = title;
             Mode = mode;
             _read = read;
             _write = write;
+            ExclusiveGroup = exclusiveGroup;
             Options = new ObservableCollection<object>();
             ClearCommand = new ClearOneCommand(this);
             ApplyCommand = new ApplyServerFilterCommand(this);
@@ -71,6 +77,8 @@ namespace Store.Views.Filtering
         public string PropertyName { get; }
 
         public string Title { get; }
+
+        public string ExclusiveGroup { get; }
 
         public ColumnFilterMode Mode { get; }
 
@@ -411,23 +419,42 @@ namespace Store.Views.Filtering
             return Add(propertyName, title, read, ColumnFilterMode.Text);
         }
 
-        public ColumnHeaderFilter AddServerText(string propertyName, string title, Func<object, string> read, Action<string> write)
+        public ColumnHeaderFilter AddServerText(string propertyName, string title, Func<object, string> read, Action<string> write, string exclusiveGroup = null)
         {
-            return Add(propertyName, title, read, ColumnFilterMode.ServerText, write);
+            return Add(propertyName, title, read, ColumnFilterMode.ServerText, write, exclusiveGroup);
         }
 
         private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
         {
-            return Add(propertyName, title, read, mode, null);
+            return Add(propertyName, title, read, mode, null, null);
         }
 
-        private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode, Action<string> write)
+        private ColumnHeaderFilter Add(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode, Action<string> write, string exclusiveGroup = null)
         {
-            var filter = new ColumnHeaderFilter(propertyName, title, read, mode, write);
-            filter.Changed += (_, _) => Publish();
+            var filter = new ColumnHeaderFilter(propertyName, title, read, mode, write, exclusiveGroup);
+            filter.Changed += (_, _) =>
+            {
+                ReleaseGroup(filter);
+                Publish();
+            };
             _filters[propertyName] = filter;
             _order.Add(filter);
             return filter;
+        }
+
+        private void ReleaseGroup(ColumnHeaderFilter owner)
+        {
+            if (!owner.IsActive || string.IsNullOrEmpty(owner.ExclusiveGroup))
+                return;
+
+            foreach (var other in _order)
+            {
+                if (other == owner || !string.Equals(other.ExclusiveGroup, owner.ExclusiveGroup, StringComparison.Ordinal))
+                    continue;
+                if (!other.IsActive && other.Text.Length == 0)
+                    continue;
+                other.ShowApplied(null);
+            }
         }
 
         private void Publish()
