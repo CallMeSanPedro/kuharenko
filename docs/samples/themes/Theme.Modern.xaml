@@ -244,7 +244,15 @@
     <SolidColorBrush x:Key="ColumnFilter.PopupBg" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="ColumnFilter.PopupBorder" Color="#D5DEE9"/>
     <SolidColorBrush x:Key="ColumnFilter.Icon" Color="#94A3B8"/>
-    <SolidColorBrush x:Key="ColumnFilter.IconActive" Color="#1B3F6F"/>
+    <SolidColorBrush x:Key="ColumnFilter.IconActive" Color="#5B2C83"/>
+
+    <!-- Чипы и кнопки фильтра: фиолетовый оттенок новых элементов. -->
+    <SolidColorBrush x:Key="HeaderFilter.ChipBg" Color="#F4F0F8"/>
+    <SolidColorBrush x:Key="HeaderFilter.ChipBorder" Color="#E4D4EE"/>
+    <SolidColorBrush x:Key="HeaderFilter.ChipTitle" Color="#6B7280"/>
+    <SolidColorBrush x:Key="HeaderFilter.ChipValue" Color="#3B1248"/>
+    <SolidColorBrush x:Key="HeaderFilter.Accent" Color="#5B2C83"/>
+    <SolidColorBrush x:Key="HeaderFilter.AccentHoverBg" Color="#E4D4EE"/>
 
     <Style x:Key="ColumnFilter.Title" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Center"/>

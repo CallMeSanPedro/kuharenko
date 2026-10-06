@@ -33,10 +33,10 @@ StaysOpen остаётся True: иначе клик по выпадающему
                   Stretch="Uniform">
                 <Path.Style>
                     <Style TargetType="Path">
-                        <Setter Property="Fill" Value="#94A3B8"/>
+                        <Setter Property="Fill" Value="{DynamicResource ColumnFilter.Icon}"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                <Setter Property="Fill" Value="#1B3F6F"/>
+                                <Setter Property="Fill" Value="{DynamicResource ColumnFilter.IconActive}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -50,8 +50,8 @@ StaysOpen остаётся True: иначе клик по выпадающему
                AllowsTransparency="True"
                filtering:ColumnFilterPopup.ClosesOnOutsideClick="True"
                IsOpen="{Binding IsChecked, ElementName=FilterButton, Mode=TwoWay}">
-            <Border Background="White"
-                    BorderBrush="#D5DEE9"
+            <Border Background="{DynamicResource ColumnFilter.PopupBg}"
+                    BorderBrush="{DynamicResource ColumnFilter.PopupBorder}"
                     BorderThickness="1"
                     CornerRadius="8"
                     Padding="8"
@@ -76,6 +76,9 @@ StaysOpen остаётся True: иначе клик по выпадающему
                             MinHeight="26"
                             HorizontalAlignment="Left"
                             Padding="10,2"
+                            Foreground="{DynamicResource HeaderFilter.Accent}"
+                            BorderBrush="{DynamicResource HeaderFilter.ChipBorder}"
+                            Background="{DynamicResource HeaderFilter.ChipBg}"
                             Command="{Binding ApplyCommand}"
                             Visibility="{Binding IsServerText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}"/>
                 </StackPanel>
@@ -86,8 +89,8 @@ StaysOpen остаётся True: иначе клик по выпадающему
 
 <!-- Сводка активных фильтров шапки. Строки нет, пока ни один фильтр не задан. -->
 <Style x:Key="HeaderFilterChipStyle" TargetType="Border">
-    <Setter Property="Background" Value="#FFF4F0F8"/>
-    <Setter Property="BorderBrush" Value="#FFE4D4EE"/>
+    <Setter Property="Background" Value="{DynamicResource HeaderFilter.ChipBg}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource HeaderFilter.ChipBorder}"/>
     <Setter Property="BorderThickness" Value="1"/>
     <Setter Property="CornerRadius" Value="10"/>
     <Setter Property="Padding" Value="8,2"/>
@@ -97,7 +100,7 @@ StaysOpen остаётся True: иначе клик по выпадающему
 
 <Style x:Key="HeaderFilterChipCloseStyle" TargetType="Button">
     <Setter Property="Content" Value="×"/>
-    <Setter Property="Foreground" Value="#FF6B7280"/>
+    <Setter Property="Foreground" Value="{DynamicResource HeaderFilter.ChipTitle}"/>
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="Padding" Value="0"/>
@@ -116,8 +119,8 @@ StaysOpen остаётся True: иначе клик по выпадающему
                 </Border>
                 <ControlTemplate.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
-                        <Setter Property="Foreground" Value="#FF5B2C83"/>
-                        <Setter TargetName="Bd" Property="Background" Value="#FFE4D4EE"/>
+                        <Setter Property="Foreground" Value="{DynamicResource HeaderFilter.Accent}"/>
+                        <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.AccentHoverBg}"/>
                     </Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate>
@@ -127,7 +130,7 @@ StaysOpen остаётся True: иначе клик по выпадающему
 
 <Style x:Key="HeaderFilterClearAllStyle" TargetType="Button">
     <Setter Property="Content" Value="Сбросить"/>
-    <Setter Property="Foreground" Value="#FF5B2C83"/>
+    <Setter Property="Foreground" Value="{DynamicResource HeaderFilter.Accent}"/>
     <Setter Property="Background" Value="Transparent"/>
     <Setter Property="BorderThickness" Value="0"/>
     <Setter Property="Padding" Value="4,2"/>
@@ -181,9 +184,9 @@ StaysOpen остаётся True: иначе клик по выпадающему
                         ToolTip="{Binding FullSummary}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock VerticalAlignment="Center" FontSize="12">
-                            <Run Text="{Binding Title, Mode=OneWay}" Foreground="#FF6B7280"/>
-                            <Run Text=": " Foreground="#FF6B7280"/>
-                            <Run Text="{Binding Summary, Mode=OneWay}" Foreground="#FF3B1248"/>
+                            <Run Text="{Binding Title, Mode=OneWay}" Foreground="{DynamicResource HeaderFilter.ChipTitle}"/>
+                            <Run Text=": " Foreground="{DynamicResource HeaderFilter.ChipTitle}"/>
+                            <Run Text="{Binding Summary, Mode=OneWay}" Foreground="{DynamicResource HeaderFilter.ChipValue}"/>
                         </TextBlock>
                         <Button Style="{StaticResource HeaderFilterChipCloseStyle}"
                                 Command="{Binding ClearCommand}"/>
