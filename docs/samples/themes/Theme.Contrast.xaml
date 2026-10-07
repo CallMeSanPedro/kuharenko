@@ -153,12 +153,15 @@
     <SolidColorBrush x:Key="HeaderFilter.Accent" Color="#0A1E3D"/>
     <SolidColorBrush x:Key="HeaderFilter.AccentHoverBg" Color="#93C5FD"/>
 
-    <Style x:Key="ModeButtonStyle" TargetType="RadioButton">
+    <CornerRadius x:Key="Control.CornerRadius">8</CornerRadius>
+    <system:Double x:Key="Control.ButtonHeight">32</system:Double>
+
+    <Style x:Key="ModeButtonLeftStyle" TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
-        <Setter Property="Background" Value="{DynamicResource CardBg}"/>
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="MinHeight" Value="22"/>
-        <Setter Property="Padding" Value="8,2"/>
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Padding" Value="14,0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -168,7 +171,8 @@
                     <Border x:Name="Bd"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{DynamicResource HeaderFilter.ChipBorder}"
-                            BorderThickness="1"
+                            BorderThickness="0,0,1,0"
+                            CornerRadius="7,0,0,7"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -181,7 +185,6 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.ChipBg}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -189,15 +192,43 @@
         </Setter>
     </Style>
 
+    <Style x:Key="ModeButtonRightStyle" TargetType="RadioButton" BasedOn="{StaticResource ModeButtonLeftStyle}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderThickness="0"
+                            CornerRadius="0,7,7,0"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.Accent}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HeaderBarText}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ModeButtonStyle" TargetType="RadioButton" BasedOn="{StaticResource ModeButtonLeftStyle}"/>
+
     <Style x:Key="ModeActionButtonStyle" TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource HeaderFilter.Accent}"/>
         <Setter Property="Background" Value="{DynamicResource CardBg}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource HeaderFilter.ChipBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="MinHeight" Value="22"/>
+        <Setter Property="Height" Value="32"/>
         <Setter Property="MinWidth" Value="0"/>
-        <Setter Property="Padding" Value="8,2"/>
+        <Setter Property="Padding" Value="14,0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
@@ -209,6 +240,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -234,7 +266,11 @@
     </Style>
 
     <Style x:Key="BackToBalanceButtonStyle" TargetType="Button" BasedOn="{StaticResource ModeActionButtonStyle}"/>
-    <Style x:Key="ShowSerialsButtonStyle" TargetType="Button" BasedOn="{StaticResource ModeActionButtonStyle}"/>
+    <Style x:Key="ShowSerialsButtonStyle" TargetType="Button" BasedOn="{StaticResource ModeActionButtonStyle}">
+        <Setter Property="Background" Value="{DynamicResource HeaderFilter.Accent}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource HeaderFilter.Accent}"/>
+        <Setter Property="Foreground" Value="{DynamicResource HeaderBarText}"/>
+    </Style>
 
     <Style x:Key="ColumnFilter.Title" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Center"/>
