@@ -1,33 +1,17 @@
-<!--
-Одна капсула высотой 32, радиус 8. Стиль из темы сам по себе две кнопки не склеивает:
-левая и правая половины задаются разными ключами.
-Локальный ModeButtonStyle в ресурсах окна нужно удалить.
--->
-<Border Height="{DynamicResource Control.ButtonHeight}"
-        VerticalAlignment="Center"
-        Background="{DynamicResource CardBg}"
-        BorderBrush="{DynamicResource HeaderFilter.ChipBorder}"
-        BorderThickness="1"
-        CornerRadius="{DynamicResource Control.CornerRadius}"
-        SnapsToDevicePixels="True">
-    <StackPanel Orientation="Horizontal">
-        <RadioButton Content="Остатки"
-                     GroupName="StoreDeviceMode"
-                     IsChecked="{Binding ShowBalance, Mode=TwoWay}"
-                     Style="{DynamicResource ModeButtonLeftStyle}"/>
-        <RadioButton Content="Серийные"
-                     GroupName="StoreDeviceMode"
-                     IsChecked="{Binding ShowSerials, Mode=TwoWay}"
-                     Style="{DynamicResource ModeButtonRightStyle}"/>
-    </StackPanel>
-</Border>
-
-<Button Content="← К остатку"
-        Margin="8,0,0,0"
-        VerticalAlignment="Center"
-        Style="{DynamicResource BackToBalanceButtonStyle}"/>
-
-<Button Content="Показать серийные"
-        Margin="8,0,0,0"
-        VerticalAlignment="Center"
-        Style="{DynamicResource ShowSerialsButtonStyle}"/>
+<!-- Отдельные кнопки одной высоты. Общей рамки нет. -->
+<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+    <RadioButton Content="Остатки"
+                 GroupName="StoreDeviceMode"
+                 IsChecked="{Binding ShowBalance, Mode=TwoWay}"
+                 Style="{DynamicResource ModeButtonStyle}"/>
+    <RadioButton Content="Серийные"
+                 GroupName="StoreDeviceMode"
+                 IsChecked="{Binding ShowSerials, Mode=TwoWay}"
+                 Style="{DynamicResource ModeButtonStyle}"/>
+    <Button Content="← К остатку"
+            Margin="8,0,0,0"
+            Style="{DynamicResource BackToBalanceButtonStyle}"/>
+    <Button Content="Показать серийные"
+            Margin="8,0,0,0"
+            Style="{DynamicResource ShowSerialsButtonStyle}"/>
+</StackPanel>
