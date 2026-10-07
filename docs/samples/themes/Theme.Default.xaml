@@ -87,26 +87,84 @@
         <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
         <Setter Property="Background" Value="{DynamicResource CardBg}"/>
         <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MinHeight" Value="22"/>
+        <Setter Property="Padding" Value="8,2"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
                     <Border x:Name="Bd"
                             Background="{TemplateBinding Background}"
-                            Padding="8,2">
+                            BorderBrush="{DynamicResource HeaderFilter.ChipBorder}"
+                            BorderThickness="1"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.Accent}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource HeaderFilter.Accent}"/>
                             <Setter Property="Foreground" Value="{DynamicResource HeaderBarText}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.ChipBg}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="ModeActionButtonStyle" TargetType="Button">
+        <Setter Property="Foreground" Value="{DynamicResource HeaderFilter.Accent}"/>
+        <Setter Property="Background" Value="{DynamicResource CardBg}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource HeaderFilter.ChipBorder}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MinHeight" Value="22"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="Padding" Value="8,2"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.AccentHoverBg}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.Accent}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource HeaderFilter.Accent}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HeaderBarText}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HeaderFilter.ChipBg}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource HeaderFilter.ChipBorder}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="BackToBalanceButtonStyle" TargetType="Button" BasedOn="{StaticResource ModeActionButtonStyle}"/>
+    <Style x:Key="ShowSerialsButtonStyle" TargetType="Button" BasedOn="{StaticResource ModeActionButtonStyle}"/>
 
     <Style x:Key="ColumnFilter.Title" TargetType="TextBlock">
         <Setter Property="VerticalAlignment" Value="Center"/>
