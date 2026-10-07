@@ -23,8 +23,8 @@
     <SolidColorBrush x:Key="InputBorder" Color="#CBD5E1"/>
 
     <SolidColorBrush x:Key="Tab.IdleForeground" Color="#64748B"/>
-    <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#1B3F6F"/>
-    <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#1B3F6F"/>
+    <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#0F2D5B"/>
+    <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#0F2D5B"/>
 
     <!-- Таблицы -->
     <SolidColorBrush x:Key="DataGrid.HeaderBg" Color="#F8FAFC"/>
@@ -50,11 +50,131 @@
         <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
     </Style>
 
-    <!-- 3. Базовый стиль вкладок (стандартный MahApps / базовый стиль приложения) -->
-    <Style TargetType="TabItem" BasedOn="{StaticResource MahApps.Styles.TabItem}">
+    <!-- 3. Компактные вкладки: текст 12px и черта цвета шапки, без объёмного хрома -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource HeaderBarMuted}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="mah:TabControlHelper.Underlined" Value="None"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid SnapsToDevicePixels="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="ColumnDefinition0"/>
+                            <ColumnDefinition x:Name="ColumnDefinition1" Width="0"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition x:Name="RowDefinition0" Height="Auto"/>
+                            <RowDefinition x:Name="RowDefinition1" Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border x:Name="HeaderPanel"
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="0,0,0,1"
+                                SnapsToDevicePixels="True">
+                            <TabPanel IsItemsHost="True" KeyboardNavigation.TabNavigation="Local"/>
+                        </Border>
+                        <Border x:Name="ContentPanel"
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Background="{TemplateBinding Background}"
+                                BorderThickness="0"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="PART_SelectedContentHost"
+                                              ContentSource="SelectedContent"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="TabStripPlacement" Value="Bottom">
+                            <Setter TargetName="HeaderPanel" Property="Grid.Row" Value="1"/>
+                            <Setter TargetName="HeaderPanel" Property="BorderThickness" Value="0,1,0,0"/>
+                            <Setter TargetName="ContentPanel" Property="Grid.Row" Value="0"/>
+                            <Setter TargetName="RowDefinition0" Property="Height" Value="*"/>
+                            <Setter TargetName="RowDefinition1" Property="Height" Value="Auto"/>
+                        </Trigger>
+                        <Trigger Property="TabStripPlacement" Value="Left">
+                            <Setter TargetName="ColumnDefinition0" Property="Width" Value="Auto"/>
+                            <Setter TargetName="ColumnDefinition1" Property="Width" Value="*"/>
+                            <Setter TargetName="HeaderPanel" Property="Grid.Column" Value="0"/>
+                            <Setter TargetName="HeaderPanel" Property="Grid.Row" Value="0"/>
+                            <Setter TargetName="HeaderPanel" Property="BorderThickness" Value="0,0,1,0"/>
+                            <Setter TargetName="ContentPanel" Property="Grid.Column" Value="1"/>
+                            <Setter TargetName="ContentPanel" Property="Grid.Row" Value="0"/>
+                            <Setter TargetName="RowDefinition0" Property="Height" Value="*"/>
+                            <Setter TargetName="RowDefinition1" Property="Height" Value="0"/>
+                        </Trigger>
+                        <Trigger Property="TabStripPlacement" Value="Right">
+                            <Setter TargetName="ColumnDefinition0" Property="Width" Value="*"/>
+                            <Setter TargetName="ColumnDefinition1" Property="Width" Value="Auto"/>
+                            <Setter TargetName="HeaderPanel" Property="Grid.Column" Value="1"/>
+                            <Setter TargetName="HeaderPanel" Property="Grid.Row" Value="0"/>
+                            <Setter TargetName="HeaderPanel" Property="BorderThickness" Value="1,0,0,0"/>
+                            <Setter TargetName="ContentPanel" Property="Grid.Column" Value="0"/>
+                            <Setter TargetName="ContentPanel" Property="Grid.Row" Value="0"/>
+                            <Setter TargetName="RowDefinition0" Property="Height" Value="*"/>
+                            <Setter TargetName="RowDefinition1" Property="Height" Value="0"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="controls:TabControl" BasedOn="{StaticResource {x:Type TabControl}}"/>
+
+    <Style TargetType="TabItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Foreground" Value="{DynamicResource Tab.IdleForeground}"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Padding" Value="10,4"/>
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="Margin" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                        <DockPanel LastChildFill="True">
+                            <Rectangle x:Name="Underline"
+                                       DockPanel.Dock="Bottom"
+                                       Height="2"
+                                       Margin="0,2,0,0"
+                                       Fill="Transparent"
+                                       SnapsToDevicePixels="True"/>
+                            <ContentPresenter ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"
+                                              TextElement.FontSize="12"/>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Underline" Property="Fill" Value="{DynamicResource Tab.SelectedUnderline}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                            <Setter TargetName="Underline" Property="Fill" Value="Transparent"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- 4. Базовый стиль кнопок -->
