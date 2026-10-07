@@ -131,9 +131,6 @@
     <Style TargetType="TabItem">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Foreground" Value="{DynamicResource Tab.IdleForeground}"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Padding" Value="10,4"/>
         <Setter Property="MinHeight" Value="28"/>
         <Setter Property="Margin" Value="0"/>
@@ -151,24 +148,28 @@
                                        Margin="0,2,0,0"
                                        Fill="Transparent"
                                        SnapsToDevicePixels="True"/>
-                            <ContentPresenter ContentSource="Header"
+                            <ContentPresenter x:Name="HeaderText"
+                                              ContentSource="Header"
                                               HorizontalAlignment="Center"
                                               VerticalAlignment="Center"
                                               RecognizesAccessKey="True"
-                                              TextElement.FontSize="12"/>
+                                              TextElement.Foreground="{DynamicResource Tab.IdleForeground}"
+                                              TextElement.FontSize="12"
+                                              TextElement.FontWeight="Normal"/>
                         </DockPanel>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Underline" Property="Fill" Value="{DynamicResource Tab.SelectedUnderline}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
-                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter TargetName="HeaderText" Property="TextElement.Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
+                            <Setter TargetName="HeaderText" Property="TextElement.FontWeight" Value="SemiBold"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
+                            <Setter TargetName="HeaderText" Property="TextElement.Foreground" Value="{DynamicResource Tab.SelectedForeground}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
+                            <Setter TargetName="HeaderText" Property="TextElement.Foreground" Value="{DynamicResource TextSecondary}"/>
+                            <Setter TargetName="HeaderText" Property="TextElement.FontWeight" Value="Normal"/>
                             <Setter TargetName="Underline" Property="Fill" Value="Transparent"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
