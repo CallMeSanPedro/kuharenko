@@ -73,12 +73,8 @@ StaysOpen остаётся True: иначе клик по выпадающему
                     </TextBox>
                     <Button Content="Найти"
                             Margin="0,8,0,0"
-                            MinHeight="26"
                             HorizontalAlignment="Left"
-                            Padding="10,2"
-                            Foreground="{DynamicResource HeaderFilter.Accent}"
-                            BorderBrush="{DynamicResource HeaderFilter.ChipBorder}"
-                            Background="{DynamicResource HeaderFilter.ChipBg}"
+                            Style="{DynamicResource ModeActionButtonStyle}"
                             Command="{Binding ApplyCommand}"
                             Visibility="{Binding IsServerText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}"/>
                 </StackPanel>
