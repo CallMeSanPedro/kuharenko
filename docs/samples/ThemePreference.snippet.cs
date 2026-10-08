@@ -1,6 +1,10 @@
 // После входа, когда логин уже известен.
 var login = MainViewModel.Current != null ? MainViewModel.Current.Login : string.Empty;
-UiTheme.Apply(PinnedStoresStorage.LoadTheme(login));
+var themeName = UserSettingsStorage.Load(
+    UserSettingsStorage.ThemeSection,
+    UserSettingsStorage.HashLogin(login),
+    "Default");
+UiTheme.Apply(themeName);
 
 // ThemeMenuItem_OnClick в шапке.
 private void ThemeMenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -11,6 +15,9 @@ private void ThemeMenuItem_OnClick(object sender, RoutedEventArgs e)
         return;
 
     var login = MainViewModel.Current != null ? MainViewModel.Current.Login : string.Empty;
-    PinnedStoresStorage.SaveTheme(login, themeName);
+    UserSettingsStorage.Save(
+        UserSettingsStorage.ThemeSection,
+        UserSettingsStorage.HashLogin(login),
+        themeName);
     UiTheme.Apply(themeName);
 }
