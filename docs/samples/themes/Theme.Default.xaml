@@ -35,15 +35,15 @@
     <SolidColorBrush x:Key="Tree.SelectedBg" Color="#E8F1FB"/>
     <SolidColorBrush x:Key="Tree.SelectedText" Color="#1B3F6F"/>
 
-    <!-- 2. Базовый стиль карточек: наследует стандартный MainContentBorders -->
+    <!-- 2. Карточка вплотную к содержимому: без скругления и внутреннего поля -->
     <Style x:Key="MainContentBorders" TargetType="Border">
         <Setter Property="Background" Value="White"/>
         <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="CornerRadius" Value="0"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="Padding" Value="12"/>
+        <Setter Property="Padding" Value="0"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="UseLayoutRounding" Value="True"/>
         <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
