@@ -1,0 +1,27 @@
+<!--
+  Подключите словарь (путь поправьте под сборку):
+  <ResourceDictionary Source="pack://application:,,,/Store.Views;component/Icons/TreeIcons.xaml"/>
+
+  В шаблоне строки дерева вместо png:
+-->
+<Image Width="16"
+       Height="16"
+       SnapsToDevicePixels="True"
+       Source="{StaticResource TreeIcon.TechnicalNode}"/>
+
+<!--
+  TreeIcon.TechnicalNode        технический узел
+  TreeIcon.RepairStore          склад ремонта
+  TreeIcon.DistributionStore    распределительный склад
+  TreeIcon.KittingStore         склад комплектации
+  TreeIcon.SubscriberStore      склад абонентского оборудования
+  TreeIcon.ReturnStore          склад возврата
+  TreeIcon.WriteOffStore        склад списания
+  TreeIcon.SiteStore            склад участка
+  TreeIcon.InstallerBackpack    рюкзак монтажника
+  TreeIcon.ArchiveStore         архивный склад
+  TreeIcon.NetworkStore         склад сетевого оборудования
+
+  Если иконка выбирается в коде:
+  image.Source = (DrawingImage)Application.Current.TryFindResource("TreeIcon.RepairStore");
+-->
