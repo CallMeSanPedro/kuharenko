@@ -1,0 +1,31 @@
+<!--
+  Дефолтная тема — линейные иконки цвета шапки:
+  <ResourceDictionary Source="pack://application:,,,/Store.Views;component/Icons/TreeIcons.Default.xaml"/>
+
+  Современная тема — цветные, ближе к текущему дереву:
+  <ResourceDictionary Source="pack://application:,,,/Store.Views;component/Icons/TreeIcons.Modern.xaml"/>
+
+  Ключи в обоих словарях одинаковые, подключайте один.
+-->
+<!--
+  xmlns:theming="clr-namespace:Store.Views.Theming"
+  TypeStoreToImageConverter больше не нужен: SetResourceReference обновляет рисунок при смене темы.
+-->
+<Image Height="17"
+       Width="17"
+       SnapsToDevicePixels="True"
+       theming:TreeIcon.Type="{Binding Path=Item.Dopinfo}"/>
+
+<!--
+  TreeIcon.TechnicalNode        технический узел
+  TreeIcon.RepairStore          склад ремонта
+  TreeIcon.DistributionStore    распределительный склад
+  TreeIcon.KittingStore         склад комплектации
+  TreeIcon.SubscriberStore      склад абонентского оборудования
+  TreeIcon.ReturnStore          склад возврата
+  TreeIcon.WriteOffStore        склад списания
+  TreeIcon.SiteStore            склад участка
+  TreeIcon.InstallerBackpack    рюкзак монтажника
+  TreeIcon.ArchiveStore         архивный склад
+  TreeIcon.NetworkStore         склад сетевого оборудования
+-->
