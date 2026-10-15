@@ -1,8 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!--
-        Иконки дерева складов, 24×24. В шаблоне: Image 16×16, Source="{StaticResource TreeIcon.*}".
-        Цвет — шапка дефолтной темы (#0F2D5B). Для современной темы замените цвет кистей на #5B2C83.
+        Дефолтная тема. Линейные иконки 24×24 цвета шапки #0F2D5B.
+        В дереве Image 16×16, Source="{StaticResource TreeIcon.*}".
+        Подключать вместе с Theme.Default, не вместе со словарём Modern: ключи совпадают.
     -->
     <SolidColorBrush x:Key="TreeIcon.Stroke" x:Shared="False" Color="#0F2D5B"/>
     <Pen x:Key="TreeIcon.Pen" x:Shared="False"

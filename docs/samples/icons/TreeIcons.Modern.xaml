@@ -1,0 +1,303 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Современная тема. Цветные залитые иконки 24×24, по характеру текущего дерева:
+        синий треугольник у узла, золото у складов, красный у ремонта.
+        Ключи те же, что в TreeIcons.Default.xaml. Подключать только один словарь.
+    -->
+
+    <!-- Технический узел -->
+    <DrawingImage x:Key="TreeIcon.TechnicalNode">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#3D74D6" Geometry="M12,2.8 L21.2,20.6 L2.8,20.6 Z">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#1F4AA0" Thickness="1.2" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF" Geometry="M12,8.4 L16.2,16 L7.8,16 Z"/>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Склад ремонта -->
+    <DrawingImage x:Key="TreeIcon.RepairStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#E25555">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#B33B3B" Thickness="1.2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="2.2,2.2,19.6,19.6" RadiusX="5" RadiusY="5"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M14.8,9.4 L7.6,16.6">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#FFFFFF" Thickness="2" StartLineCap="Round" EndLineCap="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#FFFFFF" Thickness="2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="16.2,7.2" RadiusX="2.5" RadiusY="2.5"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#FFFFFF" Thickness="2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="6.6,17.6" RadiusX="1.7" RadiusY="1.7"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Распределительный склад -->
+    <DrawingImage x:Key="TreeIcon.DistributionStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#E2A51A" Geometry="M3.2,10.4 L8.2,5.2 L13.2,10.4 Z"/>
+                <GeometryDrawing Brush="#E2A51A">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#B87E0A" Thickness="1.2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="3.6,10.2,9.2,9.4" RadiusX="1.2" RadiusY="1.2"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#E2A51A" Geometry="M14.4,7.2 H17.6 V5.6 L21,8.2 L17.6,10.8 V9.2 H14.4 Z"/>
+                <GeometryDrawing Brush="#E2A51A" Geometry="M14.4,11.4 H17.6 V9.8 L21,12.4 L17.6,15 V13.4 H14.4 Z"/>
+                <GeometryDrawing Brush="#E2A51A" Geometry="M14.4,15.8 H17.6 V14.2 L21,16.8 L17.6,19.4 V17.8 H14.4 Z"/>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Склад комплектации -->
+    <DrawingImage x:Key="TreeIcon.KittingStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#F0B428">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#B87E0A" Thickness="1.1"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="2.6,2.8,8.6,8.4" RadiusX="1.8" RadiusY="1.8"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#F0B428">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#B87E0A" Thickness="1.1"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="12.8,2.8,8.6,8.4" RadiusX="1.8" RadiusY="1.8"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#E29614">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#B87E0A" Thickness="1.1"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="5.2,12.6,13.6,8.6" RadiusX="1.8" RadiusY="1.8"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M12,15.2 V18.8 M10.2,17 H13.8">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#FFFFFF" Thickness="1.8" StartLineCap="Round" EndLineCap="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Склад абонентского оборудования -->
+    <DrawingImage x:Key="TreeIcon.SubscriberStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Geometry="M8,8.2 V4.4 M16,8.2 V4.4">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#2E9AA8" Thickness="1.8" StartLineCap="Round" EndLineCap="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#2E9AA8" Geometry="M8,3.4 m-1.3,0 a1.3,1.3 0 1,0 2.6,0 a1.3,1.3 0 1,0 -2.6,0"/>
+                <GeometryDrawing Brush="#2E9AA8" Geometry="M16,3.4 m-1.3,0 a1.3,1.3 0 1,0 2.6,0 a1.3,1.3 0 1,0 -2.6,0"/>
+                <GeometryDrawing Brush="#2E9AA8">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#186E7A" Thickness="1.2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="2.8,8.4,18.4,10.8" RadiusX="2.4" RadiusY="2.4"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF" Geometry="M7.2,13.8 m-1.2,0 a1.2,1.2 0 1,0 2.4,0 a1.2,1.2 0 1,0 -2.4,0"/>
+                <GeometryDrawing Brush="#FFFFFF" Geometry="M10.8,13.8 m-1.2,0 a1.2,1.2 0 1,0 2.4,0 a1.2,1.2 0 1,0 -2.4,0"/>
+                <GeometryDrawing Geometry="M14.4,13.8 H18.4">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#FFFFFF" Thickness="1.8" StartLineCap="Round" EndLineCap="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Склад возврата -->
+    <DrawingImage x:Key="TreeIcon.ReturnStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Geometry="M17.2,5.4 V12 A5.2,5.2 0 0 1 6.8,12 M10.2,9.4 L6.2,12 L10.2,14.6">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#E07A2F" Thickness="2.6" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Склад списания -->
+    <DrawingImage x:Key="TreeIcon.WriteOffStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#A84848" Geometry="M3.4,10.6 L12,3.6 L20.6,10.6 Z"/>
+                <GeometryDrawing Brush="#A84848">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#783030" Thickness="1.2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="4.4,10.4,15.2,10" RadiusX="1" RadiusY="1"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M8.4,13.2 L15.6,17.6 M15.6,13.2 L8.4,17.6">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#FFFFFF" Thickness="1.8" StartLineCap="Round" EndLineCap="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Склад участка -->
+    <DrawingImage x:Key="TreeIcon.SiteStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#3C9A62" Geometry="M16.6,13.3 A6.3,6.3 0 1 0 7.4,13.3 L12,21.4 Z">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#246E40" Thickness="1.2" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="12,9.2" RadiusX="2.3" RadiusY="2.3"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Рюкзак монтажника -->
+    <DrawingImage x:Key="TreeIcon.InstallerBackpack">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Geometry="M7.2,9.4 L4.4,12.4 L6,17.6 M16.8,9.4 L19.6,12.4 L18,17.6">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#4A3478" Thickness="1.8" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#6B4FA0">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#4A3478" Thickness="1.2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="6.2,7.2,11.6,13.6" RadiusX="3.2" RadiusY="3.2"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#6B4FA0">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="9.6,4.2,4.8,3.6" RadiusX="1.2" RadiusY="1.2"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="8.6,12.2,6.8,5.2" RadiusX="1.3" RadiusY="1.3"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Архивный склад -->
+    <DrawingImage x:Key="TreeIcon.ArchiveStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#A9845A" Geometry="M3.2,8.8 L5.2,4.4 H18.8 L20.8,8.8 Z">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#7A5A38" Thickness="1.1" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#C49E70">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#7A5A38" Thickness="1.1"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="4,8.6,16,11.6" RadiusX="1.1" RadiusY="1.1"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="8,11.8,8,3.8" RadiusX="0.6" RadiusY="0.6"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <!-- Склад сетевого оборудования -->
+    <DrawingImage x:Key="TreeIcon.NetworkStore">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#00FFFFFF" Geometry="M0,0 H24 V24 H0 Z"/>
+                <GeometryDrawing Brush="#3A7CA5">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#205678" Thickness="1.2"/>
+                    </GeometryDrawing.Pen>
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="2.2,6.6,19.6,10.8" RadiusX="2.2" RadiusY="2.2"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="4.8,9.2,2.6,5.4" RadiusX="0.4" RadiusY="0.4"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="8.6,9.2,2.6,5.4" RadiusX="0.4" RadiusY="0.4"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="12.4,9.2,2.6,5.4" RadiusX="0.4" RadiusY="0.4"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="18.4,12" RadiusX="1.25" RadiusY="1.25"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+</ResourceDictionary>

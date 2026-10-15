@@ -1,8 +1,11 @@
 <!--
-  Подключите словарь (путь поправьте под сборку):
-  <ResourceDictionary Source="pack://application:,,,/Store.Views;component/Icons/TreeIcons.xaml"/>
+  Дефолтная тема — линейные иконки цвета шапки:
+  <ResourceDictionary Source="pack://application:,,,/Store.Views;component/Icons/TreeIcons.Default.xaml"/>
 
-  В шаблоне строки дерева вместо png:
+  Современная тема — цветные, ближе к текущему дереву:
+  <ResourceDictionary Source="pack://application:,,,/Store.Views;component/Icons/TreeIcons.Modern.xaml"/>
+
+  Ключи в обоих словарях одинаковые, подключайте один.
 -->
 <Image Width="16"
        Height="16"
@@ -21,7 +24,4 @@
   TreeIcon.InstallerBackpack    рюкзак монтажника
   TreeIcon.ArchiveStore         архивный склад
   TreeIcon.NetworkStore         склад сетевого оборудования
-
-  Если иконка выбирается в коде:
-  image.Source = (DrawingImage)Application.Current.TryFindResource("TreeIcon.RepairStore");
 -->
