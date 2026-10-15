@@ -7,10 +7,14 @@
 
   Ключи в обоих словарях одинаковые, подключайте один.
 -->
-<Image Width="16"
-       Height="16"
+<!--
+  xmlns:theming="clr-namespace:Store.Views.Theming"
+  TypeStoreToImageConverter больше не нужен: SetResourceReference обновляет рисунок при смене темы.
+-->
+<Image Height="17"
+       Width="17"
        SnapsToDevicePixels="True"
-       Source="{StaticResource TreeIcon.TechnicalNode}"/>
+       theming:TreeIcon.Type="{Binding Path=Item.Dopinfo}"/>
 
 <!--
   TreeIcon.TechnicalNode        технический узел
