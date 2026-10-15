@@ -15,6 +15,17 @@ namespace Store.Views.Theming
             typeof(TreeIcon),
             new PropertyMetadata(null, OnTypeChanged));
 
+        static TreeIcon()
+        {
+            // У технического узла Dopinfo пустой и совпадает со значением по умолчанию,
+            // поэтому OnTypeChanged не вызывается. Loaded ставит иконку и в этом случае.
+            EventManager.RegisterClassHandler(
+                typeof(Image),
+                FrameworkElement.LoadedEvent,
+                new RoutedEventHandler(OnImageLoaded),
+                true);
+        }
+
         public static void SetType(DependencyObject element, string value)
         {
             element.SetValue(TypeProperty, value);
@@ -25,13 +36,26 @@ namespace Store.Views.Theming
             return (string)element.GetValue(TypeProperty);
         }
 
+        private static void OnImageLoaded(object sender, RoutedEventArgs e)
+        {
+            var image = (Image)sender;
+            if (image.ReadLocalValue(TypeProperty) == DependencyProperty.UnsetValue)
+                return;
+
+            Apply(image);
+        }
+
         private static void OnTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var image = d as Image;
+            Apply(d as Image);
+        }
+
+        private static void Apply(Image image)
+        {
             if (image == null)
                 return;
 
-            image.SetResourceReference(Image.SourceProperty, KeyFor(e.NewValue as string));
+            image.SetResourceReference(Image.SourceProperty, KeyFor(GetType(image)));
         }
 
         public static string KeyFor(string type)
