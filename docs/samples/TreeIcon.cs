@@ -1,5 +1,8 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Threading;
 
 namespace Store.Views.Theming
 {
@@ -9,16 +12,17 @@ namespace Store.Views.Theming
     /// </summary>
     public static class TreeIcon
     {
+        // Не null: у технического узла Dopinfo как раз null, и иначе свойство «не меняется».
+        private const string Unassigned = "\u0000";
+
         public static readonly DependencyProperty TypeProperty = DependencyProperty.RegisterAttached(
             "Type",
             typeof(string),
             typeof(TreeIcon),
-            new PropertyMetadata(null, OnTypeChanged));
+            new PropertyMetadata(Unassigned, OnTypeChanged));
 
         static TreeIcon()
         {
-            // У технического узла Dopinfo пустой и совпадает со значением по умолчанию,
-            // поэтому OnTypeChanged не вызывается. Loaded ставит иконку и в этом случае.
             EventManager.RegisterClassHandler(
                 typeof(Image),
                 FrameworkElement.LoadedEvent,
@@ -42,12 +46,17 @@ namespace Store.Views.Theming
             if (image.ReadLocalValue(TypeProperty) == DependencyProperty.UnsetValue)
                 return;
 
-            Apply(image);
+            image.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() => Apply(image)));
         }
 
         private static void OnTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            Apply(d as Image);
+            var image = d as Image;
+            if (image == null)
+                return;
+
+            Apply(image);
+            image.Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() => Apply(image)));
         }
 
         private static void Apply(Image image)
@@ -55,7 +64,16 @@ namespace Store.Views.Theming
             if (image == null)
                 return;
 
-            image.SetResourceReference(Image.SourceProperty, KeyFor(GetType(image)));
+            var type = GetType(image);
+            if (type == Unassigned)
+            {
+                // Привязка есть, но null так и не записался в свойство — это технический узел.
+                if (!(image.ReadLocalValue(TypeProperty) is BindingExpression))
+                    return;
+                type = null;
+            }
+
+            image.SetResourceReference(Image.SourceProperty, KeyFor(type));
         }
 
         public static string KeyFor(string type)
