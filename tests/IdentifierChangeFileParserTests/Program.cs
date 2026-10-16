@@ -20,6 +20,7 @@ class Program
         MissingSerialColumnThrows();
         PositionalRowWithoutHeader();
         QuotedCellsAndBom();
+        BuildsVerifyXml();
         Console.WriteLine("ok");
         return 0;
     }
@@ -137,6 +138,34 @@ class Program
         Expect(rows.Count == 1, "quoted row");
         Expect(rows[0].SerialNumberCurrent == "OLD 1" && rows[0].SerialNumberNew == "NEW 1", "quotes trimmed");
         Expect(rows[0].CanApply, "quoted applies");
+    }
+
+    static void BuildsVerifyXml()
+    {
+        var xml = IdentifierChangeXml.Build(10m, new List<IdentifierChangeRow>
+        {
+            new IdentifierChangeRow
+            {
+                LineNumber = 2,
+                SerialNumberCurrent = "A&B",
+                MacCurrent = "AA:BB:CC:DD:EE:FF",
+                PonCurrent = "P1",
+                SerialNumberNew = "N1",
+                MacNew = "",
+                PonNew = "P<2>"
+            }
+        });
+
+        Expect(xml.StartsWith("<ArrayOfIdentifierChange><IdentifierChange>"), "xml root");
+        Expect(xml.Contains("<store_document_id>10</store_document_id>"), "document id");
+        Expect(xml.Contains("<line_no>2</line_no>"), "line");
+        Expect(xml.Contains("<serial_number>A&amp;B</serial_number>"), "escaped serial");
+        Expect(xml.Contains("<mac_address>AA:BB:CC:DD:EE:FF</mac_address>"), "mac");
+        Expect(xml.Contains("<pon_serial>P1</pon_serial>"), "pon");
+        Expect(xml.Contains("<new_serial_number>N1</new_serial_number>"), "new serial");
+        Expect(xml.Contains("<new_mac_address></new_mac_address>"), "empty new mac");
+        Expect(xml.Contains("<new_pon_serial>P&lt;2&gt;</new_pon_serial>"), "escaped pon");
+        Expect(xml.EndsWith("</IdentifierChange></ArrayOfIdentifierChange>"), "xml close");
     }
 
     static List<IdentifierChangeRow> Parse(string text, bool skipFirstRow)

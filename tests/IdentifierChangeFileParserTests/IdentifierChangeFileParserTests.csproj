@@ -8,5 +8,6 @@
   <ItemGroup>
     <Compile Include="..\..\src\Store.Device.Models\IdentifierChangeRow.cs" />
     <Compile Include="..\..\src\Store.Device.Models\IdentifierChangeFileParser.cs" />
+    <Compile Include="..\..\src\Store.Device.Models\IdentifierChangeXml.cs" />
   </ItemGroup>
 </Project>
