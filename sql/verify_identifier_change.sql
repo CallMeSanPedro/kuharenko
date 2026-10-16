@@ -1,10 +1,10 @@
 -- Проверка файла смены идентификаторов s/n, MAC и PON.
--- Рядом с verify_change_file_to_doc, отдельно от ремонта и ГСО:
--- склад подразделения ремонта, реферб и номенклатура здесь не проверяются.
---
+-- Одна функция. Строка результата — record курсора, без object-типа.
 -- MAC и PON читаются из store_device_param.mac_address и store_device_param.pon_serial.
--- Филиал документа передаётся параметром. Пустой p_filial_kod отключает проверку филиала.
--- Функция ничего не записывает в карточку. Её вызывают после загрузки файла и ещё раз при закрытии документа.
+-- Пустой p_filial_kod отключает проверку филиала.
+-- Карточку функция не изменяет.
+--
+-- v_rc := verify_identifier_change(p_store_document_id, p_xml, p_filial_kod);
 --
 -- <ArrayOfIdentifierChange>
 --   <IdentifierChange>
@@ -21,6 +21,16 @@
 
 begin
   execute immediate 'drop function verify_identifier_change';
+exception
+  when others then
+    if sqlcode != -4043 then
+      raise;
+    end if;
+end;
+/
+
+begin
+  execute immediate 'drop function identifier_change_norm_mac';
 exception
   when others then
     if sqlcode != -4043 then
@@ -49,77 +59,45 @@ exception
 end;
 /
 
-create or replace function identifier_change_norm_mac(p_value in varchar2) return varchar2 deterministic is
-begin
-  return nullif(upper(replace(replace(replace(replace(trim(p_value), ':', ''), '-', ''), '.', ''), ' ', '')), '');
-end;
-/
-
-create or replace type identifier_change_row as object (
-  store_document_id  number,
-  line_no            number,
-  comm_id            number,
-  serial_number      varchar2(100),
-  mac_address        varchar2(100),
-  pon_serial         varchar2(100),
-  new_serial_number  varchar2(100),
-  new_mac_address    varchar2(100),
-  new_pon_serial     varchar2(100),
-  card_mac_address   varchar2(100),
-  card_pon_serial    varchar2(100),
-  filial_kod         number,
-  verify_status_num  number,
-  verify_status_str  varchar2(1000)
-);
-/
-
-create or replace type identifier_change_tab as table of identifier_change_row;
-/
-
 create or replace function verify_identifier_change(p_store_document_id in number,
                                                      p_xml               in clob,
-                                                     p_filial_kod        in number default null)
-  return identifier_change_tab pipelined is
+                                                     p_filial_kod        in number default null) return sys_refcursor is
   -- Как в verify_change_file_to_doc: exploit_status_id = 5 не считается наличием на складе.
   c_status_not_on_store constant number := 5;
 
-  v_xml          xmltype;
-  v_tab          identifier_change_tab := identifier_change_tab();
-  v_comm_id      number;
-  v_filial       number;
-  v_card_mac     varchar2(100);
-  v_card_pon     varchar2(100);
-  v_cnt          number;
-  v_key          varchar2(200);
-
-  type t_count_map is table of pls_integer index by varchar2(200);
-  v_current_sn t_count_map;
-  v_new_sn     t_count_map;
-  v_new_mac    t_count_map;
+  v_xml      xmltype;
+  v_ret      sys_refcursor;
+  v_out      clob;
+  v_comm_id  number;
+  v_filial   number;
+  v_card_mac varchar2(100);
+  v_card_pon varchar2(100);
+  v_cnt      number;
+  v_key      varchar2(200);
+  v_blocked  boolean;
 
   cursor v_cur(p_in_xml xmltype) is
-    select identifier_change_row(
-             nvl(case
-                   when regexp_like(trim(xml_tab.store_document_id), '^[0-9]+$') then
-                    to_number(trim(xml_tab.store_document_id))
-                 end,
-                 p_store_document_id),
-             case
-               when regexp_like(trim(xml_tab.line_no), '^[0-9]+$') then
-                to_number(trim(xml_tab.line_no))
-             end,
-             null,
-             nullif(trim(xml_tab.serial_number), ''),
-             nullif(trim(xml_tab.mac_address), ''),
-             nullif(trim(xml_tab.pon_serial), ''),
-             nullif(trim(xml_tab.new_serial_number), ''),
-             nullif(trim(xml_tab.new_mac_address), ''),
-             nullif(trim(xml_tab.new_pon_serial), ''),
-             null,
-             null,
-             null,
-             null,
-             null)
+    select nvl(case
+                 when regexp_like(trim(xml_tab.store_document_id), '^[0-9]+$') then
+                  to_number(trim(xml_tab.store_document_id))
+               end,
+               p_store_document_id) store_document_id,
+           case
+             when regexp_like(trim(xml_tab.line_no), '^[0-9]+$') then
+              to_number(trim(xml_tab.line_no))
+           end line_no,
+           cast(null as number) comm_id,
+           nullif(trim(xml_tab.serial_number), '') serial_number,
+           nullif(trim(xml_tab.mac_address), '') mac_address,
+           nullif(trim(xml_tab.pon_serial), '') pon_serial,
+           nullif(trim(xml_tab.new_serial_number), '') new_serial_number,
+           nullif(trim(xml_tab.new_mac_address), '') new_mac_address,
+           nullif(trim(xml_tab.new_pon_serial), '') new_pon_serial,
+           cast(null as varchar2(100)) card_mac_address,
+           cast(null as varchar2(100)) card_pon_serial,
+           cast(null as number) filial_kod,
+           cast(null as number) verify_status_num,
+           cast(null as varchar2(1000)) verify_status_str
       from xmltable('/ArrayOfIdentifierChange/IdentifierChange' passing p_in_xml columns
                     store_document_id varchar2(50) path 'store_document_id',
                     line_no varchar2(50) path 'line_no',
@@ -129,6 +107,42 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
                     new_serial_number varchar2(100) path 'new_serial_number',
                     new_mac_address varchar2(100) path 'new_mac_address',
                     new_pon_serial varchar2(100) path 'new_pon_serial') xml_tab;
+
+  type t_tab is table of v_cur%rowtype index by binary_integer;
+  v_tab t_tab;
+
+  type t_count_map is table of pls_integer index by varchar2(200);
+  v_current_sn t_count_map;
+  v_new_sn     t_count_map;
+  v_new_mac    t_count_map;
+
+  function norm_mac(p_value in varchar2) return varchar2 is
+  begin
+    return nullif(upper(replace(replace(replace(replace(trim(p_value), ':', ''), '-', ''), '.', ''), ' ', '')), '');
+  end;
+
+  function sn_changes(p_row in v_cur%rowtype) return boolean is
+  begin
+    if p_row.serial_number is null or p_row.new_serial_number is null then
+      return false;
+    end if;
+    return lower(trim(p_row.new_serial_number)) <> lower(trim(p_row.serial_number));
+  end;
+
+  function mac_changes(p_row in v_cur%rowtype) return boolean is
+    v_new varchar2(100);
+    v_old varchar2(100);
+  begin
+    v_new := norm_mac(p_row.new_mac_address);
+    v_old := norm_mac(p_row.card_mac_address);
+    return v_new is not null and v_new <> nvl(v_old, chr(1));
+  end;
+
+  function pon_changes(p_row in v_cur%rowtype) return boolean is
+  begin
+    return p_row.new_pon_serial is not null
+           and lower(trim(p_row.new_pon_serial)) <> nvl(lower(trim(p_row.card_pon_serial)), chr(1));
+  end;
 
   procedure add_error(p_index in pls_integer, p_message in varchar2) is
   begin
@@ -152,32 +166,77 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
     end if;
   end;
 
-  function sn_changes(p_row in identifier_change_row) return boolean is
+  function released_serial(p_comm_id in number) return boolean is
+    v_hits pls_integer := 0;
   begin
-    if p_row.serial_number is null or p_row.new_serial_number is null then
+    if p_comm_id is null then
       return false;
     end if;
-    return lower(trim(p_row.new_serial_number)) <> lower(trim(p_row.serial_number));
+    for j in 1 .. v_tab.count loop
+      if v_tab(j).comm_id = p_comm_id and sn_changes(v_tab(j)) then
+        v_hits := v_hits + 1;
+      end if;
+    end loop;
+    return v_hits = 1;
   end;
 
-  function mac_changes(p_row in identifier_change_row) return boolean is
-    v_new varchar2(100);
-    v_old varchar2(100);
+  function released_mac(p_comm_id in number) return boolean is
+    v_hits pls_integer := 0;
   begin
-    v_new := identifier_change_norm_mac(p_row.new_mac_address);
-    v_old := identifier_change_norm_mac(p_row.card_mac_address);
-    return v_new is not null and v_new <> nvl(v_old, chr(1));
+    if p_comm_id is null then
+      return false;
+    end if;
+    for j in 1 .. v_tab.count loop
+      if v_tab(j).comm_id = p_comm_id and mac_changes(v_tab(j)) then
+        v_hits := v_hits + 1;
+      end if;
+    end loop;
+    return v_hits = 1;
   end;
 
-  function pon_changes(p_row in identifier_change_row) return boolean is
+  procedure append_text(p_name in varchar2, p_value in varchar2) is
   begin
-    return p_row.new_pon_serial is not null
-           and lower(trim(p_row.new_pon_serial)) <> nvl(lower(trim(p_row.card_pon_serial)), chr(1));
+    if p_value is null then
+      return;
+    end if;
+    v_out := v_out || '<' || p_name || '>' ||
+             replace(replace(replace(replace(p_value, '&', '&amp;'), '<', '&lt;'), '>', '&gt;'), '"', '&quot;') ||
+             '</' || p_name || '>';
+  end;
+
+  procedure append_num(p_name in varchar2, p_value in number) is
+  begin
+    if p_value is null then
+      return;
+    end if;
+    append_text(p_name, to_char(p_value, 'FM99999999999999999990'));
+  end;
+
+  procedure open_empty is
+  begin
+    open v_ret for
+      select cast(null as number) store_document_id,
+             cast(null as number) line_no,
+             cast(null as number) comm_id,
+             cast(null as varchar2(100)) serial_number,
+             cast(null as varchar2(100)) mac_address,
+             cast(null as varchar2(100)) pon_serial,
+             cast(null as varchar2(100)) new_serial_number,
+             cast(null as varchar2(100)) new_mac_address,
+             cast(null as varchar2(100)) new_pon_serial,
+             cast(null as varchar2(100)) card_mac_address,
+             cast(null as varchar2(100)) card_pon_serial,
+             cast(null as number) filial_kod,
+             cast(null as number) verify_status_num,
+             cast(null as varchar2(1000)) verify_status_str
+        from dual
+       where 1 = 0;
   end;
 
 begin
   if p_xml is null then
-    return;
+    open_empty;
+    return v_ret;
   end if;
 
   begin
@@ -192,7 +251,8 @@ begin
   close v_cur;
 
   if v_tab.count() = 0 then
-    return;
+    open_empty;
+    return v_ret;
   end if;
 
   for i in 1 .. v_tab.count() loop
@@ -208,7 +268,7 @@ begin
 
     if v_tab(i).serial_number is null then
       if v_tab(i).new_mac_address is not null then
-        inc_key(v_new_mac, identifier_change_norm_mac(v_tab(i).new_mac_address));
+        inc_key(v_new_mac, norm_mac(v_tab(i).new_mac_address));
       end if;
       continue;
     end if;
@@ -260,7 +320,7 @@ begin
 
     if v_comm_id is null then
       if v_tab(i).new_mac_address is not null then
-        inc_key(v_new_mac, identifier_change_norm_mac(v_tab(i).new_mac_address));
+        inc_key(v_new_mac, norm_mac(v_tab(i).new_mac_address));
       end if;
       continue;
     end if;
@@ -271,7 +331,7 @@ begin
     v_tab(i).card_pon_serial := v_card_pon;
 
     if v_tab(i).mac_address is not null
-       and identifier_change_norm_mac(v_tab(i).mac_address) <> nvl(identifier_change_norm_mac(v_card_mac), chr(1)) then
+       and norm_mac(v_tab(i).mac_address) <> nvl(norm_mac(v_card_mac), chr(1)) then
       add_error(i, 'Контрольный MAC не совпал');
     end if;
 
@@ -289,7 +349,7 @@ begin
     end if;
 
     if mac_changes(v_tab(i)) then
-      inc_key(v_new_mac, identifier_change_norm_mac(v_tab(i).new_mac_address));
+      inc_key(v_new_mac, norm_mac(v_tab(i).new_mac_address));
     end if;
   end loop;
 
@@ -307,7 +367,7 @@ begin
     end if;
 
     if v_tab(i).new_mac_address is not null then
-      v_key := identifier_change_norm_mac(v_tab(i).new_mac_address);
+      v_key := norm_mac(v_tab(i).new_mac_address);
       if v_key is not null and v_new_mac.exists(v_key) and v_new_mac(v_key) > 1 then
         add_error(i, 'Повторяющийся MAC_новый');
       end if;
@@ -320,21 +380,20 @@ begin
     end if;
 
     if sn_changes(v_tab(i)) then
-      select count(distinct c.comm_id)
-        into v_cnt
-        from eth_comm_atu c
-        join store_device_param p on p.comm_id = c.comm_id and p.priznakdel = 0
-       where c.priznakdel = 0
-         and nvl(p.exploit_status_id, -1) <> c_status_not_on_store
-         and c.comm_id <> v_tab(i).comm_id
-         and lower(trim(c.numbdec)) = lower(trim(v_tab(i).new_serial_number))
-         and (select count(*)
-                from table(v_tab) t
-               where t.comm_id = c.comm_id
-                 and t.new_serial_number is not null
-                 and lower(trim(t.new_serial_number)) <> lower(trim(t.serial_number))) <> 1;
-
-      if v_cnt > 0 then
+      v_blocked := false;
+      for owner in (select distinct c.comm_id
+                      from eth_comm_atu c
+                      join store_device_param p on p.comm_id = c.comm_id and p.priznakdel = 0
+                     where c.priznakdel = 0
+                       and nvl(p.exploit_status_id, -1) <> c_status_not_on_store
+                       and c.comm_id <> v_tab(i).comm_id
+                       and lower(trim(c.numbdec)) = lower(trim(v_tab(i).new_serial_number))) loop
+        if not released_serial(owner.comm_id) then
+          v_blocked := true;
+          exit;
+        end if;
+      end loop;
+      if v_blocked then
         add_error(i, 'Новый серийный номер уже есть в системе');
       end if;
     end if;
@@ -344,20 +403,21 @@ begin
     end if;
 
     if mac_changes(v_tab(i)) then
-      select count(distinct c.comm_id)
-        into v_cnt
-        from eth_comm_atu c
-        join store_device_param p on p.comm_id = c.comm_id and p.priznakdel = 0
-       where c.priznakdel = 0
-         and nvl(p.exploit_status_id, -1) <> c_status_not_on_store
-         and c.comm_id <> v_tab(i).comm_id
-         and identifier_change_norm_mac(p.mac_address) = identifier_change_norm_mac(v_tab(i).new_mac_address)
-         and (select count(*)
-                from table(v_tab) t
-               where t.comm_id = c.comm_id
-                 and identifier_change_norm_mac(t.new_mac_address) <> nvl(identifier_change_norm_mac(t.card_mac_address), chr(1))) <> 1;
-
-      if v_cnt > 0 then
+      v_key := norm_mac(v_tab(i).new_mac_address);
+      v_blocked := false;
+      for owner in (select distinct c.comm_id
+                      from eth_comm_atu c
+                      join store_device_param p on p.comm_id = c.comm_id and p.priznakdel = 0
+                     where c.priznakdel = 0
+                       and nvl(p.exploit_status_id, -1) <> c_status_not_on_store
+                       and c.comm_id <> v_tab(i).comm_id
+                       and upper(replace(replace(replace(replace(trim(p.mac_address), ':', ''), '-', ''), '.', ''), ' ', '')) = v_key) loop
+        if not released_mac(owner.comm_id) then
+          v_blocked := true;
+          exit;
+        end if;
+      end loop;
+      if v_blocked then
         add_error(i, 'Новый MAC уже есть в системе');
       end if;
     end if;
@@ -370,10 +430,58 @@ begin
     v_tab(i).verify_status_str := nvl(v_tab(i).verify_status_str, 'Успешно');
   end loop;
 
+  v_out := '<ArrayOfIdentifierChangeResult>';
   for i in 1 .. v_tab.count() loop
-    pipe row(v_tab(i));
+    v_out := v_out || '<IdentifierChangeResult>';
+    append_num('store_document_id', v_tab(i).store_document_id);
+    append_num('line_no', v_tab(i).line_no);
+    append_num('comm_id', v_tab(i).comm_id);
+    append_text('serial_number', v_tab(i).serial_number);
+    append_text('mac_address', v_tab(i).mac_address);
+    append_text('pon_serial', v_tab(i).pon_serial);
+    append_text('new_serial_number', v_tab(i).new_serial_number);
+    append_text('new_mac_address', v_tab(i).new_mac_address);
+    append_text('new_pon_serial', v_tab(i).new_pon_serial);
+    append_text('card_mac_address', v_tab(i).card_mac_address);
+    append_text('card_pon_serial', v_tab(i).card_pon_serial);
+    append_num('filial_kod', v_tab(i).filial_kod);
+    append_num('verify_status_num', v_tab(i).verify_status_num);
+    append_text('verify_status_str', v_tab(i).verify_status_str);
+    v_out := v_out || '</IdentifierChangeResult>';
   end loop;
+  v_out := v_out || '</ArrayOfIdentifierChangeResult>';
 
-  return;
+  open v_ret for
+    select store_document_id,
+           line_no,
+           comm_id,
+           serial_number,
+           mac_address,
+           pon_serial,
+           new_serial_number,
+           new_mac_address,
+           new_pon_serial,
+           card_mac_address,
+           card_pon_serial,
+           filial_kod,
+           verify_status_num,
+           verify_status_str
+      from xmltable('/ArrayOfIdentifierChangeResult/IdentifierChangeResult' passing xmltype(v_out) columns
+                    store_document_id number path 'store_document_id',
+                    line_no number path 'line_no',
+                    comm_id number path 'comm_id',
+                    serial_number varchar2(100) path 'serial_number',
+                    mac_address varchar2(100) path 'mac_address',
+                    pon_serial varchar2(100) path 'pon_serial',
+                    new_serial_number varchar2(100) path 'new_serial_number',
+                    new_mac_address varchar2(100) path 'new_mac_address',
+                    new_pon_serial varchar2(100) path 'new_pon_serial',
+                    card_mac_address varchar2(100) path 'card_mac_address',
+                    card_pon_serial varchar2(100) path 'card_pon_serial',
+                    filial_kod number path 'filial_kod',
+                    verify_status_num number path 'verify_status_num',
+                    verify_status_str varchar2(1000) path 'verify_status_str');
+
+  return v_ret;
 end;
 /
