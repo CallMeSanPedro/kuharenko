@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Store.Device.Models;
 
 class Program
@@ -22,7 +21,6 @@ class Program
         PositionalRowWithoutHeader();
         QuotedCellsAndBom();
         BuildsVerifyXml();
-        AppliesVerifyResultByLine();
         Console.WriteLine("ok");
         return 0;
     }
@@ -168,47 +166,6 @@ class Program
         Expect(xml.Contains("<new_mac_address></new_mac_address>"), "empty new mac");
         Expect(xml.Contains("<new_pon_serial>P&lt;2&gt;</new_pon_serial>"), "escaped pon");
         Expect(xml.EndsWith("</IdentifierChange></ArrayOfIdentifierChange>"), "xml close");
-    }
-
-    static void AppliesVerifyResultByLine()
-    {
-        var rows = new List<IdentifierChangeRow>
-        {
-            new IdentifierChangeRow { LineNumber = 2, SerialNumberCurrent = "OLD", SerialNumberNew = "NEW", CanApply = true, ChBoxS = true },
-            new IdentifierChangeRow { LineNumber = 3, SerialNumberCurrent = "BAD", Error = "Некорректный MAC_текущий", CanApply = false, ChBoxS = false },
-            new IdentifierChangeRow { LineNumber = 4, SerialNumberCurrent = "MISS", SerialNumberNew = "X", CanApply = true, ChBoxS = true },
-            new IdentifierChangeRow { LineNumber = 5, SerialNumberCurrent = "TAKEN", SerialNumberNew = "BUSY", CanApply = true, ChBoxS = true }
-        };
-        var xml = IdentifierChangeXml.Build(15m, rows.Where(row => row.CanApply).ToList());
-        Expect(xml.Contains("<line_no>2</line_no>"), "ready line sent");
-        Expect(xml.Contains("<line_no>4</line_no>"), "second ready line sent");
-        Expect(xml.Contains("<line_no>3</line_no>") == false, "local error stays local");
-
-        IdentifierChangeVerify.Apply(rows, new List<VerifyIdentifierChangeEntity>
-        {
-            new VerifyIdentifierChangeEntity
-            {
-                LineNo = 2,
-                CommId = 77,
-                CardMacAddress = "AABBCCDDEEFF",
-                CardPonSerial = "PON-OLD",
-                VerifyStatusNum = 1,
-                VerifyStatusStr = "Успешно"
-            },
-            new VerifyIdentifierChangeEntity
-            {
-                LineNo = 5,
-                CommId = 88,
-                VerifyStatusNum = -1,
-                VerifyStatusStr = "Новый серийный номер уже есть в системе"
-            }
-        });
-
-        Expect(rows[0].CommId == 77 && rows[0].CardMacAddress == "AABBCCDDEEFF" && rows[0].CardPonSerial == "PON-OLD", "card copied");
-        Expect(rows[0].CanApply && rows[0].ChBoxS && rows[0].VerifyStatusStr == "Успешно", "success stays checked");
-        Expect(rows[1].Error == "Некорректный MAC_текущий" && rows[1].CommId == null, "local error untouched");
-        Expect(!rows[2].CanApply && !rows[2].ChBoxS && rows[2].Error == "Нет ответа проверки", "missing reply rejected");
-        Expect(rows[3].CommId == 88 && !rows[3].CanApply && rows[3].Error == "Новый серийный номер уже есть в системе", "server reject copied");
     }
 
     static List<IdentifierChangeRow> Parse(string text, bool skipFirstRow)

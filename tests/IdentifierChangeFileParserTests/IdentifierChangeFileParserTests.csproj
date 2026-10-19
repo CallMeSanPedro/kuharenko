@@ -9,7 +9,5 @@
     <Compile Include="..\..\src\Store.Device.Models\IdentifierChangeRow.cs" />
     <Compile Include="..\..\src\Store.Device.Models\IdentifierChangeFileParser.cs" />
     <Compile Include="..\..\src\Store.Device.Models\IdentifierChangeXml.cs" />
-    <Compile Include="..\..\src\Store.Device.Models\VerifyIdentifierChangeEntity.cs" />
-    <Compile Include="..\..\src\Store.Device.Models\IdentifierChangeVerify.cs" />
   </ItemGroup>
 </Project>

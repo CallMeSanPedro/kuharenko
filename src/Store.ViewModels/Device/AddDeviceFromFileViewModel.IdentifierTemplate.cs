@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Windows.Input;
 using Store.Device.Models;
 
@@ -88,40 +87,8 @@ namespace Store.ViewModels.Device
 
         public void LoadIdentifierChangeFromFile(FileInfo file)
         {
-            var rows = ReadIdentifierChangeFile(file);
-            if (rows == null)
-                return;
-
-            IdentifierChangeItems = rows;
-            ShowIdentifierChange = true;
-            VerifyIdentifierChange(rows);
-        }
-
-        public void VerifyIdentifierChange(List<IdentifierChangeRow> rows)
-        {
-            var ready = rows == null
-                ? new List<IdentifierChangeRow>()
-                : rows.Where(row => row != null && row.CanApply).ToList();
-
-            if (ready.Count == 0)
-                return;
-
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready);
-            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChangeEntity>>(Filter.StoreDocumentId, xml, Filter);
-            BusyMessage = "Проверка идентификаторов...";
-            IsBusy = true;
-            ExecuteAsync(selectCmd, s =>
-            {
-                IdentifierChangeVerify.Apply(rows, selectCmd.ResultSet);
-                IdentifierChangeItems = new List<IdentifierChangeRow>(rows);
-                IsBusy = false;
-            }, z => { IsBusy = false; });
-        }
-
-        List<IdentifierChangeRow> ReadIdentifierChangeFile(FileInfo file)
-        {
             if (file == null)
-                return null;
+                return;
 
             var sourceExt = file.Extension.ToLower();
             if (sourceExt == ".xml")
@@ -137,7 +104,7 @@ namespace Store.ViewModels.Device
                 }
 
                 if (file == null)
-                    return null;
+                    return;
 
                 StreamReader sr = sourceExt == ".csv"
                     ? new StreamReader(file.OpenRead(), new Encoding1251())
@@ -145,7 +112,8 @@ namespace Store.ViewModels.Device
 
                 using (sr)
                 {
-                    return IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    ShowIdentifierChange = true;
                 }
             }
             finally
