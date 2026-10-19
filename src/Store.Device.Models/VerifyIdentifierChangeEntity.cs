@@ -4,6 +4,15 @@ namespace Store.Device.Models
 {
     public class VerifyIdentifierChangeEntity
     {
+        [Display(Name = "", ShortName = "", Description = "Выбор строки для загрузки", AutoGenerateField = false)]
+        public bool ChBoxS { get; set; }
+
+        [Display(AutoGenerateField = false)]
+        public bool CanPressCheckBoxS
+        {
+            get { return VerifyStatusNum != -1; }
+        }
+
         [Display(AutoGenerateField = false)]
         public decimal? StoreDocumentId { get; set; }
 

@@ -175,7 +175,7 @@ namespace Store.ViewModels.Device
 
         static bool CanSend(VerifyIdentifierChangeEntity row)
         {
-            return row != null && row.VerifyStatusNum != -1 && !string.IsNullOrEmpty(row.SerialNumber);
+            return row != null && row.ChBoxS && row.CanPressCheckBoxS && !string.IsNullOrEmpty(row.SerialNumber);
         }
 
         static List<VerifyIdentifierChangeEntity> MergeVerifyResult(List<VerifyIdentifierChangeEntity> current, List<VerifyIdentifierChangeEntity> result)
@@ -197,7 +197,10 @@ namespace Store.ViewModels.Device
             {
                 VerifyIdentifierChangeEntity server;
                 if (item != null && item.LineNo != null && byLine.TryGetValue(item.LineNo.Value, out server))
+                {
+                    server.ChBoxS = server.VerifyStatusNum == -1 ? false : item.ChBoxS;
                     merged.Add(server);
+                }
                 else
                     merged.Add(item);
             }

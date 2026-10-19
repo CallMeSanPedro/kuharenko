@@ -67,6 +67,10 @@ namespace Store.Device.Models
             MarkDuplicates(rows, row => row.SerialNumber, "Повторяющийся SN_текущий");
             MarkDuplicates(rows, row => row.NewSerialNumber, "Повторяющийся SN_новый");
             MarkDuplicates(rows, row => row.NewMacAddress, "Повторяющийся MAC_новый");
+
+            foreach (var row in rows)
+                row.ChBoxS = row.VerifyStatusNum != -1;
+
             return rows;
         }
 

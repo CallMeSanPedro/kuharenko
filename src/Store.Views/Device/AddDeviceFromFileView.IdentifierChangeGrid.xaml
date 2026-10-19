@@ -13,4 +13,19 @@
                    HorizontalScrollBarVisibility="Auto"
                    VerticalScrollBarVisibility="Auto"
                    MinHeight="326"
-                   SelectionMode="Single"/>
+                   SelectionMode="Single">
+    <Controls:DataGrid.Columns>
+        <DataGridTemplateColumn Width="36" IsReadOnly="False" CanUserSort="False">
+            <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <CheckBox IsChecked="{Binding Path=ChBoxS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding Path=CanPressCheckBoxS}"
+                              IsThreeState="False"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              ToolTip="Выбор строки для загрузки"/>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+    </Controls:DataGrid.Columns>
+</Controls:DataGrid>

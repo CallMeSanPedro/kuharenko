@@ -14,7 +14,7 @@ namespace Store.Device.Models
             {
                 foreach (var row in rows)
                 {
-                    if (row == null || row.VerifyStatusNum == -1)
+                    if (row == null || !row.ChBoxS || row.VerifyStatusNum == -1)
                         continue;
 
                     xml.Append("<IdentifierChange>");
