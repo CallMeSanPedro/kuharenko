@@ -19,46 +19,6 @@
 --   </IdentifierChange>
 -- </ArrayOfIdentifierChange>
 
-begin
-  execute immediate 'drop function verify_identifier_change';
-exception
-  when others then
-    if sqlcode != -4043 then
-      raise;
-    end if;
-end;
-/
-
-begin
-  execute immediate 'drop function identifier_change_norm_mac';
-exception
-  when others then
-    if sqlcode != -4043 then
-      raise;
-    end if;
-end;
-/
-
-begin
-  execute immediate 'drop type identifier_change_tab';
-exception
-  when others then
-    if sqlcode != -4043 then
-      raise;
-    end if;
-end;
-/
-
-begin
-  execute immediate 'drop type identifier_change_row';
-exception
-  when others then
-    if sqlcode != -4043 then
-      raise;
-    end if;
-end;
-/
-
 create or replace function verify_identifier_change(p_store_document_id in number,
                                                      p_xml               in clob,
                                                      p_filial_kod        in number default null) return sys_refcursor is
