@@ -1,4 +1,6 @@
-<!-- Поставить в Grid Name="Table", строка 2. Пока ShowIdentifierChange=true, грид приёмки cdgDeviceList нужно скрыть. -->
+<!-- Поставить в Grid Name="Table", строка 2, рядом с cdgDeviceList.
+     У cdgDeviceList и кнопок приёмки в bordertoolbar_row1 добавить
+     Visibility="{Binding Path=ShowFileLoad, Converter={x:Static controls:BoolToVisibilityConverter.Instance}}". -->
 <Controls:DataGrid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                    xmlns:Controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
@@ -18,12 +20,15 @@
         <DataGridTemplateColumn Width="36" IsReadOnly="False" CanUserSort="False">
             <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
-                    <CheckBox IsChecked="{Binding Path=ChBoxS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              IsEnabled="{Binding Path=CanPressCheckBoxS}"
-                              IsThreeState="False"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"
-                              ToolTip="Выбор строки для загрузки"/>
+                    <ContentControl IsEnabled="{Binding Path=CanAddBool, Mode=OneWay, TargetNullValue=True}">
+                        <CheckBox IsChecked="{Binding Path=ChBoxS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  IsThreeState="False"
+                                  Command="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeChBoxCommand}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"
+                                  Padding="0"
+                                  ToolTip="Выбор строки для загрузки"/>
+                    </ContentControl>
                 </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>

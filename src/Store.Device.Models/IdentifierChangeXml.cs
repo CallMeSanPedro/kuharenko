@@ -6,7 +6,7 @@ namespace Store.Device.Models
 {
     public static class IdentifierChangeXml
     {
-        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChangeEntity> rows)
+        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows)
         {
             var xml = new StringBuilder();
             xml.Append("<ArrayOfIdentifierChange>");

@@ -14,12 +14,12 @@ namespace Store.Device.Models
         public const string ColMacNew = "MAC_новый";
         public const string ColPonNew = "PON_новый";
 
-        public static List<VerifyIdentifierChangeEntity> Parse(TextReader reader, bool skipFirstRow, string macPattern)
+        public static List<VerifyIdentifierChange> Parse(TextReader reader, bool skipFirstRow, string macPattern)
         {
             if (reader == null)
                 throw new ArgumentNullException("reader");
 
-            var rows = new List<VerifyIdentifierChangeEntity>();
+            var rows = new List<VerifyIdentifierChange>();
             int lineNumber = 0;
             bool columnsResolved = false;
             int iSn = 0;
@@ -50,7 +50,7 @@ namespace Store.Device.Models
                         continue;
                 }
 
-                var row = new VerifyIdentifierChangeEntity
+                var row = new VerifyIdentifierChange
                 {
                     LineNo = lineNumber,
                     SerialNumber = Cell(raw, iSn),
@@ -74,7 +74,7 @@ namespace Store.Device.Models
             return rows;
         }
 
-        private static void ValidateRow(VerifyIdentifierChangeEntity row, string macPattern)
+        private static void ValidateRow(VerifyIdentifierChange row, string macPattern)
         {
             if ((row.SerialNumber ?? "").Length == 0)
                 AddError(row, "Не заполнен SN_текущий");
@@ -100,19 +100,19 @@ namespace Store.Device.Models
                    Regex.Match(mac, macPattern).ToString().Length == mac.Length;
         }
 
-        private static void MarkDuplicates(List<VerifyIdentifierChangeEntity> rows, Func<VerifyIdentifierChangeEntity, string> value, string message)
+        private static void MarkDuplicates(List<VerifyIdentifierChange> rows, Func<VerifyIdentifierChange, string> value, string message)
         {
-            var groups = new Dictionary<string, List<VerifyIdentifierChangeEntity>>(StringComparer.Ordinal);
+            var groups = new Dictionary<string, List<VerifyIdentifierChange>>(StringComparer.Ordinal);
             foreach (var row in rows)
             {
                 var key = value(row);
                 if (string.IsNullOrEmpty(key))
                     continue;
 
-                List<VerifyIdentifierChangeEntity> bucket;
+                List<VerifyIdentifierChange> bucket;
                 if (!groups.TryGetValue(key, out bucket))
                 {
-                    bucket = new List<VerifyIdentifierChangeEntity>();
+                    bucket = new List<VerifyIdentifierChange>();
                     groups.Add(key, bucket);
                 }
 
@@ -129,7 +129,7 @@ namespace Store.Device.Models
             }
         }
 
-        private static void AddError(VerifyIdentifierChangeEntity row, string message)
+        private static void AddError(VerifyIdentifierChange row, string message)
         {
             row.VerifyStatusNum = -1;
             row.VerifyStatusStr = string.IsNullOrEmpty(row.VerifyStatusStr) ? message : row.VerifyStatusStr + "; " + message;
