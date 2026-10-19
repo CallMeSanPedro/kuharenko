@@ -5,7 +5,8 @@ using System.Linq;
 using System.Windows.Input;
 using Store.Device.Models;
 
-// DelegateCommand, Encoding1251, Messenger, MainViewModel, Rep, Filter, _exp, SkipFirstRow, MacPattern и SetValue
+// DelegateCommand, Encoding1251, Messenger, MainViewModel, Rep, Filter, _exp, SkipFirstRow, MacPattern, SetValue,
+// VerifyData, ShowResume, ResumeText, FileRowCount, BadMacCount, AddRowCount, RowSiftingCount и тексты резюме
 // берутся из основного файла AddDeviceFromFileViewModel. Класс нужно объявить как partial.
 namespace Store.ViewModels.Device
 {
@@ -16,6 +17,7 @@ namespace Store.ViewModels.Device
         private ICommand _verifyIdentifierChangeCommand;
         private List<VerifyIdentifierChangeEntity> _identifierChangeItems;
         private bool _showIdentifierChange;
+        private int _identifierChangeBadMacCount;
 
         public ICommand DownloadIdentifierTemplateCommand
         {
@@ -101,6 +103,7 @@ namespace Store.ViewModels.Device
             if (file == null)
                 return;
 
+            ClearIdentifierChangeResume();
             var sourceExt = file.Extension.ToLower();
             if (sourceExt == ".xml")
                 throw new InvalidDataException("Файл смены идентификаторов должен быть csv или xlsx.");
@@ -124,6 +127,7 @@ namespace Store.ViewModels.Device
                 using (sr)
                 {
                     IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    _identifierChangeBadMacCount = CountBadMac(IdentifierChangeItems);
                     ShowIdentifierChange = true;
                 }
             }
@@ -144,6 +148,8 @@ namespace Store.ViewModels.Device
 
             if (CanVerifyIdentifierChange())
                 VerifyIdentifierChange();
+            else
+                RefreshIdentifierChangeResume();
         }
 
         [DependsOn("IdentifierChangeItems")]
@@ -156,11 +162,17 @@ namespace Store.ViewModels.Device
         {
             var ready = IdentifierChangeItems.Where(CanSend).ToList();
             if (!ready.Any())
+            {
+                RefreshIdentifierChangeResume();
                 return;
+            }
 
             var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready);
             if (xml == null)
+            {
+                RefreshIdentifierChangeResume();
                 return;
+            }
 
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChangeEntity>>(Filter.StoreDocumentId, xml, null);
             BusyMessage = "Проверка смены идентификаторов...";
@@ -169,8 +181,86 @@ namespace Store.ViewModels.Device
             {
                 IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
                 NotifyPropertyChanged(() => IdentifierChangeItems);
+                RefreshIdentifierChangeResume();
                 IsBusy = false;
-            }, z => { IsBusy = false; });
+            }, z =>
+            {
+                RefreshIdentifierChangeResume();
+                IsBusy = false;
+            });
+        }
+
+        void ClearIdentifierChangeResume()
+        {
+            _identifierChangeBadMacCount = 0;
+            FileRowCount = 0;
+            BadMacCount = 0;
+            AddRowCount = -1;
+            RowSiftingCount = 0;
+            FileRowCountText = "";
+            BadMacCountText = "";
+            AddRowCountText = "";
+            RowSiftingCountText = "";
+            ResumeText = "";
+            ShowResume = false;
+            NotifyPropertyChanged(() => ShowResume);
+            NotifyPropertyChanged(() => ResumeText);
+        }
+
+        void RefreshIdentifierChangeResume()
+        {
+            var rows = IdentifierChangeItems ?? new List<VerifyIdentifierChangeEntity>();
+            FileRowCount = rows.Count;
+            BadMacCount = _identifierChangeBadMacCount;
+            AddRowCount = 0;
+            RowSiftingCount = 0;
+            foreach (var row in rows)
+            {
+                if (row != null && row.ChBoxS)
+                    AddRowCount++;
+                else
+                    RowSiftingCount++;
+            }
+
+            FileRowCountText = "";
+            BadMacCountText = "";
+            AddRowCountText = "";
+            RowSiftingCountText = "";
+            SetResumeText();
+            if (ShowResume || FileRowCount == 0)
+                return;
+
+            if (FileRowCount > 0)
+                FileRowCountText = "Считано записей из файла: " + FileRowCount;
+            if (BadMacCount > 0)
+                BadMacCountText = "\nНе верный mac-адрес: " + BadMacCount;
+            if (AddRowCount > -1)
+                AddRowCountText = "\nБудет загружено: " + AddRowCount;
+            if (RowSiftingCount > 0)
+                RowSiftingCountText = "\nОтсев: " + RowSiftingCount;
+
+            ResumeText = FileRowCountText + BadMacCountText + RowSiftingCountText + AddRowCountText;
+            ShowResume = ResumeText.Length > 0;
+            NotifyPropertyChanged(() => ShowResume);
+            NotifyPropertyChanged(() => ResumeText);
+        }
+
+        static int CountBadMac(IEnumerable<VerifyIdentifierChangeEntity> rows)
+        {
+            int count = 0;
+            if (rows == null)
+                return count;
+
+            foreach (var row in rows)
+            {
+                var status = row == null ? "" : (row.VerifyStatusStr ?? "");
+                if (status.IndexOf("Некорректный MAC_текущий", StringComparison.Ordinal) >= 0)
+                    count++;
+                if (status.IndexOf("Некорректный MAC_новый", StringComparison.Ordinal) >= 0)
+                    count++;
+            }
+
+            return count;
         }
 
         static bool CanSend(VerifyIdentifierChangeEntity row)
