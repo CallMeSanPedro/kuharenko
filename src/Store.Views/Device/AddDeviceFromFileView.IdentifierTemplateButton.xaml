@@ -1,4 +1,4 @@
-<!-- Вставить обе кнопки в bordertoolbar_row1 сразу после кнопки SelFromFileCommand -->
+<!-- Вставить кнопки в bordertoolbar_row1 сразу после кнопки SelFromFileCommand -->
 <StackPanel xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             Orientation="Horizontal">
@@ -15,5 +15,12 @@
             Command="{Binding Path=LoadIdentifierChangeCommand}"
             ToolTipService.ToolTip="Загрузить файл смены идентификаторов"
             ContentTemplate="{StaticResource IconFromFolderTemplate}"
+            Style="{StaticResource ButtonChromelessStyle}"/>
+    <Button Margin="3"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Center"
+            Command="{Binding Path=VerifyIdentifierChangeCommand}"
+            ToolTipService.ToolTip="Проверить смену идентификаторов"
+            Content="Проверить"
             Style="{StaticResource ButtonChromelessStyle}"/>
 </StackPanel>

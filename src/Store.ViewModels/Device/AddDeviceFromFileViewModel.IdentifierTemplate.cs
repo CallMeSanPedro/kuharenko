@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows.Input;
 using Store.Device.Models;
 
-// DelegateCommand, Encoding1251, Messenger, MainViewModel, _exp, SkipFirstRow, MacPattern и SetValue
+// DelegateCommand, Encoding1251, Messenger, MainViewModel, Rep, Filter, _exp, SkipFirstRow, MacPattern и SetValue
 // берутся из основного файла AddDeviceFromFileViewModel. Класс нужно объявить как partial.
 namespace Store.ViewModels.Device
 {
@@ -12,7 +13,8 @@ namespace Store.ViewModels.Device
     {
         private ICommand _downloadIdentifierTemplateCommand;
         private ICommand _loadIdentifierChangeCommand;
-        private List<IdentifierChangeRow> _identifierChangeItems;
+        private ICommand _verifyIdentifierChangeCommand;
+        private List<VerifyIdentifierChangeEntity> _identifierChangeItems;
         private bool _showIdentifierChange;
 
         public ICommand DownloadIdentifierTemplateCommand
@@ -33,9 +35,18 @@ namespace Store.ViewModels.Device
             }
         }
 
-        public List<IdentifierChangeRow> IdentifierChangeItems
+        public ICommand VerifyIdentifierChangeCommand
         {
-            get { return _identifierChangeItems ?? (_identifierChangeItems = new List<IdentifierChangeRow>()); }
+            get
+            {
+                return _verifyIdentifierChangeCommand ??
+                       (_verifyIdentifierChangeCommand = new DelegateCommand(VerifyIdentifierChange, CanVerifyIdentifierChange));
+            }
+        }
+
+        public List<VerifyIdentifierChangeEntity> IdentifierChangeItems
+        {
+            get { return _identifierChangeItems ?? (_identifierChangeItems = new List<VerifyIdentifierChangeEntity>()); }
             set { SetValue(ref _identifierChangeItems, value, () => IdentifierChangeItems); }
         }
 
@@ -130,6 +141,67 @@ namespace Store.ViewModels.Device
                     }
                 }
             }
+        }
+
+        [DependsOn("IdentifierChangeItems")]
+        public bool CanVerifyIdentifierChange()
+        {
+            return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(CanSend);
+        }
+
+        public void VerifyIdentifierChange()
+        {
+            var ready = IdentifierChangeItems.Where(CanSend).ToList();
+            if (!ready.Any())
+                return;
+
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready);
+            if (xml == null)
+                return;
+
+            var cmd = Rep.VerifyIdentifierChange(Filter.StoreDocumentId, xml, null);
+            MainViewModel.Current.BusyMessage = "Проверка смены идентификаторов...";
+            MainViewModel.Current.IsBusy = true;
+            ExecuteAsync(cmd, x =>
+            {
+                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, cmd.ResultSet);
+                MainViewModel.Current.IsBusy = false;
+            }, z =>
+            {
+                MainViewModel.Current.IsBusy = false;
+            });
+        }
+
+        static bool CanSend(VerifyIdentifierChangeEntity row)
+        {
+            return row != null && row.VerifyStatusNum != -1 && !string.IsNullOrEmpty(row.SerialNumber);
+        }
+
+        static List<VerifyIdentifierChangeEntity> MergeVerifyResult(List<VerifyIdentifierChangeEntity> current, List<VerifyIdentifierChangeEntity> result)
+        {
+            if (current == null)
+                return result ?? new List<VerifyIdentifierChangeEntity>();
+            if (result == null)
+                return current;
+
+            var byLine = new Dictionary<decimal, VerifyIdentifierChangeEntity>();
+            foreach (var item in result)
+            {
+                if (item != null && item.LineNo != null)
+                    byLine[item.LineNo.Value] = item;
+            }
+
+            var merged = new List<VerifyIdentifierChangeEntity>();
+            foreach (var item in current)
+            {
+                VerifyIdentifierChangeEntity server;
+                if (item != null && item.LineNo != null && byLine.TryGetValue(item.LineNo.Value, out server))
+                    merged.Add(server);
+                else
+                    merged.Add(item);
+            }
+
+            return merged;
         }
     }
 }

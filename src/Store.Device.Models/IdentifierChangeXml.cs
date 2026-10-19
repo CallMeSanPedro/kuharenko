@@ -6,7 +6,7 @@ namespace Store.Device.Models
 {
     public static class IdentifierChangeXml
     {
-        public static string Build(decimal? storeDocumentId, IList<IdentifierChangeRow> rows)
+        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChangeEntity> rows)
         {
             var xml = new StringBuilder();
             xml.Append("<ArrayOfIdentifierChange>");
@@ -14,18 +14,18 @@ namespace Store.Device.Models
             {
                 foreach (var row in rows)
                 {
-                    if (row == null)
+                    if (row == null || row.VerifyStatusNum == -1)
                         continue;
 
                     xml.Append("<IdentifierChange>");
                     Append(xml, "store_document_id", NumberText(storeDocumentId));
-                    Append(xml, "line_no", row.LineNumber.ToString(CultureInfo.InvariantCulture));
-                    Append(xml, "serial_number", row.SerialNumberCurrent);
-                    Append(xml, "mac_address", row.MacCurrent);
-                    Append(xml, "pon_serial", row.PonCurrent);
-                    Append(xml, "new_serial_number", row.SerialNumberNew);
-                    Append(xml, "new_mac_address", row.MacNew);
-                    Append(xml, "new_pon_serial", row.PonNew);
+                    Append(xml, "line_no", NumberText(row.LineNo));
+                    Append(xml, "serial_number", row.SerialNumber);
+                    Append(xml, "mac_address", row.MacAddress);
+                    Append(xml, "pon_serial", row.PonSerial);
+                    Append(xml, "new_serial_number", row.NewSerialNumber);
+                    Append(xml, "new_mac_address", row.NewMacAddress);
+                    Append(xml, "new_pon_serial", row.NewPonSerial);
                     xml.Append("</IdentifierChange>");
                 }
             }

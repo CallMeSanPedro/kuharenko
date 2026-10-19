@@ -14,23 +14,16 @@
                    MinHeight="326"
                    SelectionMode="Single">
     <Controls:DataGrid.Columns>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=LineNumber}" Width="auto" Header="Строка"/>
-        <DataGridTemplateColumn>
-            <DataGridTemplateColumn.CellTemplate>
-                <DataTemplate>
-                    <CheckBox IsChecked="{Binding Path=ChBoxS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                              IsEnabled="{Binding Path=CanApply}"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"/>
-                </DataTemplate>
-            </DataGridTemplateColumn.CellTemplate>
-        </DataGridTemplateColumn>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=SerialNumberCurrent}" Width="auto" MaxWidth="250" Header="SN текущий"/>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=MacCurrent}" Width="auto" MaxWidth="250" Header="MAC текущий"/>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=PonCurrent}" Width="auto" MaxWidth="250" Header="PON текущий"/>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=SerialNumberNew}" Width="auto" MaxWidth="250" Header="SN новый"/>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=MacNew}" Width="auto" MaxWidth="250" Header="MAC новый"/>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=PonNew}" Width="auto" MaxWidth="250" Header="PON новый"/>
-        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=Error}" Width="*" MaxWidth="1000" Header="Ошибка"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=LineNo}" Width="auto" Header="Строка"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=SerialNumber}" Width="auto" MaxWidth="250" Header="SN текущий"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=MacAddress}" Width="auto" MaxWidth="250" Header="MAC текущий"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=PonSerial}" Width="auto" MaxWidth="250" Header="PON текущий"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=NewSerialNumber}" Width="auto" MaxWidth="250" Header="SN новый"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=NewMacAddress}" Width="auto" MaxWidth="250" Header="MAC новый"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=NewPonSerial}" Width="auto" MaxWidth="250" Header="PON новый"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=CommId}" Width="auto" Header="Карточка"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=CardMacAddress}" Width="auto" MaxWidth="250" Header="MAC на карточке"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=CardPonSerial}" Width="auto" MaxWidth="250" Header="PON на карточке"/>
+        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=VerifyStatusStr}" Width="*" MaxWidth="1000" Header="Результат"/>
     </Controls:DataGrid.Columns>
 </Controls:DataGrid>

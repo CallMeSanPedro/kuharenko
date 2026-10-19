@@ -14,12 +14,12 @@ namespace Store.Device.Models
         public const string ColMacNew = "MAC_новый";
         public const string ColPonNew = "PON_новый";
 
-        public static List<IdentifierChangeRow> Parse(TextReader reader, bool skipFirstRow, string macPattern)
+        public static List<VerifyIdentifierChangeEntity> Parse(TextReader reader, bool skipFirstRow, string macPattern)
         {
             if (reader == null)
                 throw new ArgumentNullException("reader");
 
-            var rows = new List<IdentifierChangeRow>();
+            var rows = new List<VerifyIdentifierChangeEntity>();
             int lineNumber = 0;
             bool columnsResolved = false;
             int iSn = 0;
@@ -50,45 +50,40 @@ namespace Store.Device.Models
                         continue;
                 }
 
-                var row = new IdentifierChangeRow
+                var row = new VerifyIdentifierChangeEntity
                 {
-                    LineNumber = lineNumber,
-                    SerialNumberCurrent = Cell(raw, iSn),
-                    MacCurrent = Cell(raw, iMac),
-                    PonCurrent = Cell(raw, iPon),
-                    SerialNumberNew = Cell(raw, iSnNew),
-                    MacNew = Cell(raw, iMacNew),
-                    PonNew = Cell(raw, iPonNew)
+                    LineNo = lineNumber,
+                    SerialNumber = Cell(raw, iSn),
+                    MacAddress = Cell(raw, iMac),
+                    PonSerial = Cell(raw, iPon),
+                    NewSerialNumber = Cell(raw, iSnNew),
+                    NewMacAddress = Cell(raw, iMacNew),
+                    NewPonSerial = Cell(raw, iPonNew)
                 };
                 ValidateRow(row, macPattern);
                 rows.Add(row);
             }
 
-            MarkDuplicates(rows, r => r.SerialNumberCurrent, "Повторяющийся SN_текущий");
-            MarkDuplicates(rows, r => r.SerialNumberNew, "Повторяющийся SN_новый");
-            MarkDuplicates(rows, r => r.MacNew, "Повторяющийся MAC_новый");
-
-            foreach (var row in rows)
-            {
-                row.CanApply = string.IsNullOrEmpty(row.Error);
-                row.ChBoxS = row.CanApply;
-            }
-
+            MarkDuplicates(rows, row => row.SerialNumber, "Повторяющийся SN_текущий");
+            MarkDuplicates(rows, row => row.NewSerialNumber, "Повторяющийся SN_новый");
+            MarkDuplicates(rows, row => row.NewMacAddress, "Повторяющийся MAC_новый");
             return rows;
         }
 
-        private static void ValidateRow(IdentifierChangeRow row, string macPattern)
+        private static void ValidateRow(VerifyIdentifierChangeEntity row, string macPattern)
         {
-            if (row.SerialNumberCurrent.Length == 0)
+            if ((row.SerialNumber ?? "").Length == 0)
                 AddError(row, "Не заполнен SN_текущий");
 
-            if (row.SerialNumberNew.Length == 0 && row.MacNew.Length == 0 && row.PonNew.Length == 0)
+            if ((row.NewSerialNumber ?? "").Length == 0 &&
+                (row.NewMacAddress ?? "").Length == 0 &&
+                (row.NewPonSerial ?? "").Length == 0)
                 AddError(row, "Не задано ни одного нового значения");
 
-            if (row.MacCurrent.Length > 0 && !IsValidMac(row.MacCurrent, macPattern))
+            if ((row.MacAddress ?? "").Length > 0 && !IsValidMac(row.MacAddress, macPattern))
                 AddError(row, "Некорректный MAC_текущий");
 
-            if (row.MacNew.Length > 0 && !IsValidMac(row.MacNew, macPattern))
+            if ((row.NewMacAddress ?? "").Length > 0 && !IsValidMac(row.NewMacAddress, macPattern))
                 AddError(row, "Некорректный MAC_новый");
         }
 
@@ -101,19 +96,19 @@ namespace Store.Device.Models
                    Regex.Match(mac, macPattern).ToString().Length == mac.Length;
         }
 
-        private static void MarkDuplicates(List<IdentifierChangeRow> rows, Func<IdentifierChangeRow, string> value, string message)
+        private static void MarkDuplicates(List<VerifyIdentifierChangeEntity> rows, Func<VerifyIdentifierChangeEntity, string> value, string message)
         {
-            var groups = new Dictionary<string, List<IdentifierChangeRow>>(StringComparer.Ordinal);
+            var groups = new Dictionary<string, List<VerifyIdentifierChangeEntity>>(StringComparer.Ordinal);
             foreach (var row in rows)
             {
                 var key = value(row);
                 if (string.IsNullOrEmpty(key))
                     continue;
 
-                List<IdentifierChangeRow> bucket;
+                List<VerifyIdentifierChangeEntity> bucket;
                 if (!groups.TryGetValue(key, out bucket))
                 {
-                    bucket = new List<IdentifierChangeRow>();
+                    bucket = new List<VerifyIdentifierChangeEntity>();
                     groups.Add(key, bucket);
                 }
 
@@ -130,9 +125,10 @@ namespace Store.Device.Models
             }
         }
 
-        private static void AddError(IdentifierChangeRow row, string message)
+        private static void AddError(VerifyIdentifierChangeEntity row, string message)
         {
-            row.Error = string.IsNullOrEmpty(row.Error) ? message : row.Error + "; " + message;
+            row.VerifyStatusNum = -1;
+            row.VerifyStatusStr = string.IsNullOrEmpty(row.VerifyStatusStr) ? message : row.VerifyStatusStr + "; " + message;
         }
 
         private static bool IsHeader(string[] raw)
