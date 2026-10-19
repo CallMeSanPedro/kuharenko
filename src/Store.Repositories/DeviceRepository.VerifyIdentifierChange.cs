@@ -5,18 +5,20 @@ namespace Store.Repositories
 {
     public partial interface IDeviceRepository
     {
-        IRequest<VerifyIdentifierChangeEntity, List<VerifyIdentifierChangeEntity>> VerifyIdentifierChange(decimal? storeDocumentId, string xml, decimal? filialKod);
+        IRequest<VerifyIdentifierChangeEntity, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod)
+            where TList : class, ICollection<VerifyIdentifierChangeEntity>, new();
     }
 
     public partial class DeviceRepository
     {
-        public IRequest<VerifyIdentifierChangeEntity, List<VerifyIdentifierChangeEntity>> VerifyIdentifierChange(decimal? storeDocumentId, string xml, decimal? filialKod)
+        public IRequest<VerifyIdentifierChangeEntity, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod)
+            where TList : class, ICollection<VerifyIdentifierChangeEntity>, new()
         {
-            var cmd = new StoreCpe.Store.Device.VerifyIdentifierChange();
-            cmd["p_store_document_id"] = storeDocumentId;
-            cmd["p_xml"] = xml;
-            cmd["p_filial_kod"] = filialKod;
-            return cmd;
+            var cmd = new StoreCpe.Store.Device.VerifyIdentifierChange<VerifyIdentifierChangeEntity>();
+            cmd.Params.PStoreDocumentId = storeDocumentId;
+            cmd.Params.PXml = xmlData;
+            cmd.Params.PFilialKod = filialKod;
+            return new DatumNodeQueryRequest<VerifyIdentifierChangeEntity, TList>(cmd);
         }
     }
 }

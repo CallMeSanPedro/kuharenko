@@ -141,6 +141,9 @@ namespace Store.ViewModels.Device
                     }
                 }
             }
+
+            if (CanVerifyIdentifierChange())
+                VerifyIdentifierChange();
         }
 
         [DependsOn("IdentifierChangeItems")]
@@ -159,17 +162,15 @@ namespace Store.ViewModels.Device
             if (xml == null)
                 return;
 
-            var cmd = Rep.VerifyIdentifierChange(Filter.StoreDocumentId, xml, null);
-            MainViewModel.Current.BusyMessage = "Проверка смены идентификаторов...";
-            MainViewModel.Current.IsBusy = true;
-            ExecuteAsync(cmd, x =>
+            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChangeEntity>>(Filter.StoreDocumentId, xml, null);
+            BusyMessage = "Проверка смены идентификаторов...";
+            IsBusy = true;
+            ExecuteAsync(selectCmd, s =>
             {
-                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, cmd.ResultSet);
-                MainViewModel.Current.IsBusy = false;
-            }, z =>
-            {
-                MainViewModel.Current.IsBusy = false;
-            });
+                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
+                NotifyPropertyChanged(() => IdentifierChangeItems);
+                IsBusy = false;
+            }, z => { IsBusy = false; });
         }
 
         static bool CanSend(VerifyIdentifierChangeEntity row)
