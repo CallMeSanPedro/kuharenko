@@ -31,6 +31,9 @@ create or replace procedure apply_identifier_change_doc(p_store_document_id in n
   v_errors varchar2(4000);
   v_errcnt pls_integer := 0;
   v_cnt    pls_integer := 0;
+  v_own    number;
+  v_cond   number;
+  v_tech   number;
 
   function esc(p_value in varchar2) return varchar2 is
   begin
@@ -131,6 +134,32 @@ begin
     if v_ok(i).new_pon_serial is not null then
       update store_device_param p
          set p.pon_serial = v_ok(i).new_pon_serial
+       where p.comm_id = v_ok(i).comm_id
+         and p.priznakdel = 0;
+    end if;
+
+    select d.ownership_id, d.dev_condition_id, d.sosttech_kod
+      into v_own, v_cond, v_tech
+      from store_doc_identifier_change d
+     where d.line_id = v_ok(i).line_no;
+
+    if v_own is not null then
+      update store_device_param p
+         set p.ownership_id = v_own
+       where p.comm_id = v_ok(i).comm_id
+         and p.priznakdel = 0;
+    end if;
+
+    if v_cond is not null then
+      update store_device_param p
+         set p.dev_condition_id = v_cond
+       where p.comm_id = v_ok(i).comm_id
+         and p.priznakdel = 0;
+    end if;
+
+    if v_tech is not null then
+      update store_device_param p
+         set p.sosttech_kod = v_tech
        where p.comm_id = v_ok(i).comm_id
          and p.priznakdel = 0;
     end if;

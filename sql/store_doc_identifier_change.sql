@@ -16,6 +16,9 @@ create table store_doc_identifier_change
   new_pon_serial    varchar2(100),
   card_mac_address  varchar2(100),
   card_pon_serial   varchar2(100),
+  ownership_id      number,
+  dev_condition_id  number,
+  sosttech_kod      number,
   verify_status_str varchar2(1000),
   create_date       date default sysdate not null,
   applied_date      date,
@@ -30,3 +33,9 @@ comment on column store_doc_identifier_change.new_serial_number is 'Новый S
 comment on column store_doc_identifier_change.new_mac_address is 'Новый MAC, пусто — не менять';
 comment on column store_doc_identifier_change.new_pon_serial is 'Новый PON, пусто — не менять';
 comment on column store_doc_identifier_change.applied_date is 'Когда значения записаны на карточку';
+comment on column store_doc_identifier_change.ownership_id is 'Форма владения для всех строк загрузки, пусто — не менять';
+comment on column store_doc_identifier_change.dev_condition_id is 'Состояние для всех строк загрузки, пусто — не менять';
+comment on column store_doc_identifier_change.sosttech_kod is 'Техническое состояние для всех строк загрузки, пусто — не менять';
+
+-- Если таблица уже создана без этих колонок:
+-- alter table store_doc_identifier_change add (ownership_id number, dev_condition_id number, sosttech_kod number);

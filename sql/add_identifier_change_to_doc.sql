@@ -3,7 +3,10 @@
 -- в документ попадают только строки со статусом 1. Повторная загрузка той же карточки заменяет строку.
 
 create or replace procedure add_identifier_change_to_doc(p_store_document_id in number,
-                                                         p_xml               in clob) is
+                                                         p_xml               in clob,
+                                                         p_ownership_id      in number default null,
+                                                         p_dev_condition_id  in number default null,
+                                                         p_sosttech_kod      in number default null) is
   type t_row is record(
     store_document_id number,
     line_no           number,
@@ -52,6 +55,9 @@ begin
          new_pon_serial,
          card_mac_address,
          card_pon_serial,
+         ownership_id,
+         dev_condition_id,
+         sosttech_kod,
          verify_status_str)
       values
         (store_doc_identifier_change_seq.nextval,
@@ -65,6 +71,9 @@ begin
          v_row.new_pon_serial,
          v_row.card_mac_address,
          v_row.card_pon_serial,
+         p_ownership_id,
+         p_dev_condition_id,
+         p_sosttech_kod,
          v_row.verify_status_str);
 
       v_added := v_added + 1;

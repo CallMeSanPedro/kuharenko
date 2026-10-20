@@ -87,6 +87,21 @@ namespace Store.ViewModels.Device
             set { SetValue(ref _identifierChangeCurrent, value, () => IdentifierChangeCurrent); }
         }
 
+        public decimal? IdentifierOwnershipId
+        {
+            get { return Ownership == null ? (decimal?)null : Ownership.OwnershipId; }
+        }
+
+        public decimal? IdentifierConditionId
+        {
+            get { return DeviceCondition == null ? (decimal?)null : DeviceCondition.DevConditionId; }
+        }
+
+        public decimal? IdentifierTechStatusId
+        {
+            get { return EthTechStatRef == null ? (decimal?)null : EthTechStatRef.SosttechKod; }
+        }
+
         public bool? IdentifierChangeAllChecked
         {
             get { return _identifierChangeAllChecked; }
@@ -269,7 +284,7 @@ namespace Store.ViewModels.Device
             LocalCurrentItem = CheckedItems.FirstOrDefault() ?? devices.FirstOrDefault();
         }
 
-        static StoreDeviceStruct ToDevice(VerifyIdentifierChange row)
+        StoreDeviceStruct ToDevice(VerifyIdentifierChange row)
         {
             if (row == null)
                 return null;
@@ -285,7 +300,10 @@ namespace Store.ViewModels.Device
                 CanPressCheckBoxS = row.CanAddBool,
                 ChBoxS = row.ChBoxS && row.IsSuccess,
                 ExploitStatusName = row.VerifyStatusStr,
-                NoteS = NewValuesText(row)
+                NoteS = NewValuesText(row),
+                OwnershipS = Ownership,
+                DeviceConditionS = DeviceCondition,
+                EthTechStatRefS = EthTechStatRef
             };
         }
 

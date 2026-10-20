@@ -17,8 +17,8 @@ namespace Store.ViewModels.Device
             get
             {
                 return _addIdentifierChangeCommand ?? (_addIdentifierChangeCommand =
-                    new DelegateCommand<IdentifierChangeFromFileViewModel>(x => AddIdentifierChangeFromFile(x.IdentifierChangeCheckedItems),
-                        x => CanAddIdentifierChange(x.IdentifierChangeCheckedItems)));
+                    new DelegateCommand<IdentifierChangeFromFileViewModel>(AddIdentifierChangeFromFile,
+                        x => x != null && CanAddIdentifierChange(x.IdentifierChangeCheckedItems)));
             }
         }
 
@@ -28,15 +28,16 @@ namespace Store.ViewModels.Device
             return !IsExecuting && rows.Any();
         }
 
-        public void AddIdentifierChangeFromFile(IEnumerable<VerifyIdentifierChange> rows)
+        public void AddIdentifierChangeFromFile(IdentifierChangeFromFileViewModel form)
         {
-            if (rows == null) return;
+            if (form == null) return;
 
-            var list = rows.ToList();
+            var list = form.IdentifierChangeCheckedItems.ToList();
             if (!list.Any()) return;
 
             var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, list);
-            IRequest cmd = Rep.AddIdentifierChangeToDocXml(Filter.StoreDocumentId, xml);
+            IRequest cmd = Rep.AddIdentifierChangeToDocXml(Filter.StoreDocumentId, xml,
+                form.IdentifierOwnershipId, form.IdentifierConditionId, form.IdentifierTechStatusId);
 
             MainViewModel.Current.BusyMessage = "Добавление смены идентификаторов в документ...";
             MainViewModel.Current.IsBusy = true;

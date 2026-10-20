@@ -8,6 +8,8 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:controls="clr-namespace:Store.Views.Controls"
     xmlns:device="clr-namespace:Store.ViewModels.Device;assembly=Store.ViewModels"
+    xmlns:ownerships="clr-namespace:Store.ViewModels.Ownerships;assembly=Store.ViewModels"
+    xmlns:reference="clr-namespace:Store.ViewModels.Reference;assembly=Store.ViewModels"
     MinViewWidth="600"
     MinViewHeight="420"
     StretchDialog="WidthAndHeight"
@@ -15,6 +17,21 @@
 
     <Controls:UserView.Resources>
         <Controls:DataContextProxy x:Key="DataContextProxy"/>
+        <Controls:DataContextProxy x:Key="OwnershipViewModel">
+            <Controls:DataContextProxy.ViewModel>
+                <ownerships:OwnershipViewModel/>
+            </Controls:DataContextProxy.ViewModel>
+        </Controls:DataContextProxy>
+        <Controls:DataContextProxy x:Key="DeviceConditionViewModel">
+            <Controls:DataContextProxy.ViewModel>
+                <reference:DeviceConditionViewModel/>
+            </Controls:DataContextProxy.ViewModel>
+        </Controls:DataContextProxy>
+        <Controls:DataContextProxy x:Key="EthTechStatRefViewModel">
+            <Controls:DataContextProxy.ViewModel>
+                <reference:EthTechStatRefViewModel/>
+            </Controls:DataContextProxy.ViewModel>
+        </Controls:DataContextProxy>
     </Controls:UserView.Resources>
 
     <xctk:BusyIndicator x:Name="BusyIndicator"
@@ -25,6 +42,7 @@
         <Border Style="{StaticResource MainContentBorders}" x:Name="MainBorder" Margin="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid Name="Main">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
@@ -61,7 +79,26 @@
                     </StackPanel>
                 </Border>
 
-                <Controls:DataGrid Grid.Row="1"
+                <Border Grid.Row="1" Style="{StaticResource MainContentBorders}" BorderThickness="1" Margin="3" Padding="3">
+                    <StackPanel Orientation="Horizontal">
+                        <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения"/>
+                        <Controls:ComboBox Margin="3" Width="180" x:Name="Ownership"
+                                           ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
+                                           SelectedItem="{Binding Path=Ownership, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
+                                           IsEnabled="{Binding Path=CanSelectOwnerschip}"/>
+                        <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние"/>
+                        <Controls:ComboBox Margin="3" Width="180" x:Name="DeviceCondition"
+                                           ItemsSource="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
+                                           SelectedItem="{Binding Path=DeviceCondition, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Controls:Label VerticalAlignment="Center" Margin="3" Content="Тех. состояние"/>
+                        <Controls:ComboBox Margin="3" Width="180" x:Name="EthTechStatRef"
+                                           ItemsSource="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
+                                           SelectedItem="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
+                                           IsEnabled="{Binding Path=CanSelectTechStat}"/>
+                    </StackPanel>
+                </Border>
+
+                <Controls:DataGrid Grid.Row="2"
                                    Name="cdgIdentifierChange"
                                    Margin="3"
                                    IsReadOnly="True"
@@ -109,7 +146,7 @@
                     </Controls:DataGrid.Columns>
                 </Controls:DataGrid>
 
-                <Grid Grid.Row="2" Margin="3"
+                <Grid Grid.Row="3" Margin="3"
                       Visibility="{Binding Path=ShowResume, Converter={x:Static controls:BoolToVisibilityConverter.Instance}, TargetNullValue=Collapsed}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
