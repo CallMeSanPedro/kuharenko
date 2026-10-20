@@ -5,42 +5,23 @@ using System.Linq;
 using System.Windows.Input;
 using Store.Device.Models;
 
-// DelegateCommand, Encoding1251, Messenger, MainViewModel, Rep, Filter, _exp, SkipFirstRow, MacPattern, SetValue,
-// VerifyData, ShowResume, ResumeText, FileRowCount, BadMacCount, AddRowCount, RowSiftingCount и тексты резюме
-// берутся из основного файла AddDeviceFromFileViewModel. Класс нужно объявить как partial.
+// Usings для DelegateCommand, DependsOn, Encoding1251, ExportToExcel, Messenger, NotificationMessageAction
+// и MainViewModel скопировать из AddDeviceFromFileViewModel.
+// Из AddDeviceFromFileViewModel наследуются Rep, Filter, ExecuteAsync, IsExecuting, IsBusy, BusyMessage,
+// SetValue, NotifyPropertyChanged, SkipFirstRow, MacPattern, ResumeText и ShowResume.
 namespace Store.ViewModels.Device
 {
-    public partial class AddDeviceFromFileViewModel
+    public class IdentifierChangeFromFileViewModel : AddDeviceFromFileViewModel
     {
         private ICommand _downloadIdentifierTemplateCommand;
         private ICommand _loadIdentifierChangeCommand;
         private ICommand _verifyIdentifierChangeCommand;
         private ICommand _identifierChangeChBoxCommand;
+        private ICommand _identifierChangeChBoxAllCommand;
         private List<VerifyIdentifierChange> _identifierChangeItems;
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
-        private bool _identifierChangeMode;
-        private int _identifierChangeBadMacCount;
-
-        public bool IdentifierChangeMode
-        {
-            get { return _identifierChangeMode; }
-            set
-            {
-                SetValue(ref _identifierChangeMode, value, () => IdentifierChangeMode);
-                NotifyPropertyChanged(() => ShowIdentifierChange);
-                NotifyPropertyChanged(() => ShowFileLoad);
-            }
-        }
-
-        public bool ShowIdentifierChange
-        {
-            get { return IdentifierChangeMode; }
-        }
-
-        public bool ShowFileLoad
-        {
-            get { return !IdentifierChangeMode; }
-        }
+        private bool? _identifierChangeAllChecked = true;
+        private int _badMacCount;
 
         public ICommand DownloadIdentifierTemplateCommand
         {
@@ -56,7 +37,7 @@ namespace Store.ViewModels.Device
             get
             {
                 return _loadIdentifierChangeCommand ??
-                       (_loadIdentifierChangeCommand = new DelegateCommand(LoadIdentifierChange, () => true));
+                       (_loadIdentifierChangeCommand = new DelegateCommand(LoadIdentifierChange, () => !IsExecuting));
             }
         }
 
@@ -78,6 +59,15 @@ namespace Store.ViewModels.Device
             }
         }
 
+        public ICommand IdentifierChangeChBoxAllCommand
+        {
+            get
+            {
+                return _identifierChangeChBoxAllCommand ??
+                       (_identifierChangeChBoxAllCommand = new DelegateCommand(CheckAllIdentifierChange, () => true));
+            }
+        }
+
         public List<VerifyIdentifierChange> IdentifierChangeItems
         {
             get { return _identifierChangeItems ?? (_identifierChangeItems = new List<VerifyIdentifierChange>()); }
@@ -88,6 +78,12 @@ namespace Store.ViewModels.Device
         {
             get { return _identifierChangeCheckedItems ?? (_identifierChangeCheckedItems = new List<VerifyIdentifierChange>()); }
             set { SetValue(ref _identifierChangeCheckedItems, value, () => IdentifierChangeCheckedItems); }
+        }
+
+        public bool? IdentifierChangeAllChecked
+        {
+            get { return _identifierChangeAllChecked; }
+            set { SetValue(ref _identifierChangeAllChecked, value, () => IdentifierChangeAllChecked); }
         }
 
         public void DownloadIdentifierTemplate()
@@ -135,18 +131,21 @@ namespace Store.ViewModels.Device
             if (file == null)
                 return;
 
-            ClearIdentifierChangeResume();
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
+            _badMacCount = 0;
+            SetIdentifierChangeResume("");
+
             var sourceExt = file.Extension.ToLower();
-            if (sourceExt == ".xml")
-                throw new InvalidDataException("Файл смены идентификаторов должен быть csv или xlsx.");
+            if (sourceExt != ".csv" && sourceExt != ".xls" && sourceExt != ".xlsx")
+                throw new InvalidDataException("Файл смены идентификаторов должен быть csv, xls или xlsx.");
 
             bool needDelete = false;
             try
             {
                 if (sourceExt == ".xls" || sourceExt == ".xlsx")
                 {
-                    file = _exp.ConvertXlsxToCsv(file);
+                    file = new ExportToExcel().ConvertXlsxToCsv(file);
                     needDelete = true;
                 }
 
@@ -160,7 +159,7 @@ namespace Store.ViewModels.Device
                 using (sr)
                 {
                     IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
-                    _identifierChangeBadMacCount = CountBadMac(IdentifierChangeItems);
+                    _badMacCount = CountBadMac(IdentifierChangeItems);
                 }
             }
             finally
@@ -200,12 +199,6 @@ namespace Store.ViewModels.Device
             }
 
             var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready);
-            if (xml == null)
-            {
-                UpdateIdentifierChangeChecked();
-                return;
-            }
-
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
@@ -222,6 +215,15 @@ namespace Store.ViewModels.Device
             });
         }
 
+        public void CheckAllIdentifierChange()
+        {
+            bool value = IdentifierChangeAllChecked == true;
+            foreach (var row in IdentifierChangeItems.Where(z => z != null && z.CanAddBool))
+                row.ChBoxS = value;
+
+            UpdateIdentifierChangeChecked();
+        }
+
         // В документ уходят только строки, которые прошли серверную проверку и отмечены пользователем.
         public void UpdateIdentifierChangeChecked()
         {
@@ -229,51 +231,44 @@ namespace Store.ViewModels.Device
                 .Where(z => z != null && z.ChBoxS && z.IsSuccess)
                 .ToList();
             NotifyPropertyChanged(() => IdentifierChangeCheckedItems);
-            RefreshIdentifierChangeResume();
-        }
 
-        void ClearIdentifierChangeResume()
-        {
-            _identifierChangeBadMacCount = 0;
-            FileRowCount = 0;
-            BadMacCount = 0;
-            AddRowCount = -1;
-            RowSiftingCount = 0;
-            FileRowCountText = "";
-            BadMacCountText = "";
-            AddRowCountText = "";
-            RowSiftingCountText = "";
-            ResumeText = "";
-            ShowResume = false;
-            NotifyPropertyChanged(() => ShowResume);
-            NotifyPropertyChanged(() => ResumeText);
+            var selectable = IdentifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
+            if (!selectable.Any() || selectable.All(z => !z.ChBoxS))
+                IdentifierChangeAllChecked = false;
+            else if (selectable.All(z => z.ChBoxS))
+                IdentifierChangeAllChecked = true;
+            else
+                IdentifierChangeAllChecked = null;
+
+            RefreshIdentifierChangeResume();
         }
 
         void RefreshIdentifierChangeResume()
         {
-            var rows = IdentifierChangeItems ?? new List<VerifyIdentifierChange>();
-            FileRowCount = rows.Count;
-            BadMacCount = _identifierChangeBadMacCount;
-            AddRowCount = IdentifierChangeCheckedItems.Count;
-            RowSiftingCount = FileRowCount - AddRowCount;
-
-            FileRowCountText = "";
-            BadMacCountText = "";
-            AddRowCountText = "";
-            RowSiftingCountText = "";
-            SetResumeText();
-            if (ShowResume || FileRowCount == 0)
+            int fileRowCount = IdentifierChangeItems.Count;
+            if (fileRowCount == 0)
+            {
+                SetIdentifierChangeResume("");
                 return;
+            }
 
-            FileRowCountText = "Считано записей из файла: " + FileRowCount;
-            if (BadMacCount > 0)
-                BadMacCountText = "\nНе верный mac-адрес: " + BadMacCount;
-            AddRowCountText = "\nБудет загружено: " + AddRowCount;
-            if (RowSiftingCount > 0)
-                RowSiftingCountText = "\nОтсев: " + RowSiftingCount;
+            int addRowCount = IdentifierChangeCheckedItems.Count;
+            int siftingCount = fileRowCount - addRowCount;
 
-            ResumeText = FileRowCountText + BadMacCountText + RowSiftingCountText + AddRowCountText;
-            ShowResume = ResumeText.Length > 0;
+            var text = "Считано записей из файла: " + fileRowCount;
+            if (_badMacCount > 0)
+                text += "\nНе верный mac-адрес: " + _badMacCount;
+            if (siftingCount > 0)
+                text += "\nОтсев: " + siftingCount;
+            text += "\nБудет загружено: " + addRowCount;
+
+            SetIdentifierChangeResume(text);
+        }
+
+        void SetIdentifierChangeResume(string text)
+        {
+            ResumeText = text;
+            ShowResume = text.Length > 0;
             NotifyPropertyChanged(() => ShowResume);
             NotifyPropertyChanged(() => ResumeText);
         }
@@ -281,9 +276,6 @@ namespace Store.ViewModels.Device
         static int CountBadMac(IEnumerable<VerifyIdentifierChange> rows)
         {
             int count = 0;
-            if (rows == null)
-                return count;
-
             foreach (var row in rows)
             {
                 var status = row == null ? "" : (row.VerifyStatusStr ?? "");
@@ -303,8 +295,6 @@ namespace Store.ViewModels.Device
 
         static List<VerifyIdentifierChange> MergeVerifyResult(List<VerifyIdentifierChange> current, List<VerifyIdentifierChange> result)
         {
-            if (current == null)
-                return result ?? new List<VerifyIdentifierChange>();
             if (result == null)
                 return current;
 

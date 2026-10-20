@@ -7,6 +7,7 @@ namespace Store.Device.Models
     {
         private bool _chBoxS;
 
+        [Display(AutoGenerateField = false)]
         public bool ChBoxS
         {
             get { return _chBoxS; }
@@ -19,6 +20,7 @@ namespace Store.Device.Models
             get { return VerifyStatusNum != -1; }
         }
 
+        [Display(AutoGenerateField = false)]
         public bool IsSuccess
         {
             get { return VerifyStatusNum == 1; }

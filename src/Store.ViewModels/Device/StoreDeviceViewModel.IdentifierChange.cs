@@ -17,7 +17,7 @@ namespace Store.ViewModels.Device
             get
             {
                 return _addIdentifierChangeCommand ?? (_addIdentifierChangeCommand =
-                    new DelegateCommand<AddDeviceFromFileViewModel>(x => AddIdentifierChangeFromFile(x.IdentifierChangeCheckedItems),
+                    new DelegateCommand<IdentifierChangeFromFileViewModel>(x => AddIdentifierChangeFromFile(x.IdentifierChangeCheckedItems),
                         x => CanAddIdentifierChange(x.IdentifierChangeCheckedItems)));
             }
         }

@@ -1,4 +1,4 @@
-<!-- Кнопка на панели формы документа, сразу после кнопки «Добавить из файла».
+<!-- Кнопка на панели формы оборудования документа, сразу после кнопки «Добавить из файла».
      Префиксы controls и converters1 взять из этой же формы.
      Привилегию StoreDeviceView.AddIdentifierChange нужно завести в справочнике привилегий. -->
 <Button xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,9 +7,9 @@
         xmlns:converters1="clr-namespace:Store.Views.Converters"
         Margin="1"
         Style="{StaticResource ButtonChromelessStyle}"
-        ContentTemplate="{StaticResource IconAddFromFileTemplate}"
+        ContentTemplate="{StaticResource IconFromFolderTemplate}"
         Command="{Binding Path=DialogCommand}"
         CommandParameter="{StaticResource IdentifierChangeFromFile}"
         Visibility="{Binding Path=Filter.CanAddFromFile, Converter={x:Static controls:BoolToVisibilityConverter.Instance}}"
-        ToolTipService.ToolTip="Смена идентификаторов из файла"
+        ToolTipService.ToolTip="Смена серийных номеров из файла"
         IsEnabled="{Binding Path=Owner.UserPrivList, Converter={x:Static converters1:PrivilegesToBool.Instance}, ConverterParameter='StoreDeviceView.AddIdentifierChange'}"/>
