@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows.Input;
 using Store.Device.Models;
 
@@ -21,8 +20,8 @@ namespace Store.ViewModels.Device
         private ICommand _identifierChangeChBoxAllCommand;
         private List<VerifyIdentifierChange> _identifierChangeItems;
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
-        private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
+        private bool _devicesProjected;
         private int _badMacCount;
 
         public ICommand DownloadIdentifierTemplateCommand
@@ -82,16 +81,6 @@ namespace Store.ViewModels.Device
             set { SetValue(ref _identifierChangeCheckedItems, value, () => IdentifierChangeCheckedItems); }
         }
 
-        public VerifyIdentifierChange IdentifierChangeCurrent
-        {
-            get { return _identifierChangeCurrent; }
-            set
-            {
-                SetValue(ref _identifierChangeCurrent, value, () => IdentifierChangeCurrent);
-                AssignLocalCurrentItem(value != null);
-            }
-        }
-
         public bool? IdentifierChangeAllChecked
         {
             get { return _identifierChangeAllChecked; }
@@ -145,6 +134,10 @@ namespace Store.ViewModels.Device
 
             IdentifierChangeItems = new List<VerifyIdentifierChange>();
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
+            _devicesProjected = false;
+            FileItems = new List<StoreDeviceStruct>();
+            CheckedItems = new List<StoreDeviceStruct>();
+            LocalCurrentItem = null;
             _badMacCount = 0;
             SetIdentifierChangeResume("");
 
@@ -233,23 +226,19 @@ namespace Store.ViewModels.Device
             foreach (var row in IdentifierChangeItems.Where(z => z != null && z.CanAddBool))
                 row.ChBoxS = value;
 
+            _devicesProjected = false;
             UpdateIdentifierChangeChecked();
         }
 
         // В документ уходят только строки, которые прошли серверную проверку и отмечены пользователем.
         public void UpdateIdentifierChangeChecked()
         {
+            PullSelectionFromDevices();
             IdentifierChangeCheckedItems = IdentifierChangeItems
                 .Where(z => z != null && z.ChBoxS && z.IsSuccess)
                 .ToList();
             NotifyPropertyChanged(() => IdentifierChangeCheckedItems);
-
-            var selected = IdentifierChangeCheckedItems.FirstOrDefault()
-                           ?? IdentifierChangeItems.FirstOrDefault(z => z != null);
-            if (!IdentifierChangeItems.Contains(IdentifierChangeCurrent))
-                IdentifierChangeCurrent = selected;
-            else
-                AssignLocalCurrentItem(IdentifierChangeCurrent != null);
+            PublishDevices();
 
             var selectable = IdentifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
             if (!selectable.Any() || selectable.All(z => !z.ChBoxS))
@@ -262,31 +251,70 @@ namespace Store.ViewModels.Device
             RefreshIdentifierChangeResume();
         }
 
-        // LocalCurrentItem у формы приёмки имеет тип строки приёмки, не VerifyIdentifierChange.
-        // Диалог в режиме Select включает «Добавить», когда это свойство заполнено.
-        void AssignLocalCurrentItem(bool hasRow)
+        void PullSelectionFromDevices()
         {
-            var property = GetType().GetProperty("LocalCurrentItem", BindingFlags.Instance | BindingFlags.Public);
-            if (property == null || !property.CanWrite)
+            if (!_devicesProjected || FileItems == null)
                 return;
 
-            object value = null;
-            if (hasRow)
+            int index = 0;
+            foreach (var device in FileItems)
             {
-                var type = property.PropertyType;
-                if (IdentifierChangeCurrent != null && type.IsInstanceOfType(IdentifierChangeCurrent))
-                    value = IdentifierChangeCurrent;
-                else if (type.GetConstructor(Type.EmptyTypes) != null)
-                    value = Activator.CreateInstance(type);
+                if (index >= IdentifierChangeItems.Count)
+                    break;
+                if (device != null && IdentifierChangeItems[index] != null)
+                    IdentifierChangeItems[index].ChBoxS = device.ChBoxS;
+                index++;
             }
+        }
 
-            try
+        // VerifyIdentifierChange не приводится к StoreDeviceStruct. Копируем поля и кладём строки
+        // туда же, куда их кладёт проверка приёмки: FileItems, CheckedItems, LocalCurrentItem.
+        void PublishDevices()
+        {
+            var devices = IdentifierChangeItems.Select(ToDevice).ToList();
+            FileItems = devices;
+            CheckedItems = new List<StoreDeviceStruct>(devices.Where(z => z != null && z.ChBoxS));
+            NotifyPropertyChanged(() => FileItems);
+            NotifyPropertyChanged(() => CheckedItems);
+            LocalCurrentItem = CheckedItems.FirstOrDefault() ?? devices.FirstOrDefault();
+            _devicesProjected = true;
+        }
+
+        static StoreDeviceStruct ToDevice(VerifyIdentifierChange row)
+        {
+            if (row == null)
+                return null;
+
+            return new StoreDeviceStruct
             {
-                property.SetValue(this, value, null);
-            }
-            catch (Exception)
-            {
-            }
+                SerialNumberS = row.SerialNumber,
+                SerialNumber = FirstFilled(row.NewSerialNumber, row.SerialNumber),
+                MacAddressS = FirstFilled(row.NewMacAddress, row.MacAddress),
+                PonSerialS = FirstFilled(row.NewPonSerial, row.PonSerial),
+                StoreDocumentIdS = row.StoreDocumentId,
+                CanAdd = row.IsSuccess ? 1 : 0,
+                CanPressCheckBoxS = row.CanAddBool,
+                ChBoxS = row.ChBoxS && row.IsSuccess,
+                ExploitStatusName = row.VerifyStatusStr,
+                NoteS = NewValuesText(row)
+            };
+        }
+
+        static string NewValuesText(VerifyIdentifierChange row)
+        {
+            var parts = new List<string>();
+            if (!string.IsNullOrEmpty(row.NewSerialNumber))
+                parts.Add("SN " + row.NewSerialNumber);
+            if (!string.IsNullOrEmpty(row.NewMacAddress))
+                parts.Add("MAC " + row.NewMacAddress);
+            if (!string.IsNullOrEmpty(row.NewPonSerial))
+                parts.Add("PON " + row.NewPonSerial);
+            return string.Join("; ", parts.ToArray());
+        }
+
+        static string FirstFilled(string primary, string fallback)
+        {
+            return string.IsNullOrEmpty(primary) ? fallback : primary;
         }
 
         void RefreshIdentifierChangeResume()
