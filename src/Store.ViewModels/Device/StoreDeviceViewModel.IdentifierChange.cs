@@ -17,9 +17,27 @@ namespace Store.ViewModels.Device
             get
             {
                 return _addIdentifierChangeCommand ?? (_addIdentifierChangeCommand =
-                    new DelegateCommand<IdentifierChangeFromFileViewModel>(x => AddIdentifierChangeFromFile(x.IdentifierChangeCheckedItems),
-                        x => CanAddIdentifierChange(x.IdentifierChangeCheckedItems)));
+                    new DelegateCommand<object>(x => AddIdentifierChangeFromFile(CheckedIdentifierChanges(x)),
+                        x => CanAddIdentifierChange(CheckedIdentifierChanges(x))));
             }
+        }
+
+        // В параметр может прийти сама форма или DataContextProxy с формой внутри.
+        static IEnumerable<VerifyIdentifierChange> CheckedIdentifierChanges(object parameter)
+        {
+            var form = parameter as IdentifierChangeFromFileViewModel;
+            if (form == null && parameter != null)
+            {
+                foreach (var name in new[] { "DataSource", "ViewModel" })
+                {
+                    var property = parameter.GetType().GetProperty(name);
+                    if (property == null) continue;
+                    form = property.GetValue(parameter, null) as IdentifierChangeFromFileViewModel;
+                    if (form != null) break;
+                }
+            }
+
+            return form == null ? null : form.IdentifierChangeCheckedItems;
         }
 
         public bool CanAddIdentifierChange(IEnumerable<VerifyIdentifierChange> rows)
