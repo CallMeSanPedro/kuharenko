@@ -5,7 +5,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     xmlns:Controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
-    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:controls="clr-namespace:Store.Views.Controls"
     xmlns:device="clr-namespace:Store.ViewModels.Device;assembly=Store.ViewModels"
     MinViewWidth="600"
@@ -17,112 +16,106 @@
         <Controls:DataContextProxy x:Key="DataContextProxy"/>
     </Controls:UserView.Resources>
 
-    <xctk:BusyIndicator x:Name="BusyIndicator"
-                        IsBusy="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IsBusy, Mode=TwoWay}"
-                        BusyContent="{Binding Path=BusyMessage}"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch">
-        <Border Style="{StaticResource MainContentBorders}" x:Name="MainBorder" Margin="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <Grid Name="Main">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+    <Border Style="{StaticResource MainContentBorders}" x:Name="MainBorder" Margin="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid Name="Main">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Style="{StaticResource MainContentBorders}" BorderThickness="1" Margin="3" Name="bordertoolbar">
-                    <StackPanel Orientation="Horizontal">
-                        <Button Margin="3"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Command="{Binding Path=DownloadIdentifierTemplateCommand}"
-                                ToolTipService.ToolTip="Скачать шаблон смены идентификаторов"
-                                ContentTemplate="{StaticResource IconExcelTemplate}"
-                                Style="{StaticResource ButtonChromelessStyle}"/>
-                        <Button Margin="3"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Command="{Binding Path=LoadIdentifierChangeCommand}"
-                                ToolTipService.ToolTip="Загрузить файл смены идентификаторов"
-                                ContentTemplate="{StaticResource IconFromFolderTemplate}"
-                                Style="{StaticResource ButtonChromelessStyle}"/>
-                        <Button Margin="3"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Command="{Binding Path=VerifyIdentifierChangeCommand}"
-                                ToolTipService.ToolTip="Повторно проверить отмеченные строки"
-                                Content="Проверить"
-                                Style="{StaticResource ButtonChromelessStyle}"/>
-                        <Border Style="{StaticResource SeparatorStyle}"/>
-                        <CheckBox Content="Пропустить первую строку"
-                                  VerticalAlignment="Center"
-                                  IsChecked="{Binding Path=SkipFirstRow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="1" Padding="4,1,0,0"/>
-                    </StackPanel>
-                </Border>
+            <Border Grid.Row="0" Style="{StaticResource MainContentBorders}" BorderThickness="1" Margin="3" Name="bordertoolbar">
+                <StackPanel Orientation="Horizontal">
+                    <Button Margin="3"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Command="{Binding Path=DownloadIdentifierTemplateCommand}"
+                            ToolTipService.ToolTip="Скачать шаблон смены идентификаторов"
+                            ContentTemplate="{StaticResource IconExcelTemplate}"
+                            Style="{StaticResource ButtonChromelessStyle}"/>
+                    <Button Margin="3"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Command="{Binding Path=LoadIdentifierChangeCommand}"
+                            ToolTipService.ToolTip="Загрузить файл смены идентификаторов"
+                            ContentTemplate="{StaticResource IconFromFolderTemplate}"
+                            Style="{StaticResource ButtonChromelessStyle}"/>
+                    <Button Margin="3"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Command="{Binding Path=VerifyIdentifierChangeCommand}"
+                            ToolTipService.ToolTip="Повторно проверить отмеченные строки"
+                            Content="Проверить"
+                            Style="{StaticResource ButtonChromelessStyle}"/>
+                    <Border Style="{StaticResource SeparatorStyle}"/>
+                    <CheckBox Content="Пропустить первую строку"
+                              VerticalAlignment="Center"
+                              IsChecked="{Binding Path=SkipFirstRow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              Margin="1" Padding="4,1,0,0"/>
+                </StackPanel>
+            </Border>
 
-                <Controls:DataGrid Grid.Row="1"
-                                   Name="cdgIdentifierChange"
-                                   Margin="3"
-                                   IsReadOnly="True"
-                                   AutoGenerateColumns="True"
-                                   Reflection="True"
-                                   ItemsSource="{Binding Path=IdentifierChangeItems, Mode=OneWay}"
-                                   HorizontalScrollBarVisibility="Auto"
-                                   VerticalScrollBarVisibility="Auto"
-                                   MinHeight="326"
-                                   SelectionMode="Single">
-                    <Controls:DataGrid.Columns>
-                        <DataGridTemplateColumn Width="36" IsReadOnly="False" CanUserSort="False">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <ContentControl IsEnabled="{Binding Path=CanAddBool, Mode=OneWay, TargetNullValue=True}">
-                                        <CheckBox IsChecked="{Binding Path=ChBoxS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                  IsThreeState="False"
-                                                  Command="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeChBoxCommand}"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"
-                                                  Padding="0"
-                                                  ToolTip="Выбор строки для загрузки"/>
-                                    </ContentControl>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                            <DataGridTemplateColumn.HeaderStyle>
-                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
-                                    <Setter Property="ContentTemplate">
-                                        <Setter.Value>
-                                            <DataTemplate>
-                                                <CheckBox IsThreeState="True"
-                                                          IsChecked="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeAllChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                          Command="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeChBoxAllCommand}"
-                                                          Margin="2,1,0,1"
-                                                          HorizontalAlignment="Center"
-                                                          VerticalAlignment="Center"
-                                                          Padding="0"/>
-                                            </DataTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </DataGridTemplateColumn.HeaderStyle>
-                        </DataGridTemplateColumn>
-                    </Controls:DataGrid.Columns>
-                </Controls:DataGrid>
+            <Controls:DataGrid Grid.Row="1"
+                               Name="cdgIdentifierChange"
+                               Margin="3"
+                               IsReadOnly="True"
+                               AutoGenerateColumns="True"
+                               Reflection="True"
+                               ItemsSource="{Binding Path=IdentifierChangeItems, Mode=OneWay}"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Auto"
+                               MinHeight="326"
+                               SelectionMode="Single">
+                <Controls:DataGrid.Columns>
+                    <DataGridTemplateColumn Width="36" IsReadOnly="False" CanUserSort="False">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ContentControl IsEnabled="{Binding Path=CanAddBool, Mode=OneWay, TargetNullValue=True}">
+                                    <CheckBox IsChecked="{Binding Path=ChBoxS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              IsThreeState="False"
+                                              Command="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeChBoxCommand}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Padding="0"
+                                              ToolTip="Выбор строки для загрузки"/>
+                                </ContentControl>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                <Setter Property="ContentTemplate">
+                                    <Setter.Value>
+                                        <DataTemplate>
+                                            <CheckBox IsThreeState="True"
+                                                      IsChecked="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeAllChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                      Command="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeChBoxAllCommand}"
+                                                      Margin="2,1,0,1"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Padding="0"/>
+                                        </DataTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGridTemplateColumn.HeaderStyle>
+                    </DataGridTemplateColumn>
+                </Controls:DataGrid.Columns>
+            </Controls:DataGrid>
 
-                <Grid Grid.Row="2" Margin="3"
-                      Visibility="{Binding Path=ShowResume, Converter={x:Static controls:BoolToVisibilityConverter.Instance}, TargetNullValue=Collapsed}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Controls:Label Grid.Column="0" Margin="3" Content="Резюме"/>
-                    <TextBox Grid.Column="1"
-                             Margin="3"
-                             x:Name="result"
-                             Text="{Binding Path=ResumeText, Mode=OneWay}"
-                             AcceptsReturn="True"
-                             IsReadOnly="True"/>
-                </Grid>
+            <Grid Grid.Row="2" Margin="3"
+                  Visibility="{Binding Path=ShowResume, Converter={x:Static controls:BoolToVisibilityConverter.Instance}, TargetNullValue=Collapsed}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Controls:Label Grid.Column="0" Margin="3" Content="Резюме"/>
+                <TextBox Grid.Column="1"
+                         Margin="3"
+                         x:Name="result"
+                         Text="{Binding Path=ResumeText, Mode=OneWay}"
+                         AcceptsReturn="True"
+                         IsReadOnly="True"/>
             </Grid>
-        </Border>
-    </xctk:BusyIndicator>
+        </Grid>
+    </Border>
 </Controls:UserView>
