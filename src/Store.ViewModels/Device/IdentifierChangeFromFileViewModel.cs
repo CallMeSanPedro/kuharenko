@@ -4,23 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using Store.Device.Models;
-using Store.Repositories;
 
-// Usings для ItemsViewModel, IRepository, StoreDevice, StoreDeviceFilter, StoreDocumentChildViewModel,
-// DocumentAdditionalMasterDetailViewModel, DelegateCommand, DependsOn, Encoding1251, ExportToExcel, Messenger,
-// NotificationMessageAction и MainViewModel скопировать из AddDeviceFromFileViewModel.
+// Usings для DelegateCommand, DependsOn, Encoding1251, ExportToExcel, Messenger, NotificationMessageAction
+// и MainViewModel скопировать из AddDeviceFromFileViewModel.
+// Из AddDeviceFromFileViewModel наследуются Rep, Filter, ExecuteAsync, IsExecuting, IsBusy, BusyMessage,
+// SetValue, NotifyPropertyChanged, SkipFirstRow, MacPattern, ResumeText и ShowResume.
 namespace Store.ViewModels.Device
 {
-    public class IdentifierChangeFromFileViewModel : ItemsViewModel<StoreDevice, StoreDeviceFilter>
+    public class IdentifierChangeFromFileViewModel : AddDeviceFromFileViewModel
     {
-        // Значение взять из MacPattern формы приёмки, если там другая маска.
-        private const string DefaultMacPattern = @"([0-9A-Fa-f]{2}[:\-]?){5}[0-9A-Fa-f]{2}|([0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4}";
-
-        private readonly IDeviceRepository _deviceRep;
-        private bool _skipFirstRow;
-        private string _macPattern = DefaultMacPattern;
-        private string _resumeText = "";
-        private bool _showResume;
         private ICommand _downloadIdentifierTemplateCommand;
         private ICommand _loadIdentifierChangeCommand;
         private ICommand _verifyIdentifierChangeCommand;
@@ -30,62 +22,6 @@ namespace Store.ViewModels.Device
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private bool? _identifierChangeAllChecked = true;
         private int _badMacCount;
-
-        public IdentifierChangeFromFileViewModel()
-            : this(MainViewModel/*Base*/.Resolve<IRepository<StoreDevice, StoreDeviceFilter>>())
-        {
-        }
-
-        private IdentifierChangeFromFileViewModel(IRepository<StoreDevice, StoreDeviceFilter> repository)
-            : base(repository)
-        {
-            _deviceRep = (IDeviceRepository)repository;
-            base.Title = "Смена серийных номеров";
-
-            RegisterMaster<StoreDocumentChildViewModel>(true, (container, master) =>
-            {
-                ResetIdentifierChange();
-                Filter.Uzel = master.MasterViewModel.Filter.Uzel;
-                Filter.StoreDocumentId = master.MasterViewModel.CurrentItem.StoreDocumentId;
-                //Чтоб не подгружались данные из БД, указываем фейкового ответственого
-                Filter.ResponsibleName = "No Responsible";
-                Filter.Mode = null;
-            });
-
-            RegisterMaster<DocumentAdditionalMasterDetailViewModel>(true, (container, master) =>
-            {
-                ResetIdentifierChange();
-                Filter.Uzel = master.MasterViewModel.Filter.Uzel;
-                Filter.StoreDocumentId = master.MasterViewModel.CurrentItem.StoreDocumentId;
-                //Чтоб не подгружались данные из БД, указываем фейкового ответственого
-                Filter.ResponsibleName = "No Responsible";
-                Filter.Mode = null;
-            });
-        }
-
-        public bool SkipFirstRow
-        {
-            get { return _skipFirstRow; }
-            set { SetValue(ref _skipFirstRow, value, () => SkipFirstRow); }
-        }
-
-        public string MacPattern
-        {
-            get { return _macPattern; }
-            set { SetValue(ref _macPattern, value, () => MacPattern); }
-        }
-
-        public string ResumeText
-        {
-            get { return _resumeText; }
-            set { SetValue(ref _resumeText, value, () => ResumeText); }
-        }
-
-        public bool ShowResume
-        {
-            get { return _showResume; }
-            set { SetValue(ref _showResume, value, () => ShowResume); }
-        }
 
         public ICommand DownloadIdentifierTemplateCommand
         {
@@ -195,7 +131,10 @@ namespace Store.ViewModels.Device
             if (file == null)
                 return;
 
-            ResetIdentifierChange();
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
+            _badMacCount = 0;
+            SetIdentifierChangeResume("");
 
             var sourceExt = file.Extension.ToLower();
             if (sourceExt != ".csv" && sourceExt != ".xls" && sourceExt != ".xlsx")
@@ -260,29 +199,20 @@ namespace Store.ViewModels.Device
             }
 
             var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready);
-            var selectCmd = _deviceRep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
-            MainViewModel/*Base*/.Current.BusyMessage = "Проверка смены идентификаторов...";
-            MainViewModel/*Base*/.Current.IsBusy = true;
+            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
+            BusyMessage = "Проверка смены идентификаторов...";
+            IsBusy = true;
             ExecuteAsync(selectCmd, s =>
             {
                 IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
                 NotifyPropertyChanged(() => IdentifierChangeItems);
                 UpdateIdentifierChangeChecked();
-                MainViewModel/*Base*/.Current.IsBusy = false;
+                IsBusy = false;
             }, z =>
             {
                 UpdateIdentifierChangeChecked();
-                MainViewModel/*Base*/.Current.IsBusy = false;
+                IsBusy = false;
             });
-        }
-
-        void ResetIdentifierChange()
-        {
-            IdentifierChangeItems = new List<VerifyIdentifierChange>();
-            IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
-            IdentifierChangeAllChecked = true;
-            _badMacCount = 0;
-            SetIdentifierChangeResume("");
         }
 
         public void CheckAllIdentifierChange()
@@ -339,6 +269,8 @@ namespace Store.ViewModels.Device
         {
             ResumeText = text;
             ShowResume = text.Length > 0;
+            NotifyPropertyChanged(() => ShowResume);
+            NotifyPropertyChanged(() => ResumeText);
         }
 
         static int CountBadMac(IEnumerable<VerifyIdentifierChange> rows)
