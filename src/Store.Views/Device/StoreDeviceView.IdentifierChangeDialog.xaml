@@ -17,5 +17,5 @@
                               Title="Загрузка и проверка смены серийных номеров"
                               TargetViewModelIsMaster="True"
                               ApplyCommand="{Binding Path=AddIdentifierChangeCommand}"
-                              ApplyCommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=ViewModel}"/>
+                              ApplyCommandParameter="{Binding Source={StaticResource IdentifierChangeFromFileViewModel}}"/>
 </ResourceDictionary>
