@@ -31,7 +31,7 @@ begin
     raise_application_error(-20001, 'Не указан документ');
   end if;
 
-  v_rc := verify_identifier_change(p_store_document_id, p_xml);
+  v_rc := verify_identifier_change(p_store_document_id, p_xml, null, p_ownership_id);
   loop
     fetch v_rc
       into v_row;

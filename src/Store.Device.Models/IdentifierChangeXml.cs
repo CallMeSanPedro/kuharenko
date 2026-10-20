@@ -8,6 +8,11 @@ namespace Store.Device.Models
     {
         public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows)
         {
+            return Build(storeDocumentId, rows, null);
+        }
+
+        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, decimal? ownershipId)
+        {
             var xml = new StringBuilder();
             xml.Append("<ArrayOfIdentifierChange>");
             if (rows != null)
@@ -26,6 +31,7 @@ namespace Store.Device.Models
                     Append(xml, "new_serial_number", row.NewSerialNumber);
                     Append(xml, "new_mac_address", row.NewMacAddress);
                     Append(xml, "new_pon_serial", row.NewPonSerial);
+                    Append(xml, "ownership_id", NumberText(ownershipId));
                     xml.Append("</IdentifierChange>");
                 }
             }

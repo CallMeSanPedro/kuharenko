@@ -5,7 +5,7 @@ namespace Store.Repositories
 {
     public partial interface IDeviceRepository
     {
-        IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod)
+        IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod, decimal? ownershipId)
             where TList : class, ICollection<VerifyIdentifierChange>, new();
 
         IRequest AddIdentifierChangeToDocXml(decimal? storeDocumentId, string xmlData, decimal? ownershipId, decimal? devConditionId, decimal? sosttechKod);
@@ -13,13 +13,14 @@ namespace Store.Repositories
 
     public partial class DeviceRepository
     {
-        public IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod)
+        public IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod, decimal? ownershipId)
             where TList : class, ICollection<VerifyIdentifierChange>, new()
         {
             var cmd = new StoreCpe.Store.Device.VerifyIdentifierChange<VerifyIdentifierChange>();
             cmd.Params.PStoreDocumentId = storeDocumentId;
             cmd.Params.PXml = xmlData;
             cmd.Params.PFilialKod = filialKod;
+            cmd.Params.POwnershipId = ownershipId;
             return new DatumNodeQueryRequest<VerifyIdentifierChange, TList>(cmd);
         }
 

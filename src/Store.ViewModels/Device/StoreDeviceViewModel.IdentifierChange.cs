@@ -35,7 +35,7 @@ namespace Store.ViewModels.Device
             var list = form.IdentifierChangeCheckedItems.ToList();
             if (!list.Any()) return;
 
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, list);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, list, form.IdentifierOwnershipId);
             IRequest cmd = Rep.AddIdentifierChangeToDocXml(Filter.StoreDocumentId, xml,
                 form.IdentifierOwnershipId, form.IdentifierConditionId, form.IdentifierTechStatusId);
 

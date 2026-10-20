@@ -2,9 +2,12 @@
 -- Одна функция. Строка результата — record курсора, без object-типа.
 -- MAC и PON читаются из store_device_param.mac_address и store_device_param.pon_serial.
 -- Пустой p_filial_kod отключает проверку филиала.
+-- Пустой p_ownership_id — обычная смена идентификаторов.
+-- Заполненный p_ownership_id — поиск по текущему SN среди оборудования
+-- со статусом exploit_status_id = 5. Новые SN, MAC и PON не проверяются.
 -- Карточку функция не изменяет.
 --
--- v_rc := verify_identifier_change(p_store_document_id, p_xml, p_filial_kod);
+-- v_rc := verify_identifier_change(p_store_document_id, p_xml, p_filial_kod, p_ownership_id);
 --
 -- <ArrayOfIdentifierChange>
 --   <IdentifierChange>
@@ -21,7 +24,8 @@
 
 create or replace function verify_identifier_change(p_store_document_id in number,
                                                      p_xml               in clob,
-                                                     p_filial_kod        in number default null) return sys_refcursor is
+                                                     p_filial_kod        in number default null,
+                                                     p_ownership_id      in number default null) return sys_refcursor is
   -- Как в verify_change_file_to_doc: exploit_status_id = 5 не считается наличием на складе.
   c_status_not_on_store constant number := 5;
 
@@ -53,6 +57,11 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
            nullif(trim(xml_tab.new_serial_number), '') new_serial_number,
            nullif(trim(xml_tab.new_mac_address), '') new_mac_address,
            nullif(trim(xml_tab.new_pon_serial), '') new_pon_serial,
+           nvl(case
+                 when regexp_like(trim(xml_tab.ownership_id), '^[0-9]+$') then
+                  to_number(trim(xml_tab.ownership_id))
+               end,
+               p_ownership_id) ownership_id,
            cast(null as varchar2(100)) card_mac_address,
            cast(null as varchar2(100)) card_pon_serial,
            cast(null as number) filial_kod,
@@ -66,7 +75,8 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
                     pon_serial varchar2(100) path 'pon_serial',
                     new_serial_number varchar2(100) path 'new_serial_number',
                     new_mac_address varchar2(100) path 'new_mac_address',
-                    new_pon_serial varchar2(100) path 'new_pon_serial') xml_tab;
+                    new_pon_serial varchar2(100) path 'new_pon_serial',
+                    ownership_id varchar2(50) path 'ownership_id') xml_tab;
 
   type t_tab is table of v_cur%rowtype index by binary_integer;
   v_tab t_tab;
@@ -222,7 +232,7 @@ begin
       inc_key(v_current_sn, lower(trim(v_tab(i).serial_number)));
     end if;
 
-    if sn_changes(v_tab(i)) then
+    if v_tab(i).ownership_id is null and sn_changes(v_tab(i)) then
       inc_key(v_new_sn, lower(trim(v_tab(i).new_serial_number)));
     end if;
 
@@ -242,7 +252,9 @@ begin
        and exists (select 1
                      from store_device_param p
                     where p.comm_id = c.comm_id
-                      and p.priznakdel = 0);
+                      and p.priznakdel = 0
+                      and (v_tab(i).ownership_id is null or
+                          nvl(p.exploit_status_id, -1) = c_status_not_on_store));
 
     if v_cnt = 0 then
       add_error(i, 'Оборудование не найдено');
@@ -255,11 +267,15 @@ begin
                (select max(p.mac_address)
                   from store_device_param p
                  where p.comm_id = c.comm_id
-                   and p.priznakdel = 0),
+                   and p.priznakdel = 0
+                   and (v_tab(i).ownership_id is null or
+                       nvl(p.exploit_status_id, -1) = c_status_not_on_store)),
                (select max(p.pon_serial)
                   from store_device_param p
                  where p.comm_id = c.comm_id
-                   and p.priznakdel = 0)
+                   and p.priznakdel = 0
+                   and (v_tab(i).ownership_id is null or
+                       nvl(p.exploit_status_id, -1) = c_status_not_on_store))
           into v_comm_id, v_filial, v_card_mac, v_card_pon
           from eth_comm_atu c
           left join store_infouzel u on u.infouzel_kod = c.uzel
@@ -268,7 +284,9 @@ begin
            and exists (select 1
                          from store_device_param p
                         where p.comm_id = c.comm_id
-                          and p.priznakdel = 0);
+                          and p.priznakdel = 0
+                          and (v_tab(i).ownership_id is null or
+                              nvl(p.exploit_status_id, -1) = c_status_not_on_store));
       exception
         when no_data_found then
           add_error(i, 'Оборудование не найдено');
@@ -304,11 +322,12 @@ begin
       add_error(i, 'Оборудование принадлежит к другому филиалу');
     end if;
 
-    if not sn_changes(v_tab(i)) and not mac_changes(v_tab(i)) and not pon_changes(v_tab(i)) then
+    if v_tab(i).ownership_id is null and not sn_changes(v_tab(i)) and not mac_changes(v_tab(i)) and
+       not pon_changes(v_tab(i)) then
       add_error(i, 'Не задано ни одного нового значения');
     end if;
 
-    if mac_changes(v_tab(i)) then
+    if v_tab(i).ownership_id is null and mac_changes(v_tab(i)) then
       inc_key(v_new_mac, norm_mac(v_tab(i).new_mac_address));
     end if;
   end loop;
@@ -319,14 +338,14 @@ begin
       add_error(i, 'Повторяющийся SN_текущий');
     end if;
 
-    if sn_changes(v_tab(i)) then
+    if v_tab(i).ownership_id is null and sn_changes(v_tab(i)) then
       v_key := lower(trim(v_tab(i).new_serial_number));
       if v_new_sn.exists(v_key) and v_new_sn(v_key) > 1 then
         add_error(i, 'Повторяющийся SN_новый');
       end if;
     end if;
 
-    if v_tab(i).new_mac_address is not null then
+    if v_tab(i).ownership_id is null and v_tab(i).new_mac_address is not null then
       v_key := norm_mac(v_tab(i).new_mac_address);
       if v_key is not null and v_new_mac.exists(v_key) and v_new_mac(v_key) > 1 then
         add_error(i, 'Повторяющийся MAC_новый');
@@ -339,7 +358,7 @@ begin
       continue;
     end if;
 
-    if sn_changes(v_tab(i)) then
+    if v_tab(i).ownership_id is null and sn_changes(v_tab(i)) then
       v_blocked := false;
       for owner in (select distinct c.comm_id
                       from eth_comm_atu c
@@ -362,7 +381,7 @@ begin
       continue;
     end if;
 
-    if mac_changes(v_tab(i)) then
+    if v_tab(i).ownership_id is null and mac_changes(v_tab(i)) then
       v_key := norm_mac(v_tab(i).new_mac_address);
       v_blocked := false;
       for owner in (select distinct c.comm_id

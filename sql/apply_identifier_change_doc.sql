@@ -70,6 +70,7 @@ begin
     tag('new_serial_number', r.new_serial_number);
     tag('new_mac_address', r.new_mac_address);
     tag('new_pon_serial', r.new_pon_serial);
+    tag('ownership_id', to_char(r.ownership_id));
     v_xml := v_xml || '</IdentifierChange>';
   end loop;
   v_xml := v_xml || '</ArrayOfIdentifierChange>';

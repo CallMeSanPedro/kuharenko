@@ -216,6 +216,7 @@ namespace Store.ViewModels.Device
 
         public void VerifyIdentifierChangeRows()
         {
+            AdjustRowsForOwnership();
             var ready = IdentifierChangeItems.Where(CanSend).ToList();
             if (!ready.Any())
             {
@@ -223,8 +224,8 @@ namespace Store.ViewModels.Device
                 return;
             }
 
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready);
-            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready, IdentifierOwnershipId);
+            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null, IdentifierOwnershipId);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
@@ -367,6 +368,79 @@ namespace Store.ViewModels.Device
             }
 
             return count;
+        }
+
+        static readonly string[] ReplacementMessages = new[]
+        {
+            "Не задано ни одного нового значения",
+            "Повторяющийся SN_новый",
+            "Повторяющийся MAC_новый",
+            "Некорректный MAC_новый"
+        };
+
+        void AdjustRowsForOwnership()
+        {
+            bool ownership = IdentifierOwnershipId != null;
+            foreach (var row in IdentifierChangeItems)
+            {
+                if (row == null)
+                    continue;
+
+                var hadError = row.VerifyStatusNum == -1;
+                var text = row.VerifyStatusStr ?? "";
+                if (ownership)
+                {
+                    foreach (var message in ReplacementMessages)
+                        text = RemoveMessage(text, message);
+                }
+                else if (row.VerifyStatusNum != 1 && NoNewValues(row) && text.IndexOf(ReplacementMessages[0], StringComparison.Ordinal) < 0)
+                {
+                    text = string.IsNullOrEmpty(text) ? ReplacementMessages[0] : text + "; " + ReplacementMessages[0];
+                }
+
+                row.VerifyStatusStr = string.IsNullOrEmpty(text) ? null : text;
+                if (string.IsNullOrEmpty(text))
+                {
+                    if (hadError)
+                    {
+                        row.VerifyStatusNum = null;
+                        row.ChBoxS = true;
+                    }
+                }
+                else if (hadError)
+                {
+                    row.VerifyStatusNum = -1;
+                    row.ChBoxS = false;
+                }
+                else if (!ownership && NoNewValues(row))
+                {
+                    row.VerifyStatusNum = -1;
+                    row.ChBoxS = false;
+                }
+            }
+        }
+
+        static bool NoNewValues(VerifyIdentifierChange row)
+        {
+            return string.IsNullOrEmpty(row.NewSerialNumber) &&
+                   string.IsNullOrEmpty(row.NewMacAddress) &&
+                   string.IsNullOrEmpty(row.NewPonSerial);
+        }
+
+        static string RemoveMessage(string text, string message)
+        {
+            if (string.IsNullOrEmpty(text))
+                return "";
+
+            var parts = text.Split(new[] { "; " }, StringSplitOptions.None);
+            var left = new List<string>();
+            foreach (var part in parts)
+            {
+                if (part != message && part.Length > 0)
+                    left.Add(part);
+            }
+
+            return string.Join("; ", left.ToArray());
         }
 
         static bool CanSend(VerifyIdentifierChange row)
