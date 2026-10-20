@@ -241,7 +241,6 @@ namespace Store.ViewModels.Device
                 IdentifierChangeAllChecked = null;
 
             RefreshIdentifierChangeResume();
-            CommandManager.InvalidateRequerySuggested();
         }
 
         void RefreshIdentifierChangeResume()

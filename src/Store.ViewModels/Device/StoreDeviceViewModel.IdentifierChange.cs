@@ -1,11 +1,11 @@
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using Store.Device.Models;
 
 // Partial к ViewModel формы документа, в которой объявлены AddFromCommand и AddFromFile.
 // Имя класса и namespace нужно привести к реальным. DelegateCommand, IRequest, Rep, Filter,
-// IsExecuting, ExecuteAsync, Refresh, Messenger и MainViewModel берутся из основного файла.
+// IsExecuting, ExecuteAsync, Refresh и MainViewModel берутся из основного файла.
 namespace Store.ViewModels.Device
 {
     public partial class StoreDeviceViewModel
@@ -17,29 +17,23 @@ namespace Store.ViewModels.Device
             get
             {
                 return _addIdentifierChangeCommand ?? (_addIdentifierChangeCommand =
-                    new DelegateCommand<IdentifierChangeFromFileViewModel>(AddIdentifierChangeFromFile, CanAddIdentifierChange));
+                    new DelegateCommand<IdentifierChangeFromFileViewModel>(x => AddIdentifierChangeFromFile(x.IdentifierChangeCheckedItems),
+                        x => CanAddIdentifierChange(x.IdentifierChangeCheckedItems)));
             }
         }
 
-        // Доступность не зависит от отмеченных строк: DialogDirector может не пересчитать CanExecute
-        // после проверки в форме. Строки собираются в момент нажатия.
-        public bool CanAddIdentifierChange(IdentifierChangeFromFileViewModel form)
+        public bool CanAddIdentifierChange(IEnumerable<VerifyIdentifierChange> rows)
         {
-            return form != null && !IsExecuting;
+            if (rows == null) return false;
+            return !IsExecuting && rows.Any();
         }
 
-        public void AddIdentifierChangeFromFile(IdentifierChangeFromFileViewModel form)
+        public void AddIdentifierChangeFromFile(IEnumerable<VerifyIdentifierChange> rows)
         {
-            if (form == null) return;
+            if (rows == null) return;
 
-            var list = form.IdentifierChangeItems
-                .Where(z => z != null && z.ChBoxS && z.IsSuccess)
-                .ToList();
-            if (!list.Any())
-            {
-                Messenger.Default.Send(new Exception("Нет отмеченных строк, прошедших проверку."), MainViewModel.MessageTypes.RaiseError);
-                return;
-            }
+            var list = rows.ToList();
+            if (!list.Any()) return;
 
             var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, list);
             IRequest cmd = Rep.AddIdentifierChangeToDocXml(Filter.StoreDocumentId, xml);
