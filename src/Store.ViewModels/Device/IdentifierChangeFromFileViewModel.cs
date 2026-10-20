@@ -20,8 +20,8 @@ namespace Store.ViewModels.Device
         private ICommand _identifierChangeChBoxAllCommand;
         private List<VerifyIdentifierChange> _identifierChangeItems;
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
+        private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
-        private bool _devicesProjected;
         private int _badMacCount;
 
         public ICommand DownloadIdentifierTemplateCommand
@@ -81,6 +81,12 @@ namespace Store.ViewModels.Device
             set { SetValue(ref _identifierChangeCheckedItems, value, () => IdentifierChangeCheckedItems); }
         }
 
+        public VerifyIdentifierChange IdentifierChangeCurrent
+        {
+            get { return _identifierChangeCurrent; }
+            set { SetValue(ref _identifierChangeCurrent, value, () => IdentifierChangeCurrent); }
+        }
+
         public bool? IdentifierChangeAllChecked
         {
             get { return _identifierChangeAllChecked; }
@@ -134,7 +140,6 @@ namespace Store.ViewModels.Device
 
             IdentifierChangeItems = new List<VerifyIdentifierChange>();
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
-            _devicesProjected = false;
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
             LocalCurrentItem = null;
@@ -226,18 +231,19 @@ namespace Store.ViewModels.Device
             foreach (var row in IdentifierChangeItems.Where(z => z != null && z.CanAddBool))
                 row.ChBoxS = value;
 
-            _devicesProjected = false;
             UpdateIdentifierChangeChecked();
         }
 
         // В документ уходят только строки, которые прошли серверную проверку и отмечены пользователем.
         public void UpdateIdentifierChangeChecked()
         {
-            PullSelectionFromDevices();
             IdentifierChangeCheckedItems = IdentifierChangeItems
                 .Where(z => z != null && z.ChBoxS && z.IsSuccess)
                 .ToList();
             NotifyPropertyChanged(() => IdentifierChangeCheckedItems);
+            if (IdentifierChangeCurrent == null || !IdentifierChangeItems.Contains(IdentifierChangeCurrent))
+                IdentifierChangeCurrent = IdentifierChangeCheckedItems.FirstOrDefault()
+                                          ?? IdentifierChangeItems.FirstOrDefault(z => z != null);
             PublishDevices();
 
             var selectable = IdentifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
@@ -251,24 +257,8 @@ namespace Store.ViewModels.Device
             RefreshIdentifierChangeResume();
         }
 
-        void PullSelectionFromDevices()
-        {
-            if (!_devicesProjected || FileItems == null)
-                return;
-
-            int index = 0;
-            foreach (var device in FileItems)
-            {
-                if (index >= IdentifierChangeItems.Count)
-                    break;
-                if (device != null && IdentifierChangeItems[index] != null)
-                    IdentifierChangeItems[index].ChBoxS = device.ChBoxS;
-                index++;
-            }
-        }
-
-        // VerifyIdentifierChange не приводится к StoreDeviceStruct. Копируем поля и кладём строки
-        // туда же, куда их кладёт проверка приёмки: FileItems, CheckedItems, LocalCurrentItem.
+        // Список для грида остаётся VerifyIdentifierChange. Копия в StoreDeviceStruct нужна диалогу:
+        // «Добавить» включается, когда заполнены FileItems, CheckedItems и LocalCurrentItem.
         void PublishDevices()
         {
             var devices = IdentifierChangeItems.Select(ToDevice).ToList();
@@ -277,7 +267,6 @@ namespace Store.ViewModels.Device
             NotifyPropertyChanged(() => FileItems);
             NotifyPropertyChanged(() => CheckedItems);
             LocalCurrentItem = CheckedItems.FirstOrDefault() ?? devices.FirstOrDefault();
-            _devicesProjected = true;
         }
 
         static StoreDeviceStruct ToDevice(VerifyIdentifierChange row)

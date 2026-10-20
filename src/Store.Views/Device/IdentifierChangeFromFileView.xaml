@@ -65,9 +65,10 @@
                                    Name="cdgIdentifierChange"
                                    Margin="3"
                                    IsReadOnly="True"
-                                   AutoGenerateColumns="False"
-                                   ItemsSource="{Binding Path=FileItems, Mode=TwoWay}"
-                                   SelectedItem="{Binding Path=LocalCurrentItem, Mode=TwoWay}"
+                                   AutoGenerateColumns="True"
+                                   Reflection="True"
+                                   ItemsSource="{Binding Path=IdentifierChangeItems, Mode=TwoWay}"
+                                   SelectedItem="{Binding Path=IdentifierChangeCurrent, Mode=TwoWay}"
                                    HorizontalScrollBarVisibility="Auto"
                                    VerticalScrollBarVisibility="Auto"
                                    MinHeight="326"
@@ -105,11 +106,6 @@
                                 </Style>
                             </DataGridTemplateColumn.HeaderStyle>
                         </DataGridTemplateColumn>
-                        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=SerialNumberS}" Width="Auto" Header="Серийный номер"/>
-                        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=MacAddressS}" Width="Auto" Header="MAC"/>
-                        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=PonSerialS}" Width="Auto" Header="PON"/>
-                        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=NoteS}" Width="Auto" Header="Новые значения"/>
-                        <DataGridTextColumn IsReadOnly="True" Binding="{Binding Path=ExploitStatusName}" Width="Auto" Header="Результат проверки"/>
                     </Controls:DataGrid.Columns>
                 </Controls:DataGrid>
 
