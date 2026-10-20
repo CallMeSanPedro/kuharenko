@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Input;
 using Store.Device.Models;
 
@@ -20,6 +21,7 @@ namespace Store.ViewModels.Device
         private ICommand _identifierChangeChBoxAllCommand;
         private List<VerifyIdentifierChange> _identifierChangeItems;
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
+        private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
         private int _badMacCount;
 
@@ -78,6 +80,16 @@ namespace Store.ViewModels.Device
         {
             get { return _identifierChangeCheckedItems ?? (_identifierChangeCheckedItems = new List<VerifyIdentifierChange>()); }
             set { SetValue(ref _identifierChangeCheckedItems, value, () => IdentifierChangeCheckedItems); }
+        }
+
+        public VerifyIdentifierChange IdentifierChangeCurrent
+        {
+            get { return _identifierChangeCurrent; }
+            set
+            {
+                SetValue(ref _identifierChangeCurrent, value, () => IdentifierChangeCurrent);
+                AssignLocalCurrentItem(value != null);
+            }
         }
 
         public bool? IdentifierChangeAllChecked
@@ -232,6 +244,13 @@ namespace Store.ViewModels.Device
                 .ToList();
             NotifyPropertyChanged(() => IdentifierChangeCheckedItems);
 
+            var selected = IdentifierChangeCheckedItems.FirstOrDefault()
+                           ?? IdentifierChangeItems.FirstOrDefault(z => z != null);
+            if (!IdentifierChangeItems.Contains(IdentifierChangeCurrent))
+                IdentifierChangeCurrent = selected;
+            else
+                AssignLocalCurrentItem(IdentifierChangeCurrent != null);
+
             var selectable = IdentifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
             if (!selectable.Any() || selectable.All(z => !z.ChBoxS))
                 IdentifierChangeAllChecked = false;
@@ -241,6 +260,33 @@ namespace Store.ViewModels.Device
                 IdentifierChangeAllChecked = null;
 
             RefreshIdentifierChangeResume();
+        }
+
+        // LocalCurrentItem у формы приёмки имеет тип строки приёмки, не VerifyIdentifierChange.
+        // Диалог в режиме Select включает «Добавить», когда это свойство заполнено.
+        void AssignLocalCurrentItem(bool hasRow)
+        {
+            var property = GetType().GetProperty("LocalCurrentItem", BindingFlags.Instance | BindingFlags.Public);
+            if (property == null || !property.CanWrite)
+                return;
+
+            object value = null;
+            if (hasRow)
+            {
+                var type = property.PropertyType;
+                if (IdentifierChangeCurrent != null && type.IsInstanceOfType(IdentifierChangeCurrent))
+                    value = IdentifierChangeCurrent;
+                else if (type.GetConstructor(Type.EmptyTypes) != null)
+                    value = Activator.CreateInstance(type);
+            }
+
+            try
+            {
+                property.SetValue(this, value, null);
+            }
+            catch (Exception)
+            {
+            }
         }
 
         void RefreshIdentifierChangeResume()
