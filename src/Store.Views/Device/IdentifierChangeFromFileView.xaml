@@ -80,7 +80,21 @@
                 </Border>
 
                 <Border Grid.Row="1" Style="{StaticResource MainContentBorders}" BorderThickness="1" Margin="3" Padding="3">
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton Content="Смена идентификаторов"
+                                         GroupName="IdentifierLoadMode"
+                                         Margin="3"
+                                         VerticalAlignment="Center"
+                                         IsChecked="{Binding Path=IdentifierChangeMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            <RadioButton Content="Смена параметров"
+                                         GroupName="IdentifierLoadMode"
+                                         Margin="3"
+                                         VerticalAlignment="Center"
+                                         IsChecked="{Binding Path=ParameterChangeMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal"
+                                    Visibility="{Binding Path=ShowParameterFields, Converter={x:Static controls:BoolToVisibilityConverter.Instance}}">
                         <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения"/>
                         <Controls:ComboBox Margin="3" Width="180" x:Name="Ownership"
                                            ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
@@ -95,6 +109,7 @@
                                            ItemsSource="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
                                            SelectedItem="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
                                            IsEnabled="{Binding Path=CanSelectTechStat}"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

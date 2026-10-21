@@ -4,6 +4,13 @@ using System.Text;
 
 namespace Store.Device.Models
 {
+    public class IdentifierChangeParameters
+    {
+        public decimal? OwnershipId { get; set; }
+        public decimal? DevConditionId { get; set; }
+        public decimal? SosttechKod { get; set; }
+    }
+
     public static class IdentifierChangeXml
     {
         public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows)
@@ -11,7 +18,8 @@ namespace Store.Device.Models
             return Build(storeDocumentId, rows, null);
         }
 
-        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, decimal? ownershipId)
+        // parameters == null — смена идентификаторов: элементы параметров в XML не пишутся.
+        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, IdentifierChangeParameters parameters)
         {
             var xml = new StringBuilder();
             xml.Append("<ArrayOfIdentifierChange>");
@@ -31,7 +39,13 @@ namespace Store.Device.Models
                     Append(xml, "new_serial_number", row.NewSerialNumber);
                     Append(xml, "new_mac_address", row.NewMacAddress);
                     Append(xml, "new_pon_serial", row.NewPonSerial);
-                    Append(xml, "ownership_id", NumberText(ownershipId));
+                    if (parameters != null)
+                    {
+                        Append(xml, "parameter_change", "1");
+                        Append(xml, "ownership_id", NumberText(parameters.OwnershipId));
+                        Append(xml, "dev_condition_id", NumberText(parameters.DevConditionId));
+                        Append(xml, "sosttech_kod", NumberText(parameters.SosttechKod));
+                    }
                     xml.Append("</IdentifierChange>");
                 }
             }

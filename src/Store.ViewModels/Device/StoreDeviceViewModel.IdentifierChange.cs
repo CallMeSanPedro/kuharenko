@@ -35,9 +35,12 @@ namespace Store.ViewModels.Device
             var list = form.IdentifierChangeCheckedItems.ToList();
             if (!list.Any()) return;
 
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, list, form.IdentifierOwnershipId);
+            var parameters = form.VerificationParameters();
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, list, parameters);
             IRequest cmd = Rep.AddIdentifierChangeToDocXml(Filter.StoreDocumentId, xml,
-                form.IdentifierOwnershipId, form.IdentifierConditionId, form.IdentifierTechStatusId);
+                parameters == null ? null : parameters.OwnershipId,
+                parameters == null ? null : parameters.DevConditionId,
+                parameters == null ? null : parameters.SosttechKod);
 
             MainViewModel.Current.BusyMessage = "Добавление смены идентификаторов в документ...";
             MainViewModel.Current.IsBusy = true;

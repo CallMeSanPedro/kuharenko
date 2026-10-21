@@ -22,6 +22,7 @@ namespace Store.ViewModels.Device
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
+        private bool _parameterChangeMode;
         private int _badMacCount;
 
         public ICommand DownloadIdentifierTemplateCommand
@@ -87,19 +88,59 @@ namespace Store.ViewModels.Device
             set { SetValue(ref _identifierChangeCurrent, value, () => IdentifierChangeCurrent); }
         }
 
+        public bool IdentifierChangeMode
+        {
+            get { return !_parameterChangeMode; }
+            set
+            {
+                if (value)
+                    SetParameterMode(false);
+            }
+        }
+
+        public bool ParameterChangeMode
+        {
+            get { return _parameterChangeMode; }
+            set
+            {
+                if (value)
+                    SetParameterMode(true);
+                else if (_parameterChangeMode)
+                    SetParameterMode(false);
+            }
+        }
+
+        public bool ShowParameterFields
+        {
+            get { return _parameterChangeMode; }
+        }
+
         public decimal? IdentifierOwnershipId
         {
-            get { return Ownership == null ? (decimal?)null : Ownership.OwnershipId; }
+            get { return _parameterChangeMode && Ownership != null ? Ownership.OwnershipId : (decimal?)null; }
         }
 
         public decimal? IdentifierConditionId
         {
-            get { return DeviceCondition == null ? (decimal?)null : DeviceCondition.DevConditionId; }
+            get { return _parameterChangeMode && DeviceCondition != null ? DeviceCondition.DevConditionId : (decimal?)null; }
         }
 
         public decimal? IdentifierTechStatusId
         {
-            get { return EthTechStatRef == null ? (decimal?)null : EthTechStatRef.SosttechKod; }
+            get { return _parameterChangeMode && EthTechStatRef != null ? EthTechStatRef.SosttechKod : (decimal?)null; }
+        }
+
+        public IdentifierChangeParameters VerificationParameters()
+        {
+            if (!_parameterChangeMode)
+                return null;
+
+            return new IdentifierChangeParameters
+            {
+                OwnershipId = IdentifierOwnershipId,
+                DevConditionId = IdentifierConditionId,
+                SosttechKod = IdentifierTechStatusId
+            };
         }
 
         public bool? IdentifierChangeAllChecked
@@ -216,7 +257,7 @@ namespace Store.ViewModels.Device
 
         public void VerifyIdentifierChangeRows()
         {
-            AdjustRowsForOwnership();
+            AdjustRowsForMode();
             var ready = IdentifierChangeItems.Where(CanSend).ToList();
             if (!ready.Any())
             {
@@ -224,8 +265,9 @@ namespace Store.ViewModels.Device
                 return;
             }
 
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready, IdentifierOwnershipId);
-            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null, IdentifierOwnershipId);
+            var parameters = VerificationParameters();
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready, parameters);
+            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
@@ -302,9 +344,9 @@ namespace Store.ViewModels.Device
                 ChBoxS = row.ChBoxS && row.IsSuccess,
                 ExploitStatusName = row.VerifyStatusStr,
                 NoteS = NewValuesText(row),
-                OwnershipS = Ownership,
-                DeviceConditionS = DeviceCondition,
-                EthTechStatRefS = EthTechStatRef
+                OwnershipS = _parameterChangeMode ? Ownership : null,
+                DeviceConditionS = _parameterChangeMode ? DeviceCondition : null,
+                EthTechStatRefS = _parameterChangeMode ? EthTechStatRef : null
             };
         }
 
@@ -378,9 +420,77 @@ namespace Store.ViewModels.Device
             "Некорректный MAC_новый"
         };
 
-        void AdjustRowsForOwnership()
+        void SetParameterMode(bool parameterMode)
         {
-            bool ownership = IdentifierOwnershipId != null;
+            if (_parameterChangeMode == parameterMode)
+                return;
+
+            _parameterChangeMode = parameterMode;
+            if (!parameterMode)
+            {
+                Ownership = null;
+                DeviceCondition = null;
+                EthTechStatRef = null;
+            }
+
+            NotifyPropertyChanged(() => ParameterChangeMode);
+            NotifyPropertyChanged(() => IdentifierChangeMode);
+            NotifyPropertyChanged(() => ShowParameterFields);
+
+            if (IdentifierChangeItems.Count == 0)
+                return;
+
+            KeepLocalMessages();
+            AdjustRowsForMode();
+            UpdateIdentifierChangeChecked();
+        }
+
+        static readonly string[] LocalMessages = new[]
+        {
+            "Не заполнен SN_текущий",
+            "Не задано ни одного нового значения",
+            "Некорректный MAC_текущий",
+            "Некорректный MAC_новый",
+            "Повторяющийся SN_текущий",
+            "Повторяющийся SN_новый",
+            "Повторяющийся MAC_новый"
+        };
+
+        void KeepLocalMessages()
+        {
+            var known = new Dictionary<string, bool>(StringComparer.Ordinal);
+            foreach (var message in LocalMessages)
+                known[message] = true;
+
+            foreach (var row in IdentifierChangeItems)
+            {
+                if (row == null)
+                    continue;
+
+                var left = new List<string>();
+                foreach (var part in (row.VerifyStatusStr ?? "").Split(new[] { "; " }, StringSplitOptions.None))
+                {
+                    if (part.Length > 0 && known.ContainsKey(part))
+                        left.Add(part);
+                }
+
+                row.VerifyStatusStr = left.Count == 0 ? null : string.Join("; ", left.ToArray());
+                if (left.Count == 0)
+                {
+                    row.VerifyStatusNum = null;
+                    row.ChBoxS = true;
+                }
+                else
+                {
+                    row.VerifyStatusNum = -1;
+                    row.ChBoxS = false;
+                }
+            }
+        }
+
+        void AdjustRowsForMode()
+        {
+            bool parameterMode = _parameterChangeMode;
             foreach (var row in IdentifierChangeItems)
             {
                 if (row == null)
@@ -388,7 +498,7 @@ namespace Store.ViewModels.Device
 
                 var hadError = row.VerifyStatusNum == -1;
                 var text = row.VerifyStatusStr ?? "";
-                if (ownership)
+                if (parameterMode)
                 {
                     foreach (var message in ReplacementMessages)
                         text = RemoveMessage(text, message);
@@ -412,7 +522,7 @@ namespace Store.ViewModels.Device
                     row.VerifyStatusNum = -1;
                     row.ChBoxS = false;
                 }
-                else if (!ownership && NoNewValues(row))
+                else if (!parameterMode && NoNewValues(row))
                 {
                     row.VerifyStatusNum = -1;
                     row.ChBoxS = false;
