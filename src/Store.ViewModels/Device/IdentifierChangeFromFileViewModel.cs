@@ -438,11 +438,25 @@ namespace Store.ViewModels.Device
             NotifyPropertyChanged(() => ShowParameterFields);
 
             if (IdentifierChangeItems.Count == 0)
+            {
+                IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
+                CheckedItems = new List<StoreDeviceStruct>();
+                LocalCurrentItem = null;
+                IdentifierChangeAllChecked = false;
                 return;
+            }
 
             KeepLocalMessages();
             AdjustRowsForMode();
+            foreach (var row in IdentifierChangeItems)
+            {
+                if (row != null)
+                    row.ChBoxS = false;
+            }
+
+            IdentifierChangeAllChecked = false;
             UpdateIdentifierChangeChecked();
+            LocalCurrentItem = null;
         }
 
         static readonly string[] LocalMessages = new[]
