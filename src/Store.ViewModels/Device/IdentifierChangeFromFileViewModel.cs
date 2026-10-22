@@ -594,7 +594,7 @@ namespace Store.ViewModels.Device
                 VerifyIdentifierChange server;
                 if (item != null && item.LineNo != null && byLine.TryGetValue(item.LineNo.Value, out server))
                 {
-                    server.ChBoxS = server.VerifyStatusNum != -1 && item.ChBoxS;
+                    server.ChBoxS = server.IsSuccess;
                     merged.Add(server);
                 }
                 else
