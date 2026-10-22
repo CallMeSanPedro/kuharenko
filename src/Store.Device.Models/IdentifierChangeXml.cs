@@ -21,13 +21,18 @@ namespace Store.Device.Models
         // parameters == null — смена идентификаторов: элементы параметров в XML не пишутся.
         public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, IdentifierChangeParameters parameters)
         {
+            return Build(storeDocumentId, rows, parameters, true);
+        }
+
+        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, IdentifierChangeParameters parameters, bool requireChecked)
+        {
             var xml = new StringBuilder();
             xml.Append("<ArrayOfIdentifierChange>");
             if (rows != null)
             {
                 foreach (var row in rows)
                 {
-                    if (row == null || !row.ChBoxS || row.VerifyStatusNum == -1)
+                    if (row == null || row.VerifyStatusNum == -1 || (requireChecked && !row.ChBoxS))
                         continue;
 
                     xml.Append("<IdentifierChange>");

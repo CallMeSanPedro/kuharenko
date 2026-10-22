@@ -252,13 +252,24 @@ namespace Store.ViewModels.Device
         [DependsOn("IdentifierChangeItems")]
         public bool CanVerifyIdentifierChange()
         {
-            return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(CanSend);
+            return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(CanVerifyRow);
+        }
+
+        bool CanVerifyRow(VerifyIdentifierChange row)
+        {
+            if (row == null || string.IsNullOrEmpty(row.SerialNumber))
+                return false;
+
+            if (_parameterChangeMode)
+                return !HasBlockingError(row);
+
+            return row.ChBoxS && row.CanAddBool;
         }
 
         public void VerifyIdentifierChangeRows()
         {
             AdjustRowsForMode();
-            var ready = IdentifierChangeItems.Where(CanSend).ToList();
+            var ready = IdentifierChangeItems.Where(CanVerifyRow).ToList();
             if (!ready.Any())
             {
                 UpdateIdentifierChangeChecked();
@@ -266,7 +277,7 @@ namespace Store.ViewModels.Device
             }
 
             var parameters = VerificationParameters();
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready, parameters);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready, parameters, !_parameterChangeMode);
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
@@ -443,6 +454,7 @@ namespace Store.ViewModels.Device
                 CheckedItems = new List<StoreDeviceStruct>();
                 LocalCurrentItem = null;
                 IdentifierChangeAllChecked = false;
+                RefreshVerifyCommand();
                 return;
             }
 
@@ -457,6 +469,14 @@ namespace Store.ViewModels.Device
             IdentifierChangeAllChecked = false;
             UpdateIdentifierChangeChecked();
             LocalCurrentItem = null;
+            RefreshVerifyCommand();
+        }
+
+        void RefreshVerifyCommand()
+        {
+            _verifyIdentifierChangeCommand = new DelegateCommand(VerifyIdentifierChangeRows, CanVerifyIdentifierChange);
+            NotifyPropertyChanged(() => VerifyIdentifierChangeCommand);
+            CommandManager.InvalidateRequerySuggested();
         }
 
         static readonly string[] LocalMessages = new[]
@@ -526,10 +546,7 @@ namespace Store.ViewModels.Device
                 if (string.IsNullOrEmpty(text))
                 {
                     if (hadError)
-                    {
                         row.VerifyStatusNum = null;
-                        row.ChBoxS = true;
-                    }
                 }
                 else if (hadError)
                 {
@@ -549,6 +566,24 @@ namespace Store.ViewModels.Device
             return string.IsNullOrEmpty(row.NewSerialNumber) &&
                    string.IsNullOrEmpty(row.NewMacAddress) &&
                    string.IsNullOrEmpty(row.NewPonSerial);
+        }
+
+        static bool HasBlockingError(VerifyIdentifierChange row)
+        {
+            if (row.VerifyStatusNum != -1)
+                return false;
+
+            var text = row.VerifyStatusStr ?? "";
+            if (text.Length == 0)
+                return true;
+
+            foreach (var part in text.Split(new[] { "; " }, StringSplitOptions.None))
+            {
+                if (part.Length > 0 && Array.IndexOf(ReplacementMessages, part) < 0)
+                    return true;
+            }
+
+            return false;
         }
 
         static string RemoveMessage(string text, string message)
