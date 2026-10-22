@@ -68,7 +68,7 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Command="{Binding Path=VerifyIdentifierChangeCommand}"
-                                ToolTipService.ToolTip="Проверить строки"
+                                ToolTipService.ToolTip="Проверить все строки файла"
                                 Content="Проверить"
                                 Style="{StaticResource ButtonChromelessStyle}"/>
                         <Border Style="{StaticResource SeparatorStyle}"/>

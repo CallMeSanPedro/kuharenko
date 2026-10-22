@@ -19,12 +19,14 @@ namespace Store.Device.Models
         }
 
         // parameters == null — смена идентификаторов: элементы параметров в XML не пишутся.
+        // selectedOnly: в документ попадают только отмеченные строки без локальной ошибки.
+        // Проверка передаёт selectedOnly = false и отправляет все строки файла.
         public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, IdentifierChangeParameters parameters)
         {
             return Build(storeDocumentId, rows, parameters, true);
         }
 
-        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, IdentifierChangeParameters parameters, bool requireChecked)
+        public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, IdentifierChangeParameters parameters, bool selectedOnly)
         {
             var xml = new StringBuilder();
             xml.Append("<ArrayOfIdentifierChange>");
@@ -32,7 +34,9 @@ namespace Store.Device.Models
             {
                 foreach (var row in rows)
                 {
-                    if (row == null || row.VerifyStatusNum == -1 || (requireChecked && !row.ChBoxS))
+                    if (row == null)
+                        continue;
+                    if (selectedOnly && (!row.ChBoxS || row.VerifyStatusNum == -1))
                         continue;
 
                     xml.Append("<IdentifierChange>");

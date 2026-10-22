@@ -247,37 +247,27 @@ namespace Store.ViewModels.Device
                 VerifyIdentifierChangeRows();
             else
                 UpdateIdentifierChangeChecked();
+
+            RefreshVerifyCommand();
         }
 
         [DependsOn("IdentifierChangeItems")]
         public bool CanVerifyIdentifierChange()
         {
-            return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(CanVerifyRow);
-        }
-
-        bool CanVerifyRow(VerifyIdentifierChange row)
-        {
-            if (row == null || string.IsNullOrEmpty(row.SerialNumber))
-                return false;
-
-            if (_parameterChangeMode)
-                return !HasBlockingError(row);
-
-            return row.ChBoxS && row.CanAddBool;
+            return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(row => row != null);
         }
 
         public void VerifyIdentifierChangeRows()
         {
             AdjustRowsForMode();
-            var ready = IdentifierChangeItems.Where(CanVerifyRow).ToList();
-            if (!ready.Any())
+            if (!CanVerifyIdentifierChange())
             {
                 UpdateIdentifierChangeChecked();
                 return;
             }
 
             var parameters = VerificationParameters();
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, ready, parameters, !_parameterChangeMode);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, IdentifierChangeItems, parameters, false);
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
@@ -287,10 +277,12 @@ namespace Store.ViewModels.Device
                 NotifyPropertyChanged(() => IdentifierChangeItems);
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
+                RefreshVerifyCommand();
             }, z =>
             {
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
+                RefreshVerifyCommand();
             });
         }
 
@@ -568,24 +560,6 @@ namespace Store.ViewModels.Device
                    string.IsNullOrEmpty(row.NewPonSerial);
         }
 
-        static bool HasBlockingError(VerifyIdentifierChange row)
-        {
-            if (row.VerifyStatusNum != -1)
-                return false;
-
-            var text = row.VerifyStatusStr ?? "";
-            if (text.Length == 0)
-                return true;
-
-            foreach (var part in text.Split(new[] { "; " }, StringSplitOptions.None))
-            {
-                if (part.Length > 0 && Array.IndexOf(ReplacementMessages, part) < 0)
-                    return true;
-            }
-
-            return false;
-        }
-
         static string RemoveMessage(string text, string message)
         {
             if (string.IsNullOrEmpty(text))
@@ -600,11 +574,6 @@ namespace Store.ViewModels.Device
             }
 
             return string.Join("; ", left.ToArray());
-        }
-
-        static bool CanSend(VerifyIdentifierChange row)
-        {
-            return row != null && row.ChBoxS && row.CanAddBool && !string.IsNullOrEmpty(row.SerialNumber);
         }
 
         static List<VerifyIdentifierChange> MergeVerifyResult(List<VerifyIdentifierChange> current, List<VerifyIdentifierChange> result)
