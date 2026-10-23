@@ -1,0 +1,21 @@
+<!-- Ресурсы для Resources формы документа, рядом с AddDeviceFromFileViewModel и DialogDirector AddDeviceFromFile.
+     Ресурс ViewModel объявить так же, как объявлен AddDeviceFromFileViewModel. Префиксы Controls3 и device взять из этой же формы. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:Controls3="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
+                    xmlns:device="clr-namespace:Store.ViewModels.Device;assembly=Store.ViewModels">
+
+    <device:IdentifierChangeFromFileViewModel x:Key="IdentifierChangeFromFileViewModel"/>
+
+    <Controls3:DialogDirector x:Key="IdentifierChangeFromFile"
+                              TargetViewModel="{Binding}"
+                              ViewModel="{Binding Source={StaticResource IdentifierChangeFromFileViewModel}}"
+                              AcceptAllChanges="True"
+                              Operation="Select"
+                              OKButtonContent="Добавить"
+                              CancelButtonContent="Закрыть"
+                              Title="Загрузка и проверка смены серийных номеров"
+                              TargetViewModelIsMaster="True"
+                              ApplyCommand="{Binding Path=AddIdentifierChangeCommand}"
+                              ApplyCommandParameter="{Binding Source={StaticResource IdentifierChangeFromFileViewModel}}"/>
+</ResourceDictionary>
