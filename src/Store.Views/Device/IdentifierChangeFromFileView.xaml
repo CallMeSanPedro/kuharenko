@@ -115,6 +115,7 @@
                                    IsReadOnly="True"
                                    AutoGenerateColumns="True"
                                    Reflection="True"
+                                   IgnoreParamList="{Binding Path=IdentifierChangeIgnoreParamList, Mode=OneWay}"
                                    ItemsSource="{Binding Path=IdentifierChangeItems, Mode=TwoWay}"
                                    SelectedItem="{Binding Path=IdentifierChangeCurrent, Mode=TwoWay}"
                                    HorizontalScrollBarVisibility="Auto"

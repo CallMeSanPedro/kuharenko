@@ -121,6 +121,14 @@ namespace Store.ViewModels.Device
             set { SetParameterMode(value == 1); }
         }
 
+        static readonly string ParameterModeIgnoreParamList =
+            "LineNo;MacAddress;PonSerial;NewSerialNumber;NewMacAddress;NewPonSerial;CommId;CardMacAddress;CardPonSerial;StoreDocumentId;FilialKod;VerifyStatusNum;CanAddBool";
+
+        public string IdentifierChangeIgnoreParamList
+        {
+            get { return _parameterChangeMode ? ParameterModeIgnoreParamList : ""; }
+        }
+
         public decimal? IdentifierOwnershipId
         {
             get { return _parameterChangeMode && Ownership != null ? Ownership.OwnershipId : (decimal?)null; }
@@ -446,6 +454,7 @@ namespace Store.ViewModels.Device
             NotifyPropertyChanged(() => IdentifierChangeMode);
             NotifyPropertyChanged(() => ShowParameterFields);
             NotifyPropertyChanged(() => LoadModeIndex);
+            NotifyPropertyChanged(() => IdentifierChangeIgnoreParamList);
 
             if (IdentifierChangeItems.Count == 0)
             {
@@ -453,6 +462,7 @@ namespace Store.ViewModels.Device
                 CheckedItems = new List<StoreDeviceStruct>();
                 LocalCurrentItem = null;
                 IdentifierChangeAllChecked = false;
+                IdentifierChangeItems = new List<VerifyIdentifierChange>();
                 RefreshVerifyCommand();
                 return;
             }
@@ -468,6 +478,7 @@ namespace Store.ViewModels.Device
             IdentifierChangeAllChecked = false;
             UpdateIdentifierChangeChecked();
             LocalCurrentItem = null;
+            IdentifierChangeItems = IdentifierChangeItems.ToList();
             RefreshVerifyCommand();
         }
 
