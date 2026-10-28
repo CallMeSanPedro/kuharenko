@@ -6,7 +6,8 @@
 -- parameter_change = 1: новые SN, MAC и PON не проверяются.
 -- Статус exploit_status_id = 3 («у абонента») требуется только если
 -- форма владения меняется на «Собственность абонента».
--- В остальных случаях статус эксплуатации на поиск не влияет.
+-- В смене идентификаторов и при любой другой форме владения экземпляр
+-- должен быть в статусе «на складе» и на складе документа.
 -- Форма владения, состояние и тех. состояние читаются из ownership_id,
 -- dev_condition_id и sosttech_kod. В режиме смены идентификаторов этих элементов нет.
 -- Экземпляр оборудования функция не изменяет.
@@ -48,6 +49,8 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
   v_card_mac varchar2(100);
   v_card_pon varchar2(100);
   v_exploit  number;
+  v_doc_uzel number;
+  v_eq_uzel  number;
   v_cnt      number;
   v_key      varchar2(200);
   v_blocked  boolean;
@@ -128,6 +131,27 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
         return false;
     end;
     return v_name = 'собственность абонента';
+  end;
+
+  function on_store_status(p_status_id in number) return boolean is
+    v_name varchar2(400);
+  begin
+    if p_status_id is null then
+      return false;
+    end if;
+    begin
+      -- Справочник статусов эксплуатации. Колонку имени поправить, если в базе она называется иначе.
+      select lower(trim(s.exploit_status_name))
+        into v_name
+        from exploit_status s
+       where s.exploit_status_id = p_status_id;
+    exception
+      when no_data_found then
+        return false;
+      when too_many_rows then
+        return false;
+    end;
+    return v_name = 'на складе';
   end;
 
   function norm_mac(p_value in varchar2) return varchar2 is
@@ -260,6 +284,17 @@ begin
       raise_application_error(-20001, 'Неверный формат xml ' || sqlerrm);
   end;
 
+  begin
+    -- Склад документа. Колонку поправить, если склад хранится в другом поле.
+    select d.uzel
+      into v_doc_uzel
+      from store_documents d
+     where d.store_document_id = p_store_document_id;
+  exception
+    when no_data_found then
+      v_doc_uzel := null;
+  end;
+
   open v_cur(v_xml);
   fetch v_cur bulk collect into v_tab;
   close v_cur;
@@ -317,8 +352,9 @@ begin
                (select max(p.exploit_status_id)
                   from store_device_param p
                  where p.comm_id = c.comm_id
-                   and p.priznakdel = 0)
-          into v_comm_id, v_filial, v_card_mac, v_card_pon, v_exploit
+                   and p.priznakdel = 0),
+               c.uzel
+          into v_comm_id, v_filial, v_card_mac, v_card_pon, v_exploit, v_eq_uzel
           from eth_comm_atu c
           left join store_infouzel u on u.infouzel_kod = c.uzel
          where c.priznakdel = 0
@@ -362,8 +398,17 @@ begin
       add_error(i, 'Оборудование принадлежит к другому филиалу');
     end if;
 
-    if subscriber_ownership(v_tab(i).ownership_id) and nvl(v_exploit, -1) <> c_status_at_subscriber then
-      add_error(i, 'Статус эксплуатации оборудования не соответствует значению «у абонента»');
+    if subscriber_ownership(v_tab(i).ownership_id) then
+      if nvl(v_exploit, -1) <> c_status_at_subscriber then
+        add_error(i, 'Статус эксплуатации оборудования не соответствует значению «у абонента»');
+      end if;
+    else
+      if not on_store_status(v_exploit) then
+        add_error(i, 'Статус эксплуатации оборудования не соответствует значению «на складе»');
+      end if;
+      if nvl(v_eq_uzel, -1) <> nvl(v_doc_uzel, -2) then
+        add_error(i, 'Склад проведения корректировки не соответствует складу фактического размещения оборудования');
+      end if;
     end if;
 
     if v_tab(i).parameter_change = 0 and not sn_changes(v_tab(i)) and not mac_changes(v_tab(i)) and
