@@ -79,39 +79,35 @@
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Row="1" Style="{StaticResource MainContentBorders}" BorderThickness="1" Margin="3" Padding="3">
-                    <StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton Content="Смена идентификаторов"
-                                         GroupName="IdentifierLoadMode"
-                                         Margin="3"
-                                         VerticalAlignment="Center"
-                                         IsChecked="{Binding Path=IdentifierChangeMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                            <RadioButton Content="Смена параметров"
-                                         GroupName="IdentifierLoadMode"
-                                         Margin="3"
-                                         VerticalAlignment="Center"
-                                         IsChecked="{Binding Path=ParameterChangeMode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TabControl Grid.Row="1" Margin="3"
+                            SelectedIndex="{Binding Path=LoadModeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TabItem Header="Смена идентификаторов">
+                        <TextBlock Margin="6" TextWrapping="Wrap"
+                                   Text="Меняются SN, MAC и PON из файла. Форма владения, состояние и тех. состояние не заполняются и на проверку не передаются. Экземпляр должен быть в статусе «на складе» и на складе документа."/>
+                    </TabItem>
+                    <TabItem Header="Смена параметров">
+                        <StackPanel Margin="3">
+                            <TextBlock Margin="3" TextWrapping="Wrap"
+                                       Text="Форма владения, состояние и тех. состояние задаются один раз для всех строк. Новые SN, MAC и PON из файла не проверяются. Для «Собственность абонента» нужен статус «у абонента», для остальных форм — статус «на складе» и склад документа."/>
+                            <StackPanel Orientation="Horizontal">
+                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения"/>
+                                <Controls:ComboBox Margin="3" Width="180" x:Name="Ownership"
+                                                   ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
+                                                   SelectedItem="{Binding Path=Ownership, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
+                                                   IsEnabled="{Binding Path=CanSelectOwnerschip}"/>
+                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние"/>
+                                <Controls:ComboBox Margin="3" Width="180" x:Name="DeviceCondition"
+                                                   ItemsSource="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
+                                                   SelectedItem="{Binding Path=DeviceCondition, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
+                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Тех. состояние"/>
+                                <Controls:ComboBox Margin="3" Width="180" x:Name="EthTechStatRef"
+                                                   ItemsSource="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
+                                                   SelectedItem="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
+                                                   IsEnabled="{Binding Path=CanSelectTechStat}"/>
+                            </StackPanel>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal"
-                                    Visibility="{Binding Path=ShowParameterFields, Converter={x:Static controls:BoolToVisibilityConverter.Instance}}">
-                        <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения"/>
-                        <Controls:ComboBox Margin="3" Width="180" x:Name="Ownership"
-                                           ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
-                                           SelectedItem="{Binding Path=Ownership, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
-                                           IsEnabled="{Binding Path=CanSelectOwnerschip}"/>
-                        <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние"/>
-                        <Controls:ComboBox Margin="3" Width="180" x:Name="DeviceCondition"
-                                           ItemsSource="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
-                                           SelectedItem="{Binding Path=DeviceCondition, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
-                        <Controls:Label VerticalAlignment="Center" Margin="3" Content="Тех. состояние"/>
-                        <Controls:ComboBox Margin="3" Width="180" x:Name="EthTechStatRef"
-                                           ItemsSource="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
-                                           SelectedItem="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
-                                           IsEnabled="{Binding Path=CanSelectTechStat}"/>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                    </TabItem>
+                </TabControl>
 
                 <Controls:DataGrid Grid.Row="2"
                                    Name="cdgIdentifierChange"

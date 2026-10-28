@@ -115,6 +115,12 @@ namespace Store.ViewModels.Device
             get { return _parameterChangeMode; }
         }
 
+        public int LoadModeIndex
+        {
+            get { return _parameterChangeMode ? 1 : 0; }
+            set { SetParameterMode(value == 1); }
+        }
+
         public decimal? IdentifierOwnershipId
         {
             get { return _parameterChangeMode && Ownership != null ? Ownership.OwnershipId : (decimal?)null; }
@@ -439,6 +445,7 @@ namespace Store.ViewModels.Device
             NotifyPropertyChanged(() => ParameterChangeMode);
             NotifyPropertyChanged(() => IdentifierChangeMode);
             NotifyPropertyChanged(() => ShowParameterFields);
+            NotifyPropertyChanged(() => LoadModeIndex);
 
             if (IdentifierChangeItems.Count == 0)
             {
