@@ -3,11 +3,13 @@
 -- MAC и PON читаются из store_device_param.mac_address и store_device_param.pon_serial.
 -- Пустой p_filial_kod отключает проверку филиала.
 -- Режим и параметры приходят только в XML строки.
--- parameter_change = 1: поиск по текущему SN среди оборудования
--- со статусом exploit_status_id = 5. Новые SN, MAC и PON не проверяются.
+-- parameter_change = 1: новые SN, MAC и PON не проверяются.
+-- Статус exploit_status_id = 3 («у абонента») требуется только если
+-- форма владения меняется на «Собственность абонента».
+-- В остальных случаях статус эксплуатации на поиск не влияет.
 -- Форма владения, состояние и тех. состояние читаются из ownership_id,
 -- dev_condition_id и sosttech_kod. В режиме смены идентификаторов этих элементов нет.
--- Карточку функция не изменяет.
+-- Экземпляр оборудования функция не изменяет.
 --
 -- v_rc := verify_identifier_change(p_store_document_id, p_xml, p_filial_kod);
 --
@@ -33,8 +35,10 @@
 create or replace function verify_identifier_change(p_store_document_id in number,
                                                      p_xml               in clob,
                                                      p_filial_kod        in number default null) return sys_refcursor is
-  -- Как в verify_change_file_to_doc: exploit_status_id = 5 не считается наличием на складе.
+  -- Для уникальности нового SN и MAC экземпляр в этом статусе номер не занимает.
   c_status_not_on_store constant number := 5;
+  -- «У абонента». Проверяется только при смене формы владения на «Собственность абонента».
+  c_status_at_subscriber constant number := 3;
 
   v_xml      xmltype;
   v_ret      sys_refcursor;
@@ -43,6 +47,7 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
   v_filial   number;
   v_card_mac varchar2(100);
   v_card_pon varchar2(100);
+  v_exploit  number;
   v_cnt      number;
   v_key      varchar2(200);
   v_blocked  boolean;
@@ -103,6 +108,27 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
   v_current_sn t_count_map;
   v_new_sn     t_count_map;
   v_new_mac    t_count_map;
+
+  function subscriber_ownership(p_ownership_id in number) return boolean is
+    v_name varchar2(400);
+  begin
+    if p_ownership_id is null then
+      return false;
+    end if;
+    begin
+      -- Справочник форм владения. Колонку имени поправить, если в базе она называется иначе.
+      select lower(trim(o.ownership_name))
+        into v_name
+        from ownership o
+       where o.ownership_id = p_ownership_id;
+    exception
+      when no_data_found then
+        return false;
+      when too_many_rows then
+        return false;
+    end;
+    return v_name = 'собственность абонента';
+  end;
 
   function norm_mac(p_value in varchar2) return varchar2 is
   begin
@@ -270,14 +296,12 @@ begin
        and exists (select 1
                      from store_device_param p
                     where p.comm_id = c.comm_id
-                      and p.priznakdel = 0
-                      and (v_tab(i).parameter_change = 0 or
-                          nvl(p.exploit_status_id, -1) = c_status_not_on_store));
+                      and p.priznakdel = 0);
 
     if v_cnt = 0 then
       add_error(i, 'Оборудование не найдено');
     elsif v_cnt > 1 then
-      add_error(i, 'Найдено больше одной карточки');
+          add_error(i, 'Найдено больше одного экземпляра');
     else
       begin
         select c.comm_id,
@@ -285,16 +309,16 @@ begin
                (select max(p.mac_address)
                   from store_device_param p
                  where p.comm_id = c.comm_id
-                   and p.priznakdel = 0
-                   and (v_tab(i).parameter_change = 0 or
-                       nvl(p.exploit_status_id, -1) = c_status_not_on_store)),
+                   and p.priznakdel = 0),
                (select max(p.pon_serial)
                   from store_device_param p
                  where p.comm_id = c.comm_id
-                   and p.priznakdel = 0
-                   and (v_tab(i).parameter_change = 0 or
-                       nvl(p.exploit_status_id, -1) = c_status_not_on_store))
-          into v_comm_id, v_filial, v_card_mac, v_card_pon
+                   and p.priznakdel = 0),
+               (select max(p.exploit_status_id)
+                  from store_device_param p
+                 where p.comm_id = c.comm_id
+                   and p.priznakdel = 0)
+          into v_comm_id, v_filial, v_card_mac, v_card_pon, v_exploit
           from eth_comm_atu c
           left join store_infouzel u on u.infouzel_kod = c.uzel
          where c.priznakdel = 0
@@ -302,15 +326,13 @@ begin
            and exists (select 1
                          from store_device_param p
                         where p.comm_id = c.comm_id
-                          and p.priznakdel = 0
-                          and (v_tab(i).parameter_change = 0 or
-                              nvl(p.exploit_status_id, -1) = c_status_not_on_store));
+                          and p.priznakdel = 0);
       exception
         when no_data_found then
           add_error(i, 'Оборудование не найдено');
         when too_many_rows then
           v_comm_id := null;
-          add_error(i, 'Найдено больше одной карточки');
+          add_error(i, 'Найдено больше одного экземпляра');
       end;
     end if;
 
@@ -338,6 +360,10 @@ begin
 
     if p_filial_kod is not null and v_filial is not null and v_filial <> p_filial_kod then
       add_error(i, 'Оборудование принадлежит к другому филиалу');
+    end if;
+
+    if subscriber_ownership(v_tab(i).ownership_id) and nvl(v_exploit, -1) <> c_status_at_subscriber then
+      add_error(i, 'Статус эксплуатации оборудования не соответствует значению «у абонента»');
     end if;
 
     if v_tab(i).parameter_change = 0 and not sn_changes(v_tab(i)) and not mac_changes(v_tab(i)) and
