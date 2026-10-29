@@ -4,6 +4,7 @@
 --   v_cnt := close_identifier_change_doc(p_store_document_id);
 -- Источник — store_documents.xml_file, корень ArrayOfIdentifierChangeResult.
 -- Пустое новое значение заменяется текущим, чтобы lite-процедура не очищала поле.
+-- Пустые форма владения и тех. состояние в вызов не передаются.
 -- p_exploit_status_id и p_recovery_status_id остаются выключенными:
 -- в XML документа этих статусов нет.
 
@@ -11,6 +12,40 @@ create or replace function close_identifier_change_doc(p_store_document_id in nu
   v_xml clob;
   v_ret number;
   v_cnt pls_integer := 0;
+
+  procedure apply_lite(p_comm_id          in number,
+                       p_serial           in varchar2,
+                       p_mac              in varchar2,
+                       p_pon              in varchar2,
+                       p_ownership_id     in number,
+                       p_sosttech_kod     in number) is
+  begin
+    if p_ownership_id is not null and p_sosttech_kod is not null then
+      v_ret := store_utils.store_device_update_lite(p_eth_comm_atu_id => p_comm_id,
+                                                     p_eth_serial_numb => p_serial,
+                                                     p_eth_mac_address => p_mac,
+                                                     p_pon_serial      => p_pon,
+                                                     p_ownership_id    => p_ownership_id,
+                                                     p_sosttech_kod    => p_sosttech_kod);
+    elsif p_ownership_id is not null then
+      v_ret := store_utils.store_device_update_lite(p_eth_comm_atu_id => p_comm_id,
+                                                     p_eth_serial_numb => p_serial,
+                                                     p_eth_mac_address => p_mac,
+                                                     p_pon_serial      => p_pon,
+                                                     p_ownership_id    => p_ownership_id);
+    elsif p_sosttech_kod is not null then
+      v_ret := store_utils.store_device_update_lite(p_eth_comm_atu_id => p_comm_id,
+                                                     p_eth_serial_numb => p_serial,
+                                                     p_eth_mac_address => p_mac,
+                                                     p_pon_serial      => p_pon,
+                                                     p_sosttech_kod    => p_sosttech_kod);
+    else
+      v_ret := store_utils.store_device_update_lite(p_eth_comm_atu_id => p_comm_id,
+                                                     p_eth_serial_numb => p_serial,
+                                                     p_eth_mac_address => p_mac,
+                                                     p_pon_serial      => p_pon);
+    end if;
+  end;
 begin
   if p_store_document_id is null then
     raise_application_error(-20001, 'Не указан документ');
@@ -76,17 +111,12 @@ begin
                     on p.comm_id = c.comm_id
                    and p.priznakdel = 0
                  where xml_tab.verify_status_num = 1) loop
-    v_ret := store_utils.store_device_update_lite(p_eth_comm_atu_id => v_rec.comm_id,
-                                                   p_eth_serial_numb => nvl(v_rec.new_serial_number, v_rec.serial_number),
-                                                   p_eth_mac_address => nvl(v_rec.new_mac_address,
-                                                                            nvl(v_rec.card_mac_address, v_rec.mac_address)),
-                                                   p_pon_serial      => nvl(v_rec.new_pon_serial,
-                                                                            nvl(v_rec.card_pon_serial, v_rec.pon_serial)),
-                                                   p_ownership_id    => v_rec.ownership_id,
-                                                   p_sosttech_kod    => v_rec.sosttech_kod
-                                                   -- p_exploit_status_id => ltu_atua_store.c_exploit_on_work,
-                                                   -- p_recovery_status_id => c_recover_off
-                                                   );
+    apply_lite(v_rec.comm_id,
+               nvl(v_rec.new_serial_number, v_rec.serial_number),
+               nvl(v_rec.new_mac_address, nvl(v_rec.card_mac_address, v_rec.mac_address)),
+               nvl(v_rec.new_pon_serial, nvl(v_rec.card_pon_serial, v_rec.pon_serial)),
+               v_rec.ownership_id,
+               v_rec.sosttech_kod);
 
     if v_rec.dev_condition_id is not null then
       update store_device_param p

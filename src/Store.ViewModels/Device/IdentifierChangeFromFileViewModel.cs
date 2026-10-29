@@ -22,7 +22,7 @@ namespace Store.ViewModels.Device
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
-        private bool _parameterChangeMode;
+        private int _loadMode;
         private int _badMacCount;
 
         public ICommand DownloadIdentifierTemplateCommand
@@ -90,35 +90,23 @@ namespace Store.ViewModels.Device
 
         public bool IdentifierChangeMode
         {
-            get { return !_parameterChangeMode; }
-            set
-            {
-                if (value)
-                    SetParameterMode(false);
-            }
+            get { return _loadMode == 0; }
         }
 
-        public bool ParameterChangeMode
+        public bool OwnershipChangeMode
         {
-            get { return _parameterChangeMode; }
-            set
-            {
-                if (value)
-                    SetParameterMode(true);
-                else if (_parameterChangeMode)
-                    SetParameterMode(false);
-            }
+            get { return _loadMode == 1; }
         }
 
-        public bool ShowParameterFields
+        public bool StatusChangeMode
         {
-            get { return _parameterChangeMode; }
+            get { return _loadMode == 2; }
         }
 
         public int LoadModeIndex
         {
-            get { return _parameterChangeMode ? 1 : 0; }
-            set { SetParameterMode(value == 1); }
+            get { return _loadMode; }
+            set { SetLoadMode(value); }
         }
 
         static readonly string ParameterModeIgnoreParamList =
@@ -126,35 +114,44 @@ namespace Store.ViewModels.Device
 
         public string IdentifierChangeIgnoreParamList
         {
-            get { return _parameterChangeMode ? ParameterModeIgnoreParamList : ""; }
+            get { return _loadMode == 0 ? "" : ParameterModeIgnoreParamList; }
         }
 
         public decimal? IdentifierOwnershipId
         {
-            get { return _parameterChangeMode && Ownership != null ? Ownership.OwnershipId : (decimal?)null; }
+            get { return _loadMode == 1 && Ownership != null ? Ownership.OwnershipId : (decimal?)null; }
         }
 
         public decimal? IdentifierConditionId
         {
-            get { return _parameterChangeMode && DeviceCondition != null ? DeviceCondition.DevConditionId : (decimal?)null; }
+            get { return _loadMode == 2 && DeviceCondition != null ? DeviceCondition.DevConditionId : (decimal?)null; }
         }
 
         public decimal? IdentifierTechStatusId
         {
-            get { return _parameterChangeMode && EthTechStatRef != null ? EthTechStatRef.SosttechKod : (decimal?)null; }
+            get { return _loadMode == 2 && EthTechStatRef != null ? EthTechStatRef.SosttechKod : (decimal?)null; }
         }
 
         public IdentifierChangeParameters VerificationParameters()
         {
-            if (!_parameterChangeMode)
-                return null;
-
-            return new IdentifierChangeParameters
+            if (_loadMode == 1)
             {
-                OwnershipId = IdentifierOwnershipId,
-                DevConditionId = IdentifierConditionId,
-                SosttechKod = IdentifierTechStatusId
-            };
+                return new IdentifierChangeParameters
+                {
+                    OwnershipId = IdentifierOwnershipId
+                };
+            }
+
+            if (_loadMode == 2)
+            {
+                return new IdentifierChangeParameters
+                {
+                    DevConditionId = IdentifierConditionId,
+                    SosttechKod = IdentifierTechStatusId
+                };
+            }
+
+            return null;
         }
 
         public bool? IdentifierChangeAllChecked
@@ -361,9 +358,9 @@ namespace Store.ViewModels.Device
                 ChBoxS = row.ChBoxS && row.IsSuccess,
                 ExploitStatusName = row.VerifyStatusStr,
                 NoteS = NewValuesText(row),
-                OwnershipS = _parameterChangeMode ? Ownership : null,
-                DeviceConditionS = _parameterChangeMode ? DeviceCondition : null,
-                EthTechStatRefS = _parameterChangeMode ? EthTechStatRef : null
+                OwnershipS = _loadMode == 1 ? Ownership : null,
+                DeviceConditionS = _loadMode == 2 ? DeviceCondition : null,
+                EthTechStatRefS = _loadMode == 2 ? EthTechStatRef : null
             };
         }
 
@@ -437,22 +434,25 @@ namespace Store.ViewModels.Device
             "Некорректный MAC_новый"
         };
 
-        void SetParameterMode(bool parameterMode)
+        void SetLoadMode(int loadMode)
         {
-            if (_parameterChangeMode == parameterMode)
+            if (loadMode < 0 || loadMode > 2)
+                loadMode = 0;
+            if (_loadMode == loadMode)
                 return;
 
-            _parameterChangeMode = parameterMode;
-            if (!parameterMode)
-            {
+            _loadMode = loadMode;
+            if (loadMode != 1)
                 Ownership = null;
+            if (loadMode != 2)
+            {
                 DeviceCondition = null;
                 EthTechStatRef = null;
             }
 
-            NotifyPropertyChanged(() => ParameterChangeMode);
             NotifyPropertyChanged(() => IdentifierChangeMode);
-            NotifyPropertyChanged(() => ShowParameterFields);
+            NotifyPropertyChanged(() => OwnershipChangeMode);
+            NotifyPropertyChanged(() => StatusChangeMode);
             NotifyPropertyChanged(() => LoadModeIndex);
             NotifyPropertyChanged(() => IdentifierChangeIgnoreParamList);
 
@@ -534,7 +534,7 @@ namespace Store.ViewModels.Device
 
         void AdjustRowsForMode()
         {
-            bool parameterMode = _parameterChangeMode;
+            bool parameterMode = _loadMode != 0;
             foreach (var row in IdentifierChangeItems)
             {
                 if (row == null)

@@ -83,18 +83,26 @@
                             SelectedIndex="{Binding Path=LoadModeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <TabItem Header="Смена идентификаторов">
                         <TextBlock Margin="6" TextWrapping="Wrap"
-                                   Text="Меняются SN, MAC и PON из файла. Форма владения, состояние и тех. состояние не заполняются и на проверку не передаются. Экземпляр должен быть в статусе «на складе» и на складе документа."/>
+                                   Text="Меняются SN, MAC и PON из файла. Форма владения, состояние и тех. состояние на проверку не передаются. Экземпляр должен быть в статусе «на складе» и на складе документа."/>
                     </TabItem>
-                    <TabItem Header="Смена параметров">
+                    <TabItem Header="Смена формы владения">
                         <StackPanel Margin="3">
                             <TextBlock Margin="3" TextWrapping="Wrap"
-                                       Text="Форма владения, состояние и тех. состояние задаются один раз для всех строк. Новые SN, MAC и PON из файла не проверяются. Для «Собственность абонента» нужен статус «у абонента», для остальных форм — статус «на складе» и склад документа."/>
+                                       Text="Форма владения задаётся один раз для всех строк. Состояние и тех. состояние на проверку не передаются. Новые SN, MAC и PON из файла не проверяются. Для «Собственность абонента» нужен статус «у абонента», для остальных форм — статус «на складе» и склад документа."/>
                             <StackPanel Orientation="Horizontal">
                                 <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения"/>
                                 <Controls:ComboBox Margin="3" Width="180" x:Name="Ownership"
                                                    ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
                                                    SelectedItem="{Binding Path=Ownership, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
                                                    IsEnabled="{Binding Path=CanSelectOwnerschip}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </TabItem>
+                    <TabItem Header="Смена состояния и тех. состояния">
+                        <StackPanel Margin="3">
+                            <TextBlock Margin="3" TextWrapping="Wrap"
+                                       Text="Состояние и тех. состояние задаются один раз для всех строк. Форма владения на проверку не передаётся. Новые SN, MAC и PON из файла не проверяются. Экземпляр должен быть в статусе «на складе» и на складе документа."/>
+                            <StackPanel Orientation="Horizontal">
                                 <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние"/>
                                 <Controls:ComboBox Margin="3" Width="180" x:Name="DeviceCondition"
                                                    ItemsSource="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"

@@ -19,6 +19,8 @@ namespace Store.Device.Models
         }
 
         // parameters == null — смена идентификаторов: элементы параметров в XML не пишутся.
+        // Смена формы владения заполняет только ownership_id.
+        // Смена состояния и тех. состояния заполняет dev_condition_id и sosttech_kod.
         // selectedOnly: в документ попадают только отмеченные строки без локальной ошибки.
         // Проверка передаёт selectedOnly = false и отправляет все строки файла.
         public static string Build(decimal? storeDocumentId, IList<VerifyIdentifierChange> rows, IdentifierChangeParameters parameters)
@@ -51,9 +53,12 @@ namespace Store.Device.Models
                     if (parameters != null)
                     {
                         Append(xml, "parameter_change", "1");
-                        Append(xml, "ownership_id", NumberText(parameters.OwnershipId));
-                        Append(xml, "dev_condition_id", NumberText(parameters.DevConditionId));
-                        Append(xml, "sosttech_kod", NumberText(parameters.SosttechKod));
+                        if (parameters.OwnershipId.HasValue)
+                            Append(xml, "ownership_id", NumberText(parameters.OwnershipId));
+                        if (parameters.DevConditionId.HasValue)
+                            Append(xml, "dev_condition_id", NumberText(parameters.DevConditionId));
+                        if (parameters.SosttechKod.HasValue)
+                            Append(xml, "sosttech_kod", NumberText(parameters.SosttechKod));
                     }
                     xml.Append("</IdentifierChange>");
                 }

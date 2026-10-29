@@ -128,9 +128,15 @@ begin
       tag('verify_status_str', v_row.verify_status_str);
       if v_parameter_change = 1 then
         tag('parameter_change', '1');
-        tag('ownership_id', to_char(p_ownership_id));
-        tag('dev_condition_id', to_char(p_dev_condition_id));
-        tag('sosttech_kod', to_char(p_sosttech_kod));
+        if p_ownership_id is not null then
+          tag('ownership_id', to_char(p_ownership_id));
+        end if;
+        if p_dev_condition_id is not null then
+          tag('dev_condition_id', to_char(p_dev_condition_id));
+        end if;
+        if p_sosttech_kod is not null then
+          tag('sosttech_kod', to_char(p_sosttech_kod));
+        end if;
       end if;
       v_doc_xml := v_doc_xml || '</IdentifierChangeResult>';
 

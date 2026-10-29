@@ -72,9 +72,15 @@ begin
     tag('new_pon_serial', r.new_pon_serial);
     if nvl(r.parameter_change, 0) = 1 then
       tag('parameter_change', '1');
-      tag('ownership_id', to_char(r.ownership_id));
-      tag('dev_condition_id', to_char(r.dev_condition_id));
-      tag('sosttech_kod', to_char(r.sosttech_kod));
+      if r.ownership_id is not null then
+        tag('ownership_id', to_char(r.ownership_id));
+      end if;
+      if r.dev_condition_id is not null then
+        tag('dev_condition_id', to_char(r.dev_condition_id));
+      end if;
+      if r.sosttech_kod is not null then
+        tag('sosttech_kod', to_char(r.sosttech_kod));
+      end if;
     end if;
     v_xml := v_xml || '</IdentifierChange>';
   end loop;

@@ -4,12 +4,14 @@
 -- Пустой p_filial_kod отключает проверку филиала.
 -- Режим и параметры приходят только в XML строки.
 -- parameter_change = 1: новые SN, MAC и PON не проверяются.
+-- Вкладка формы владения передаёт только ownership_id.
+-- Вкладка состояния и тех. состояния передаёт dev_condition_id и sosttech_kod.
 -- Статус exploit_status_id = 3 («у абонента») требуется только если
 -- форма владения меняется на «Собственность абонента».
--- В смене идентификаторов и при любой другой форме владения экземпляр
--- должен быть в статусе «на складе» и на складе документа.
--- Форма владения, состояние и тех. состояние читаются из ownership_id,
--- dev_condition_id и sosttech_kod. В режиме смены идентификаторов этих элементов нет.
+-- В смене идентификаторов, при смене состояния и тех. состояния
+-- и при любой другой форме владения экземпляр должен быть в статусе
+-- «на складе» и на складе документа.
+-- В режиме смены идентификаторов элементов параметров нет.
 -- Экземпляр оборудования функция не изменяет.
 --
 -- v_rc := verify_identifier_change(p_store_document_id, p_xml, p_filial_kod);
@@ -27,10 +29,13 @@
 --   </IdentifierChange>
 -- </ArrayOfIdentifierChange>
 --
--- Смена параметров, те же элементы плюс:
+-- Смена формы владения, те же элементы плюс:
 --   <parameter_change>1</parameter_change>
 --   <ownership_id>10</ownership_id>
---   <dev_condition_id></dev_condition_id>
+--
+-- Смена состояния и тех. состояния:
+--   <parameter_change>1</parameter_change>
+--   <dev_condition_id>2</dev_condition_id>
 --   <sosttech_kod>3</sosttech_kod>
 
 create or replace function verify_identifier_change(p_store_document_id in number,
