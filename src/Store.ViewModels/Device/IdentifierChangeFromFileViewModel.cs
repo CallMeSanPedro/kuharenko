@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
@@ -109,12 +110,29 @@ namespace Store.ViewModels.Device
             set { SetLoadMode(value); }
         }
 
-        static readonly string ParameterModeIgnoreParamList =
-            "LineNo;MacAddress;PonSerial;NewSerialNumber;NewMacAddress;NewPonSerial;CommId;CardMacAddress;CardPonSerial;StoreDocumentId;FilialKod;VerifyStatusNum;CanAddBool";
-
-        public string IdentifierChangeIgnoreParamList
+        static readonly string[] ParameterModeHiddenColumns = new[]
         {
-            get { return _loadMode == 0 ? "" : ParameterModeIgnoreParamList; }
+            "LineNo",
+            "MacAddress",
+            "PonSerial",
+            "NewSerialNumber",
+            "NewMacAddress",
+            "NewPonSerial",
+            "CommId",
+            "CardMacAddress",
+            "CardPonSerial",
+            "StoreDocumentId",
+            "FilialKod",
+            "VerifyStatusNum",
+            "CanAddBool"
+        };
+
+        private ObservableCollection<string> _ignoreParamList = new ObservableCollection<string>();
+
+        public ObservableCollection<string> IgnoreParamList
+        {
+            get { return _ignoreParamList; }
+            set { SetValue(ref _ignoreParamList, value, () => IgnoreParamList); }
         }
 
         public decimal? IdentifierOwnershipId
@@ -454,7 +472,7 @@ namespace Store.ViewModels.Device
             NotifyPropertyChanged(() => OwnershipChangeMode);
             NotifyPropertyChanged(() => StatusChangeMode);
             NotifyPropertyChanged(() => LoadModeIndex);
-            NotifyPropertyChanged(() => IdentifierChangeIgnoreParamList);
+            ApplyHiddenColumns();
 
             if (IdentifierChangeItems.Count == 0)
             {
@@ -480,6 +498,18 @@ namespace Store.ViewModels.Device
             LocalCurrentItem = null;
             IdentifierChangeItems = IdentifierChangeItems.ToList();
             RefreshVerifyCommand();
+        }
+
+        void ApplyHiddenColumns()
+        {
+            var next = new ObservableCollection<string>();
+            if (_loadMode != 0)
+            {
+                foreach (var name in ParameterModeHiddenColumns)
+                    next.Add(name);
+            }
+
+            IgnoreParamList = next;
         }
 
         void RefreshVerifyCommand()
