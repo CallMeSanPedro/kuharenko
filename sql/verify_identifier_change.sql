@@ -3,7 +3,8 @@
 -- MAC и PON читаются из store_device_param.mac_address и store_device_param.pon_serial.
 -- Пустой p_filial_kod отключает проверку филиала.
 -- Режим и параметры приходят только в XML строки.
--- parameter_change = 1: новые SN, MAC и PON не проверяются.
+-- Новые SN, MAC и PON не проверяются, если в строке переданы значения с формы:
+-- ownership_id, dev_condition_id или sosttech_kod, либо parameter_change = 1.
 -- Вкладка формы владения передаёт только ownership_id.
 -- Вкладка состояния и тех. состояния передаёт dev_condition_id и sosttech_kod.
 -- Статус exploit_status_id = 3 («у абонента») требуется только если
@@ -187,6 +188,14 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
            and lower(trim(p_row.new_pon_serial)) <> nvl(lower(trim(p_row.card_pon_serial)), chr(1));
   end;
 
+  function updates_from_form(p_row in v_cur%rowtype) return boolean is
+  begin
+    return p_row.parameter_change = 1
+        or p_row.ownership_id is not null
+        or p_row.dev_condition_id is not null
+        or p_row.sosttech_kod is not null;
+  end;
+
   procedure add_error(p_index in pls_integer, p_message in varchar2) is
   begin
     v_tab(p_index).verify_status_num := -1;
@@ -316,12 +325,12 @@ begin
       inc_key(v_current_sn, lower(trim(v_tab(i).serial_number)));
     end if;
 
-    if v_tab(i).parameter_change = 0 and sn_changes(v_tab(i)) then
+    if not updates_from_form(v_tab(i)) and sn_changes(v_tab(i)) then
       inc_key(v_new_sn, lower(trim(v_tab(i).new_serial_number)));
     end if;
 
     if v_tab(i).serial_number is null then
-      if v_tab(i).new_mac_address is not null then
+      if not updates_from_form(v_tab(i)) and v_tab(i).new_mac_address is not null then
         inc_key(v_new_mac, norm_mac(v_tab(i).new_mac_address));
       end if;
       continue;
@@ -378,7 +387,7 @@ begin
     end if;
 
     if v_comm_id is null then
-      if v_tab(i).new_mac_address is not null then
+      if not updates_from_form(v_tab(i)) and v_tab(i).new_mac_address is not null then
         inc_key(v_new_mac, norm_mac(v_tab(i).new_mac_address));
       end if;
       continue;
@@ -416,12 +425,12 @@ begin
       end if;
     end if;
 
-    if v_tab(i).parameter_change = 0 and not sn_changes(v_tab(i)) and not mac_changes(v_tab(i)) and
+    if not updates_from_form(v_tab(i)) and not sn_changes(v_tab(i)) and not mac_changes(v_tab(i)) and
        not pon_changes(v_tab(i)) then
       add_error(i, 'Не задано ни одного нового значения');
     end if;
 
-    if v_tab(i).parameter_change = 0 and mac_changes(v_tab(i)) then
+    if not updates_from_form(v_tab(i)) and mac_changes(v_tab(i)) then
       inc_key(v_new_mac, norm_mac(v_tab(i).new_mac_address));
     end if;
   end loop;
@@ -432,14 +441,14 @@ begin
       add_error(i, 'Повторяющийся SN_текущий');
     end if;
 
-    if v_tab(i).parameter_change = 0 and sn_changes(v_tab(i)) then
+    if not updates_from_form(v_tab(i)) and sn_changes(v_tab(i)) then
       v_key := lower(trim(v_tab(i).new_serial_number));
       if v_new_sn.exists(v_key) and v_new_sn(v_key) > 1 then
         add_error(i, 'Повторяющийся SN_новый');
       end if;
     end if;
 
-    if v_tab(i).parameter_change = 0 and v_tab(i).new_mac_address is not null then
+    if not updates_from_form(v_tab(i)) and v_tab(i).new_mac_address is not null then
       v_key := norm_mac(v_tab(i).new_mac_address);
       if v_key is not null and v_new_mac.exists(v_key) and v_new_mac(v_key) > 1 then
         add_error(i, 'Повторяющийся MAC_новый');
@@ -452,7 +461,7 @@ begin
       continue;
     end if;
 
-    if v_tab(i).parameter_change = 0 and sn_changes(v_tab(i)) then
+    if not updates_from_form(v_tab(i)) and sn_changes(v_tab(i)) then
       v_blocked := false;
       for owner in (select distinct c.comm_id
                       from eth_comm_atu c
@@ -475,7 +484,7 @@ begin
       continue;
     end if;
 
-    if v_tab(i).parameter_change = 0 and mac_changes(v_tab(i)) then
+    if not updates_from_form(v_tab(i)) and mac_changes(v_tab(i)) then
       v_key := norm_mac(v_tab(i).new_mac_address);
       v_blocked := false;
       for owner in (select distinct c.comm_id
