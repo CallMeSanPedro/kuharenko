@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Input;
 using Store.Device.Models;
+using Store.ViewModels.Ownerships;
 
 // Usings для DelegateCommand, DependsOn, Encoding1251, ExportToExcel, Messenger, NotificationMessageAction
 // и MainViewModel скопировать из AddDeviceFromFileViewModel.
@@ -14,6 +15,8 @@ namespace Store.ViewModels.Device
 {
     public class IdentifierChangeFromFileViewModel : AddDeviceFromFileViewModel
     {
+        const decimal SubscriberOwnershipId = 2;
+
         private ICommand _downloadIdentifierTemplateCommand;
         private ICommand _loadIdentifierChangeCommand;
         private ICommand _verifyIdentifierChangeCommand;
@@ -25,6 +28,12 @@ namespace Store.ViewModels.Device
         private bool? _identifierChangeAllChecked = true;
         private int _loadMode;
         private int _badMacCount;
+
+        public IdentifierChangeFromFileViewModel()
+        {
+            _loadMode = 0;
+            ApplyHiddenColumns();
+        }
 
         public ICommand DownloadIdentifierTemplateCommand
         {
@@ -460,7 +469,9 @@ namespace Store.ViewModels.Device
                 return;
 
             _loadMode = loadMode;
-            if (loadMode != 1)
+            if (loadMode == 1)
+                ApplyDefaultSubscriberOwnership();
+            else
                 Ownership = null;
             if (loadMode != 2)
             {
@@ -510,6 +521,22 @@ namespace Store.ViewModels.Device
             }
 
             IgnoreParamList = next;
+        }
+
+        void ApplyDefaultSubscriberOwnership()
+        {
+            var ownershipViewModel = MainViewModel.Resolve<OwnershipViewModel>();
+            if (ownershipViewModel == null)
+                return;
+
+            foreach (var item in ownershipViewModel.ItemsView)
+            {
+                if (item == null || item.OwnershipId != SubscriberOwnershipId)
+                    continue;
+
+                Ownership = item;
+                return;
+            }
         }
 
         void RefreshVerifyCommand()
