@@ -204,8 +204,6 @@ namespace Store.ViewModels.Device
             using (var writer = new StreamWriter(dialog.FileName, false, new Encoding1251()))
             {
                 writer.WriteLine(IdentifierChangeFileParser.ColSn + ";" +
-                                 IdentifierChangeFileParser.ColMac + ";" +
-                                 IdentifierChangeFileParser.ColPon + ";" +
                                  IdentifierChangeFileParser.ColSnNew + ";" +
                                  IdentifierChangeFileParser.ColMacNew + ";" +
                                  IdentifierChangeFileParser.ColPonNew);
@@ -444,8 +442,6 @@ namespace Store.ViewModels.Device
             foreach (var row in rows)
             {
                 var status = row == null ? "" : (row.VerifyStatusStr ?? "");
-                if (status.IndexOf("Некорректный MAC_текущий", StringComparison.Ordinal) >= 0)
-                    count++;
                 if (status.IndexOf("Некорректный MAC_новый", StringComparison.Ordinal) >= 0)
                     count++;
             }
@@ -550,7 +546,6 @@ namespace Store.ViewModels.Device
         {
             "Не заполнен SN_текущий",
             "Не задано ни одного нового значения",
-            "Некорректный MAC_текущий",
             "Некорректный MAC_новый",
             "Повторяющийся SN_текущий",
             "Повторяющийся SN_новый",

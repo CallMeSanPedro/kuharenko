@@ -14,6 +14,7 @@
 -- «на складе» и на складе документа.
 -- В режиме смены идентификаторов элементов параметров нет.
 -- Экземпляр оборудования функция не изменяет.
+-- Текущие MAC и PON из файла не сверяются с карточкой.
 --
 -- v_rc := verify_identifier_change(p_store_document_id, p_xml, p_filial_kod);
 --
@@ -22,8 +23,6 @@
 --     <store_document_id>123</store_document_id>
 --     <line_no>2</line_no>
 --     <serial_number>OLD</serial_number>
---     <mac_address>AABBCCDDEEFF</mac_address>
---     <pon_serial>PON1</pon_serial>
 --     <new_serial_number>NEW</new_serial_number>
 --     <new_mac_address></new_mac_address>
 --     <new_pon_serial></new_pon_serial>
@@ -397,16 +396,6 @@ begin
     v_tab(i).filial_kod := v_filial;
     v_tab(i).card_mac_address := v_card_mac;
     v_tab(i).card_pon_serial := v_card_pon;
-
-    if v_tab(i).mac_address is not null
-       and norm_mac(v_tab(i).mac_address) <> nvl(norm_mac(v_card_mac), chr(1)) then
-      add_error(i, 'Контрольный MAC не совпал');
-    end if;
-
-    if v_tab(i).pon_serial is not null
-       and lower(trim(v_tab(i).pon_serial)) <> nvl(lower(trim(v_card_pon)), chr(1)) then
-      add_error(i, 'Контрольный PON не совпал');
-    end if;
 
     if p_filial_kod is not null and v_filial is not null and v_filial <> p_filial_kod then
       add_error(i, 'Оборудование принадлежит к другому филиалу');

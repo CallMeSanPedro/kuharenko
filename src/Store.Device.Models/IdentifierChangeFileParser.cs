@@ -8,8 +8,6 @@ namespace Store.Device.Models
     public static class IdentifierChangeFileParser
     {
         public const string ColSn = "SN_текущий";
-        public const string ColMac = "MAC_текущий";
-        public const string ColPon = "PON_текущий";
         public const string ColSnNew = "SN_новый";
         public const string ColMacNew = "MAC_новый";
         public const string ColPonNew = "PON_новый";
@@ -23,11 +21,9 @@ namespace Store.Device.Models
             int lineNumber = 0;
             bool columnsResolved = false;
             int iSn = 0;
-            int iMac = 1;
-            int iPon = 2;
-            int iSnNew = 3;
-            int iMacNew = 4;
-            int iPonNew = 5;
+            int iSnNew = 1;
+            int iMacNew = 2;
+            int iPonNew = 3;
             string line;
 
             while ((line = reader.ReadLine()) != null)
@@ -42,7 +38,7 @@ namespace Store.Device.Models
                     columnsResolved = true;
                     if (IsHeader(raw))
                     {
-                        MapHeader(raw, ref iSn, ref iMac, ref iPon, ref iSnNew, ref iMacNew, ref iPonNew);
+                        MapHeader(raw, ref iSn, ref iSnNew, ref iMacNew, ref iPonNew);
                         continue;
                     }
 
@@ -54,8 +50,6 @@ namespace Store.Device.Models
                 {
                     LineNo = lineNumber,
                     SerialNumber = Cell(raw, iSn),
-                    MacAddress = Cell(raw, iMac),
-                    PonSerial = Cell(raw, iPon),
                     NewSerialNumber = Cell(raw, iSnNew),
                     NewMacAddress = Cell(raw, iMacNew),
                     NewPonSerial = Cell(raw, iPonNew)
@@ -83,9 +77,6 @@ namespace Store.Device.Models
                 (row.NewMacAddress ?? "").Length == 0 &&
                 (row.NewPonSerial ?? "").Length == 0)
                 AddError(row, "Не задано ни одного нового значения");
-
-            if ((row.MacAddress ?? "").Length > 0 && !IsValidMac(row.MacAddress, macPattern))
-                AddError(row, "Некорректный MAC_текущий");
 
             if ((row.NewMacAddress ?? "").Length > 0 && !IsValidMac(row.NewMacAddress, macPattern))
                 AddError(row, "Некорректный MAC_новый");
@@ -141,8 +132,6 @@ namespace Store.Device.Models
             {
                 var name = Clean(cell);
                 if (string.Equals(name, ColSn, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(name, ColMac, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(name, ColPon, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(name, ColSnNew, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(name, ColMacNew, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(name, ColPonNew, StringComparison.OrdinalIgnoreCase))
@@ -152,7 +141,7 @@ namespace Store.Device.Models
             return false;
         }
 
-        private static void MapHeader(string[] raw, ref int iSn, ref int iMac, ref int iPon, ref int iSnNew, ref int iMacNew, ref int iPonNew)
+        private static void MapHeader(string[] raw, ref int iSn, ref int iSnNew, ref int iMacNew, ref int iPonNew)
         {
             var map = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < raw.Length; i++)
@@ -167,8 +156,6 @@ namespace Store.Device.Models
                 throw new InvalidDataException("В файле нет колонки SN_текущий");
 
             iSn = sn;
-            iMac = IndexOf(map, ColMac);
-            iPon = IndexOf(map, ColPon);
             iSnNew = IndexOf(map, ColSnNew);
             iMacNew = IndexOf(map, ColMacNew);
             iPonNew = IndexOf(map, ColPonNew);
