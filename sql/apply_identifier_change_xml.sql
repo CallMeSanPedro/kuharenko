@@ -5,6 +5,7 @@
 -- Пустое новое значение не затирает текущее. SN и MAC пишутся в два шага,
 -- чтобы обмен номерами между карточками проходил при уникальном индексе.
 -- Повторный вызов не меняет карточку, у которой серийный номер уже стал новым.
+-- Серийный номер, MAC и PON читаются через string(...), чтобы экспонента оставалась текстом.
 
 create or replace function apply_identifier_change_xml(p_store_document_id in number) return number is
   v_xml clob;
@@ -30,10 +31,10 @@ create or replace function apply_identifier_change_xml(p_store_document_id in nu
            end sosttech_kod
       from xmltable('/ArrayOfIdentifierChangeResult/IdentifierChangeResult' passing p_in_xml columns
                     comm_id number path 'comm_id',
-                    serial_number varchar2(100) path 'serial_number',
-                    new_serial_number varchar2(100) path 'new_serial_number',
-                    new_mac_address varchar2(100) path 'new_mac_address',
-                    new_pon_serial varchar2(100) path 'new_pon_serial',
+                    serial_number varchar2(100) path 'string(serial_number)',
+                    new_serial_number varchar2(100) path 'string(new_serial_number)',
+                    new_mac_address varchar2(100) path 'string(new_mac_address)',
+                    new_pon_serial varchar2(100) path 'string(new_pon_serial)',
                     ownership_id varchar2(50) path 'ownership_id',
                     dev_condition_id varchar2(50) path 'dev_condition_id',
                     sosttech_kod varchar2(50) path 'sosttech_kod',

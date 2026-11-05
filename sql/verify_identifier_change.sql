@@ -15,6 +15,7 @@
 -- В режиме смены идентификаторов элементов параметров нет.
 -- Экземпляр оборудования функция не изменяет.
 -- Текущие MAC и PON из файла не сверяются с карточкой.
+-- Серийный номер, MAC и PON читаются через string(...): значение в экспоненте остаётся текстом.
 --
 -- v_rc := verify_identifier_change(p_store_document_id, p_xml, p_filial_kod);
 --
@@ -98,12 +99,12 @@ create or replace function verify_identifier_change(p_store_document_id in numbe
       from xmltable('/ArrayOfIdentifierChange/IdentifierChange' passing p_in_xml columns
                     store_document_id varchar2(50) path 'store_document_id',
                     line_no varchar2(50) path 'line_no',
-                    serial_number varchar2(100) path 'serial_number',
-                    mac_address varchar2(100) path 'mac_address',
-                    pon_serial varchar2(100) path 'pon_serial',
-                    new_serial_number varchar2(100) path 'new_serial_number',
-                    new_mac_address varchar2(100) path 'new_mac_address',
-                    new_pon_serial varchar2(100) path 'new_pon_serial',
+                    serial_number varchar2(100) path 'string(serial_number)',
+                    mac_address varchar2(100) path 'string(mac_address)',
+                    pon_serial varchar2(100) path 'string(pon_serial)',
+                    new_serial_number varchar2(100) path 'string(new_serial_number)',
+                    new_mac_address varchar2(100) path 'string(new_mac_address)',
+                    new_pon_serial varchar2(100) path 'string(new_pon_serial)',
                     parameter_change varchar2(10) path 'parameter_change',
                     ownership_id varchar2(50) path 'ownership_id',
                     dev_condition_id varchar2(50) path 'dev_condition_id',
@@ -541,14 +542,14 @@ begin
                     store_document_id number path 'store_document_id',
                     line_no number path 'line_no',
                     comm_id number path 'comm_id',
-                    serial_number varchar2(100) path 'serial_number',
-                    mac_address varchar2(100) path 'mac_address',
-                    pon_serial varchar2(100) path 'pon_serial',
-                    new_serial_number varchar2(100) path 'new_serial_number',
-                    new_mac_address varchar2(100) path 'new_mac_address',
-                    new_pon_serial varchar2(100) path 'new_pon_serial',
-                    card_mac_address varchar2(100) path 'card_mac_address',
-                    card_pon_serial varchar2(100) path 'card_pon_serial',
+                    serial_number varchar2(100) path 'string(serial_number)',
+                    mac_address varchar2(100) path 'string(mac_address)',
+                    pon_serial varchar2(100) path 'string(pon_serial)',
+                    new_serial_number varchar2(100) path 'string(new_serial_number)',
+                    new_mac_address varchar2(100) path 'string(new_mac_address)',
+                    new_pon_serial varchar2(100) path 'string(new_pon_serial)',
+                    card_mac_address varchar2(100) path 'string(card_mac_address)',
+                    card_pon_serial varchar2(100) path 'string(card_pon_serial)',
                     filial_kod number path 'filial_kod',
                     verify_status_num number path 'verify_status_num',
                     verify_status_str varchar2(1000) path 'verify_status_str');
