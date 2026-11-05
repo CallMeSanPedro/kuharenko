@@ -5,7 +5,6 @@
 -- Источник — store_documents.xml_file, корень ArrayOfIdentifierChangeResult.
 -- Пустое новое значение заменяется текущим, чтобы lite-процедура не очищала поле.
 -- Пустые форма владения и тех. состояние в вызов не передаются.
--- Серийный номер, MAC и PON читаются через string(...), чтобы экспонента оставалась текстом.
 -- p_exploit_status_id и p_recovery_status_id остаются выключенными:
 -- в XML документа этих статусов нет.
 
@@ -91,14 +90,14 @@ begin
                                 passing (select xmltype(d.xml_file)
                                            from store_documents d
                                           where d.store_document_id = p_store_document_id)
-                                columns serial_number varchar2(100) path 'string(serial_number)',
-                                        new_serial_number varchar2(100) path 'string(new_serial_number)',
-                                        mac_address varchar2(100) path 'string(mac_address)',
-                                        new_mac_address varchar2(100) path 'string(new_mac_address)',
-                                        card_mac_address varchar2(100) path 'string(card_mac_address)',
-                                        pon_serial varchar2(100) path 'string(pon_serial)',
-                                        new_pon_serial varchar2(100) path 'string(new_pon_serial)',
-                                        card_pon_serial varchar2(100) path 'string(card_pon_serial)',
+                                columns serial_number varchar2(100) path 'serial_number',
+                                        new_serial_number varchar2(100) path 'new_serial_number',
+                                        mac_address varchar2(100) path 'mac_address',
+                                        new_mac_address varchar2(100) path 'new_mac_address',
+                                        card_mac_address varchar2(100) path 'card_mac_address',
+                                        pon_serial varchar2(100) path 'pon_serial',
+                                        new_pon_serial varchar2(100) path 'new_pon_serial',
+                                        card_pon_serial varchar2(100) path 'card_pon_serial',
                                         comm_id number path 'comm_id',
                                         ownership_id varchar2(50) path 'ownership_id',
                                         dev_condition_id varchar2(50) path 'dev_condition_id',

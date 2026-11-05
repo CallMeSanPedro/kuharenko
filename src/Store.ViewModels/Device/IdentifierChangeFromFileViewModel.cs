@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Store.Device.Models;
 using Store.ViewModels.Ownerships;
@@ -261,6 +263,7 @@ namespace Store.ViewModels.Device
                 using (sr)
                 {
                     IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    PlainIdentifierText(IdentifierChangeItems);
                     _badMacCount = CountBadMac(IdentifierChangeItems);
                 }
             }
@@ -285,6 +288,47 @@ namespace Store.ViewModels.Device
                 UpdateIdentifierChangeChecked();
 
             RefreshVerifyCommand();
+        }
+
+        static readonly Regex ScientificIdentifier = new Regex(
+            @"^[+-]?\d+(\.\d+)?[eE][+]?\d+$",
+            RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+        static void PlainIdentifierText(IList<VerifyIdentifierChange> rows)
+        {
+            if (rows == null)
+                return;
+
+            foreach (var row in rows)
+            {
+                if (row == null)
+                    continue;
+
+                row.SerialNumber = PlainIdentifier(row.SerialNumber);
+                row.MacAddress = PlainIdentifier(row.MacAddress);
+                row.PonSerial = PlainIdentifier(row.PonSerial);
+                row.NewSerialNumber = PlainIdentifier(row.NewSerialNumber);
+                row.NewMacAddress = PlainIdentifier(row.NewMacAddress);
+                row.NewPonSerial = PlainIdentifier(row.NewPonSerial);
+            }
+        }
+
+        static string PlainIdentifier(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return value;
+
+            var text = value.Trim().Replace(',', '.');
+            if (!ScientificIdentifier.IsMatch(text))
+                return value;
+
+            decimal number;
+            if (!decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number))
+                return value;
+            if (number != decimal.Truncate(number))
+                return value;
+
+            return number.ToString("0", CultureInfo.InvariantCulture);
         }
 
         [DependsOn("IdentifierChangeItems")]

@@ -3,7 +3,6 @@
 -- в документ попадают только строки со статусом 1. Повторная загрузка той же карточки заменяет строку.
 -- Успешные строки записываются в store_documents.xml_file и привязываются к документу
 -- через ltu_atua_store.storedoc_dev_link_add.
--- Серийный номер из XML документа читается через string(...), чтобы экспонента оставалась текстом.
 
 create or replace procedure add_identifier_change_to_doc(p_store_document_id in number,
                                                          p_xml               in clob,
@@ -165,7 +164,7 @@ begin
                                 passing (select xmltype(d.xml_file)
                                            from store_documents d
                                           where d.store_document_id = p_store_document_id)
-                                columns serial_number varchar2(100) path 'string(serial_number)',
+                                columns serial_number varchar2(100) path 'serial_number',
                                         comm_id number path 'comm_id',
                                         verify_status_num number path 'verify_status_num') xml_tab
                   join eth_comm_atu c
