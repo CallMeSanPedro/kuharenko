@@ -54,6 +54,9 @@ namespace Store.Device.Models
                     NewMacAddress = Cell(raw, iMacNew),
                     NewPonSerial = Cell(raw, iPonNew)
                 };
+                if (IsEmptyRow(row))
+                    continue;
+
                 ValidateRow(row, macPattern);
                 rows.Add(row);
             }
@@ -66,6 +69,14 @@ namespace Store.Device.Models
                 row.ChBoxS = row.VerifyStatusNum != -1;
 
             return rows;
+        }
+
+        private static bool IsEmptyRow(VerifyIdentifierChange row)
+        {
+            return (row.SerialNumber ?? "").Length == 0 &&
+                   (row.NewSerialNumber ?? "").Length == 0 &&
+                   (row.NewMacAddress ?? "").Length == 0 &&
+                   (row.NewPonSerial ?? "").Length == 0;
         }
 
         private static void ValidateRow(VerifyIdentifierChange row, string macPattern)
