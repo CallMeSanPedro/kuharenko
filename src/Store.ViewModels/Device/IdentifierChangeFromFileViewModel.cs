@@ -524,30 +524,19 @@ namespace Store.ViewModels.Device
             NotifyPropertyChanged(() => StatusChangeMode);
             NotifyPropertyChanged(() => LoadModeIndex);
             ApplyHiddenColumns();
+            ClearIdentifierChangeItems();
+        }
 
-            if (IdentifierChangeItems.Count == 0)
-            {
-                IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
-                CheckedItems = new List<StoreDeviceStruct>();
-                LocalCurrentItem = null;
-                IdentifierChangeAllChecked = false;
-                IdentifierChangeItems = new List<VerifyIdentifierChange>();
-                RefreshVerifyCommand();
-                return;
-            }
-
-            KeepLocalMessages();
-            AdjustRowsForMode();
-            foreach (var row in IdentifierChangeItems)
-            {
-                if (row != null)
-                    row.ChBoxS = false;
-            }
-
-            IdentifierChangeAllChecked = false;
-            UpdateIdentifierChangeChecked();
+        void ClearIdentifierChangeItems()
+        {
+            _badMacCount = 0;
+            IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
+            CheckedItems = new List<StoreDeviceStruct>();
+            IdentifierChangeCurrent = null;
             LocalCurrentItem = null;
-            IdentifierChangeItems = IdentifierChangeItems.ToList();
+            IdentifierChangeAllChecked = false;
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            SetIdentifierChangeResume("");
             RefreshVerifyCommand();
         }
 
@@ -584,48 +573,6 @@ namespace Store.ViewModels.Device
             _verifyIdentifierChangeCommand = new DelegateCommand(VerifyIdentifierChangeRows, CanVerifyIdentifierChange);
             NotifyPropertyChanged(() => VerifyIdentifierChangeCommand);
             CommandManager.InvalidateRequerySuggested();
-        }
-
-        static readonly string[] LocalMessages = new[]
-        {
-            "Не заполнен SN_текущий",
-            "Не задано ни одного нового значения",
-            "Некорректный MAC_новый",
-            "Повторяющийся SN_текущий",
-            "Повторяющийся SN_новый",
-            "Повторяющийся MAC_новый"
-        };
-
-        void KeepLocalMessages()
-        {
-            var known = new Dictionary<string, bool>(StringComparer.Ordinal);
-            foreach (var message in LocalMessages)
-                known[message] = true;
-
-            foreach (var row in IdentifierChangeItems)
-            {
-                if (row == null)
-                    continue;
-
-                var left = new List<string>();
-                foreach (var part in (row.VerifyStatusStr ?? "").Split(new[] { "; " }, StringSplitOptions.None))
-                {
-                    if (part.Length > 0 && known.ContainsKey(part))
-                        left.Add(part);
-                }
-
-                row.VerifyStatusStr = left.Count == 0 ? null : string.Join("; ", left.ToArray());
-                if (left.Count == 0)
-                {
-                    row.VerifyStatusNum = null;
-                    row.ChBoxS = true;
-                }
-                else
-                {
-                    row.VerifyStatusNum = -1;
-                    row.ChBoxS = false;
-                }
-            }
         }
 
         void AdjustRowsForMode()
