@@ -7,18 +7,15 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Store.Device.Models;
-using Store.ViewModels.Ownerships;
 
 // Usings для DelegateCommand, DependsOn, Encoding1251, ExportToExcel, Messenger, NotificationMessageAction
 // и MainViewModel скопировать из AddDeviceFromFileViewModel.
 // Из AddDeviceFromFileViewModel наследуются Rep, Filter, ExecuteAsync, IsExecuting, IsBusy, BusyMessage,
-// SetValue, NotifyPropertyChanged, SkipFirstRow, MacPattern, ResumeText и ShowResume.
+// SetValue, NotifyPropertyChanged, SkipFirstRow, MacPattern, ResumeText, ShowResume и Refresh.
 namespace Store.ViewModels.Device
 {
     public class IdentifierChangeFromFileViewModel : AddDeviceFromFileViewModel
     {
-        const decimal SubscriberOwnershipId = 2;
-
         private ICommand _downloadIdentifierTemplateCommand;
         private ICommand _loadIdentifierChangeCommand;
         private ICommand _verifyIdentifierChangeCommand;
@@ -34,7 +31,16 @@ namespace Store.ViewModels.Device
         public IdentifierChangeFromFileViewModel()
         {
             _loadMode = 0;
-            ApplyHiddenColumns();
+            SetLoadMode(0);
+            //ar own = new Ownership { OwnershipId = 1 };
+        }
+
+        private ObservableCollection<string> _ignoreParamList = new ObservableCollection<string>();
+
+        public ObservableCollection<string> IgnoreParamList
+        {
+            get { return _ignoreParamList; }
+            set { SetValue(ref _ignoreParamList, value, () => IgnoreParamList); }
         }
 
         public ICommand DownloadIdentifierTemplateCommand
@@ -119,31 +125,6 @@ namespace Store.ViewModels.Device
         {
             get { return _loadMode; }
             set { SetLoadMode(value); }
-        }
-
-        static readonly string[] ParameterModeHiddenColumns = new[]
-        {
-            "LineNo",
-            "MacAddress",
-            "PonSerial",
-            "NewSerialNumber",
-            "NewMacAddress",
-            "NewPonSerial",
-            "CommId",
-            "CardMacAddress",
-            "CardPonSerial",
-            "StoreDocumentId",
-            "FilialKod",
-            "VerifyStatusNum",
-            "CanAddBool"
-        };
-
-        private ObservableCollection<string> _ignoreParamList = new ObservableCollection<string>();
-
-        public ObservableCollection<string> IgnoreParamList
-        {
-            get { return _ignoreParamList; }
-            set { SetValue(ref _ignoreParamList, value, () => IgnoreParamList); }
         }
 
         public decimal? IdentifierOwnershipId
@@ -240,9 +221,14 @@ namespace Store.ViewModels.Device
             _badMacCount = 0;
             SetIdentifierChangeResume("");
 
+            //if (MainViewModel.Current != null && _parameterChangeMode)
+            //{
+            //
+            //}
+
             var sourceExt = file.Extension.ToLower();
-            if (sourceExt != ".csv" && sourceExt != ".xls" && sourceExt != ".xlsx")
-                throw new InvalidDataException("Файл смены идентификаторов должен быть csv, xls или xlsx.");
+            if (sourceExt != ".csv" && sourceExt != ".xls" && sourceExt != ".xlsx" && sourceExt != ".txt")
+                throw new InvalidDataException("Файл смены идентификаторов должен быть csv, txt, xls или xlsx.");
 
             bool needDelete = false;
             try
@@ -334,6 +320,7 @@ namespace Store.ViewModels.Device
         [DependsOn("IdentifierChangeItems")]
         public bool CanVerifyIdentifierChange()
         {
+            //return !IsExecuting && IdentifierChangeItems.Any() /*IdentifierChangeItems != null && IdentifierChangeItems.Any(CanSend)*/;
             return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(row => row != null);
         }
 
@@ -348,7 +335,7 @@ namespace Store.ViewModels.Device
 
             var parameters = VerificationParameters();
             var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, IdentifierChangeItems, parameters, false);
-            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
+            var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
@@ -505,25 +492,62 @@ namespace Store.ViewModels.Device
         {
             if (loadMode < 0 || loadMode > 2)
                 loadMode = 0;
-            if (_loadMode == loadMode)
-                return;
+            //if (_loadMode == loadMode)
+            //    return;
 
             _loadMode = loadMode;
-            if (loadMode == 1)
-                ApplyDefaultSubscriberOwnership();
-            else
-                Ownership = null;
+            //if (loadMode != 1)
+            //    Ownership = null;
+
             if (loadMode != 2)
             {
                 DeviceCondition = null;
                 EthTechStatRef = null;
             }
 
+            if (loadMode == 0)
+            {
+                IgnoreParamList.Clear();
+                IgnoreParamList.Add("OwnershipName");
+                IgnoreParamList.Add("CommId");
+                IgnoreParamList.Add("CurrentLocation");
+                IgnoreParamList.Add("TransferCondition");
+            }
+            else if (loadMode == 1)
+            {
+                IgnoreParamList.Clear();
+                IgnoreParamList.Add("CommId");
+                IgnoreParamList.Add("NewPonSerial");
+                IgnoreParamList.Add("NewMacAddress");
+                IgnoreParamList.Add("NewSerialNumber");
+                IgnoreParamList.Add("MacAddress");
+                IgnoreParamList.Add("PonSerial");
+                IgnoreParamList.Add("CardPonSerial");
+                IgnoreParamList.Add("CardMacAddress");
+
+                //NotifyPropertyChanged(() => IgnoreParamList);
+                //Refresh();
+            }
+            else
+            {
+                IgnoreParamList.Clear();
+                IgnoreParamList.Add("CommId");
+                IgnoreParamList.Add("NewPonSerial");
+                IgnoreParamList.Add("NewMacAddress");
+                IgnoreParamList.Add("NewSerialNumber");
+                IgnoreParamList.Add("MacAddress");
+                IgnoreParamList.Add("PonSerial");
+                IgnoreParamList.Add("CardPonSerial");
+                IgnoreParamList.Add("CardMacAddress");
+                IgnoreParamList.Add("CurrentLocation");
+                IgnoreParamList.Add("TransferCondition");
+                IgnoreParamList.Add("OwnershipName");
+            }
+
             NotifyPropertyChanged(() => IdentifierChangeMode);
             NotifyPropertyChanged(() => OwnershipChangeMode);
             NotifyPropertyChanged(() => StatusChangeMode);
             NotifyPropertyChanged(() => LoadModeIndex);
-            ApplyHiddenColumns();
             ClearIdentifierChangeItems();
         }
 
@@ -540,39 +564,11 @@ namespace Store.ViewModels.Device
             RefreshVerifyCommand();
         }
 
-        void ApplyHiddenColumns()
-        {
-            var next = new ObservableCollection<string>();
-            if (_loadMode != 0)
-            {
-                foreach (var name in ParameterModeHiddenColumns)
-                    next.Add(name);
-            }
-
-            IgnoreParamList = next;
-        }
-
-        void ApplyDefaultSubscriberOwnership()
-        {
-            var ownershipViewModel = MainViewModel.Resolve<OwnershipViewModel>();
-            if (ownershipViewModel == null)
-                return;
-
-            foreach (var item in ownershipViewModel.ItemsView)
-            {
-                if (item == null || item.OwnershipId != SubscriberOwnershipId)
-                    continue;
-
-                Ownership = item;
-                return;
-            }
-        }
-
         void RefreshVerifyCommand()
         {
             _verifyIdentifierChangeCommand = new DelegateCommand(VerifyIdentifierChangeRows, CanVerifyIdentifierChange);
             NotifyPropertyChanged(() => VerifyIdentifierChangeCommand);
-            CommandManager.InvalidateRequerySuggested();
+            DatumNode.ViewModels.CommandManager.InvalidateRequerySuggested();
         }
 
         void AdjustRowsForMode()
@@ -599,7 +595,10 @@ namespace Store.ViewModels.Device
                 if (string.IsNullOrEmpty(text))
                 {
                     if (hadError)
+                    {
                         row.VerifyStatusNum = null;
+                        row.ChBoxS = false;
+                    }
                 }
                 else if (hadError)
                 {
@@ -655,6 +654,7 @@ namespace Store.ViewModels.Device
                 VerifyIdentifierChange server;
                 if (item != null && item.LineNo != null && byLine.TryGetValue(item.LineNo.Value, out server))
                 {
+                    //server.ChBoxS = server.VerifyStatusNum != -1 && item.ChBoxS;
                     server.ChBoxS = server.IsSuccess;
                     merged.Add(server);
                 }
@@ -663,6 +663,32 @@ namespace Store.ViewModels.Device
             }
 
             return merged;
+        }
+
+        private ICommand _clearFilterCommand;
+
+        public ICommand ClearFilterCommand
+        {
+            get { return _clearFilterCommand ?? (_clearFilterCommand = new DelegateCommand(ClearFilter)); }
+        }
+
+        public void ClearFilter()
+        {
+            Ownership = null;
+            DeviceCondition = null;
+            _loadMode = 0;
+            SetLoadMode(0);
+
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
+            FileItems = new List<StoreDeviceStruct>();
+            CheckedItems = new List<StoreDeviceStruct>();
+            LocalCurrentItem = null;
+            SetIdentifierChangeResume("");
+
+            Filter.Clear();
+            Filter.AcceptChanges();
+            Refresh();
         }
     }
 }

@@ -5,6 +5,9 @@ namespace Store.Repositories
 {
     public partial interface IDeviceRepository
     {
+        IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData)
+            where TList : class, ICollection<VerifyIdentifierChange>, new();
+
         IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod)
             where TList : class, ICollection<VerifyIdentifierChange>, new();
 
@@ -13,6 +16,12 @@ namespace Store.Repositories
 
     public partial class DeviceRepository
     {
+        public IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData)
+            where TList : class, ICollection<VerifyIdentifierChange>, new()
+        {
+            return SelectVerifyIdentifierChangeXml<TList>(storeDocumentId, xmlData, null);
+        }
+
         public IRequest<VerifyIdentifierChange, TList> SelectVerifyIdentifierChangeXml<TList>(decimal? storeDocumentId, string xmlData, decimal? filialKod)
             where TList : class, ICollection<VerifyIdentifierChange>, new()
         {
