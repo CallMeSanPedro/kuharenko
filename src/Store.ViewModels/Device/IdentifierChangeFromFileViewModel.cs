@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,7 +26,7 @@ namespace Store.ViewModels.Device
         private ICommand _verifyIdentifierChangeCommand;
         private ICommand _identifierChangeChBoxCommand;
         private ICommand _identifierChangeChBoxAllCommand;
-        private List<VerifyIdentifierChange> _identifierChangeItems;
+        private readonly IdentifierChangeItemCollection _identifierChangeItems = new IdentifierChangeItemCollection();
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
@@ -82,10 +84,9 @@ namespace Store.ViewModels.Device
             }
         }
 
-        public List<VerifyIdentifierChange> IdentifierChangeItems
+        public ObservableCollection<VerifyIdentifierChange> IdentifierChangeItems
         {
-            get { return _identifierChangeItems ?? (_identifierChangeItems = new List<VerifyIdentifierChange>()); }
-            set { SetValue(ref _identifierChangeItems, value, () => IdentifierChangeItems); }
+            get { return _identifierChangeItems; }
         }
 
         public List<VerifyIdentifierChange> IdentifierChangeCheckedItems
@@ -232,7 +233,7 @@ namespace Store.ViewModels.Device
             if (file == null)
                 return;
 
-            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            _identifierChangeItems.ReplaceAll(null);
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
@@ -366,15 +367,14 @@ namespace Store.ViewModels.Device
             });
         }
 
-        // Грид с AutoGenerateColumns строит колонки в момент смены ItemsSource.
-        // Повторная подстановка в том же кадре оставляет пустую область, хотя резюме уже заполнено.
+        // Одна и та же коллекция остаётся в ItemsSource. Смена ссылки заставляла грид
+        // заново строить колонки и при выключенной виртуализации подвешивала большой файл.
         void PublishIdentifierChangeItems(List<VerifyIdentifierChange> rows)
         {
-            var list = rows ?? new List<VerifyIdentifierChange>();
             Action publish = () =>
             {
                 IdentifierChangeCurrent = null;
-                IdentifierChangeItems = list;
+                _identifierChangeItems.ReplaceAll(rows);
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
                 RefreshVerifyCommand();
@@ -383,10 +383,10 @@ namespace Store.ViewModels.Device
             var dispatcher = System.Windows.Application.Current == null
                 ? null
                 : System.Windows.Application.Current.Dispatcher;
-            if (dispatcher == null)
+            if (dispatcher == null || dispatcher.CheckAccess())
                 publish();
             else
-                dispatcher.BeginInvoke(publish, System.Windows.Threading.DispatcherPriority.Loaded);
+                dispatcher.BeginInvoke(publish);
         }
 
         public void CheckAllIdentifierChange()
@@ -558,7 +558,7 @@ namespace Store.ViewModels.Device
             IdentifierChangeCurrent = null;
             LocalCurrentItem = null;
             IdentifierChangeAllChecked = false;
-            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            _identifierChangeItems.ReplaceAll(null);
             SetIdentifierChangeResume("");
             RefreshVerifyCommand();
         }
@@ -689,6 +689,27 @@ namespace Store.ViewModels.Device
             }
 
             return merged;
+        }
+    }
+
+    public class IdentifierChangeItemCollection : ObservableCollection<VerifyIdentifierChange>
+    {
+        public void ReplaceAll(IList<VerifyIdentifierChange> rows)
+        {
+            CheckReentrancy();
+            Items.Clear();
+            if (rows != null)
+            {
+                foreach (var row in rows)
+                {
+                    if (row != null)
+                        Items.Add(row);
+                }
+            }
+
+            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 }
