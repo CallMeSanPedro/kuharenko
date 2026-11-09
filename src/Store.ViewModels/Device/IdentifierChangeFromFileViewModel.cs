@@ -366,7 +366,7 @@ namespace Store.ViewModels.Device
             });
         }
 
-        // Грид с Reflection строит колонки в момент смены ItemsSource.
+        // Грид с AutoGenerateColumns строит колонки в момент смены ItemsSource.
         // Повторная подстановка в том же кадре оставляет пустую область, хотя резюме уже заполнено.
         void PublishIdentifierChangeItems(List<VerifyIdentifierChange> rows)
         {

@@ -115,7 +115,6 @@
                                    Margin="3"
                                    IsReadOnly="True"
                                    AutoGenerateColumns="True"
-                                   Reflection="True"
                                    HiddenColumns="{Binding Path=IgnoreParamList, Mode=OneWay}"
                                    ItemsSource="{Binding Path=IdentifierChangeItems, Mode=TwoWay}"
                                    SelectedItem="{Binding Path=IdentifierChangeCurrent, Mode=TwoWay}"
