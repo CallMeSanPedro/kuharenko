@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -26,7 +24,7 @@ namespace Store.ViewModels.Device
         private ICommand _verifyIdentifierChangeCommand;
         private ICommand _identifierChangeChBoxCommand;
         private ICommand _identifierChangeChBoxAllCommand;
-        private readonly IdentifierChangeItemCollection _identifierChangeItems = new IdentifierChangeItemCollection();
+        private List<VerifyIdentifierChange> _identifierChangeItems;
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
@@ -84,9 +82,10 @@ namespace Store.ViewModels.Device
             }
         }
 
-        public ObservableCollection<VerifyIdentifierChange> IdentifierChangeItems
+        public List<VerifyIdentifierChange> IdentifierChangeItems
         {
-            get { return _identifierChangeItems; }
+            get { return _identifierChangeItems ?? (_identifierChangeItems = new List<VerifyIdentifierChange>()); }
+            set { SetValue(ref _identifierChangeItems, value, () => IdentifierChangeItems); }
         }
 
         public List<VerifyIdentifierChange> IdentifierChangeCheckedItems
@@ -233,15 +232,13 @@ namespace Store.ViewModels.Device
             if (file == null)
                 return;
 
-            _identifierChangeItems.ReplaceAll(null);
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
-            IdentifierChangeCurrent = null;
+            LocalCurrentItem = null;
             _badMacCount = 0;
             SetIdentifierChangeResume("");
-
-            var parsed = new List<VerifyIdentifierChange>();
 
             var sourceExt = file.Extension.ToLower();
             if (sourceExt != ".csv" && sourceExt != ".xls" && sourceExt != ".xlsx")
@@ -265,9 +262,9 @@ namespace Store.ViewModels.Device
 
                 using (sr)
                 {
-                    parsed = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
-                    PlainIdentifierText(parsed);
-                    _badMacCount = CountBadMac(parsed);
+                    IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    PlainIdentifierText(IdentifierChangeItems);
+                    _badMacCount = CountBadMac(IdentifierChangeItems);
                 }
             }
             finally
@@ -285,10 +282,12 @@ namespace Store.ViewModels.Device
                 }
             }
 
-            if (!IsExecuting && parsed.Any(row => row != null))
-                VerifyIdentifierChangeRows(parsed);
+            if (CanVerifyIdentifierChange())
+                VerifyIdentifierChangeRows();
             else
-                PublishIdentifierChangeItems(parsed);
+                UpdateIdentifierChangeChecked();
+
+            RefreshVerifyCommand();
         }
 
         static readonly Regex ScientificIdentifier = new Regex(
@@ -340,53 +339,31 @@ namespace Store.ViewModels.Device
 
         public void VerifyIdentifierChangeRows()
         {
-            VerifyIdentifierChangeRows(IdentifierChangeItems.ToList());
-        }
-
-        void VerifyIdentifierChangeRows(List<VerifyIdentifierChange> rows)
-        {
-            rows = rows ?? new List<VerifyIdentifierChange>();
-            AdjustRowsForMode(rows);
-            if (IsExecuting || !rows.Any(row => row != null))
+            AdjustRowsForMode();
+            if (!CanVerifyIdentifierChange())
             {
-                PublishIdentifierChangeItems(rows);
+                UpdateIdentifierChangeChecked();
                 return;
             }
 
             var parameters = VerificationParameters();
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, rows, parameters, false);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, IdentifierChangeItems, parameters, false);
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
             {
-                PublishIdentifierChangeItems(MergeVerifyResult(rows, selectCmd.ResultSet));
-            }, z =>
-            {
-                PublishIdentifierChangeItems(rows);
-            });
-        }
-
-        // Одна и та же коллекция остаётся в ItemsSource. Смена ссылки заставляла грид
-        // заново строить колонки и при выключенной виртуализации подвешивала большой файл.
-        void PublishIdentifierChangeItems(List<VerifyIdentifierChange> rows)
-        {
-            Action publish = () =>
-            {
-                IdentifierChangeCurrent = null;
-                _identifierChangeItems.ReplaceAll(rows);
+                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
+                NotifyPropertyChanged(() => IdentifierChangeItems);
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
                 RefreshVerifyCommand();
-            };
-
-            var dispatcher = System.Windows.Application.Current == null
-                ? null
-                : System.Windows.Application.Current.Dispatcher;
-            if (dispatcher == null || dispatcher.CheckAccess())
-                publish();
-            else
-                dispatcher.BeginInvoke(publish);
+            }, z =>
+            {
+                UpdateIdentifierChangeChecked();
+                IsBusy = false;
+                RefreshVerifyCommand();
+            });
         }
 
         public void CheckAllIdentifierChange()
@@ -558,7 +535,7 @@ namespace Store.ViewModels.Device
             IdentifierChangeCurrent = null;
             LocalCurrentItem = null;
             IdentifierChangeAllChecked = false;
-            _identifierChangeItems.ReplaceAll(null);
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
             SetIdentifierChangeResume("");
             RefreshVerifyCommand();
         }
@@ -598,13 +575,10 @@ namespace Store.ViewModels.Device
             CommandManager.InvalidateRequerySuggested();
         }
 
-        void AdjustRowsForMode(IList<VerifyIdentifierChange> rows)
+        void AdjustRowsForMode()
         {
             bool parameterMode = _loadMode != 0;
-            if (rows == null)
-                return;
-
-            foreach (var row in rows)
+            foreach (var row in IdentifierChangeItems)
             {
                 if (row == null)
                     continue;
@@ -689,27 +663,6 @@ namespace Store.ViewModels.Device
             }
 
             return merged;
-        }
-    }
-
-    public class IdentifierChangeItemCollection : ObservableCollection<VerifyIdentifierChange>
-    {
-        public void ReplaceAll(IList<VerifyIdentifierChange> rows)
-        {
-            CheckReentrancy();
-            Items.Clear();
-            if (rows != null)
-            {
-                foreach (var row in rows)
-                {
-                    if (row != null)
-                        Items.Add(row);
-                }
-            }
-
-            OnPropertyChanged(new PropertyChangedEventArgs("Count"));
-            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 }
