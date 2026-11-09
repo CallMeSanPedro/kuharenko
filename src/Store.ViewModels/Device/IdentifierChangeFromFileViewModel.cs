@@ -236,9 +236,11 @@ namespace Store.ViewModels.Device
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
-            LocalCurrentItem = null;
+            IdentifierChangeCurrent = null;
             _badMacCount = 0;
             SetIdentifierChangeResume("");
+
+            var parsed = new List<VerifyIdentifierChange>();
 
             var sourceExt = file.Extension.ToLower();
             if (sourceExt != ".csv" && sourceExt != ".xls" && sourceExt != ".xlsx")
@@ -262,9 +264,9 @@ namespace Store.ViewModels.Device
 
                 using (sr)
                 {
-                    IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
-                    PlainIdentifierText(IdentifierChangeItems);
-                    _badMacCount = CountBadMac(IdentifierChangeItems);
+                    parsed = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    PlainIdentifierText(parsed);
+                    _badMacCount = CountBadMac(parsed);
                 }
             }
             finally
@@ -282,12 +284,10 @@ namespace Store.ViewModels.Device
                 }
             }
 
-            if (CanVerifyIdentifierChange())
-                VerifyIdentifierChangeRows();
+            if (!IsExecuting && parsed.Any(row => row != null))
+                VerifyIdentifierChangeRows(parsed);
             else
-                UpdateIdentifierChangeChecked();
-
-            RefreshVerifyCommand();
+                PublishIdentifierChangeItems(parsed);
         }
 
         static readonly Regex ScientificIdentifier = new Regex(
@@ -339,31 +339,54 @@ namespace Store.ViewModels.Device
 
         public void VerifyIdentifierChangeRows()
         {
-            AdjustRowsForMode();
-            if (!CanVerifyIdentifierChange())
+            VerifyIdentifierChangeRows(IdentifierChangeItems.ToList());
+        }
+
+        void VerifyIdentifierChangeRows(List<VerifyIdentifierChange> rows)
+        {
+            rows = rows ?? new List<VerifyIdentifierChange>();
+            AdjustRowsForMode(rows);
+            if (IsExecuting || !rows.Any(row => row != null))
             {
-                UpdateIdentifierChangeChecked();
+                PublishIdentifierChangeItems(rows);
                 return;
             }
 
             var parameters = VerificationParameters();
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, IdentifierChangeItems, parameters, false);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, rows, parameters, false);
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml, null);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
             {
-                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
-                NotifyPropertyChanged(() => IdentifierChangeItems);
-                UpdateIdentifierChangeChecked();
-                IsBusy = false;
-                RefreshVerifyCommand();
+                PublishIdentifierChangeItems(MergeVerifyResult(rows, selectCmd.ResultSet));
             }, z =>
             {
+                PublishIdentifierChangeItems(rows);
+            });
+        }
+
+        // Грид с Reflection строит колонки в момент смены ItemsSource.
+        // Повторная подстановка в том же кадре оставляет пустую область, хотя резюме уже заполнено.
+        void PublishIdentifierChangeItems(List<VerifyIdentifierChange> rows)
+        {
+            var list = rows ?? new List<VerifyIdentifierChange>();
+            Action publish = () =>
+            {
+                IdentifierChangeCurrent = null;
+                IdentifierChangeItems = list;
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
                 RefreshVerifyCommand();
-            });
+            };
+
+            var dispatcher = System.Windows.Application.Current == null
+                ? null
+                : System.Windows.Application.Current.Dispatcher;
+            if (dispatcher == null)
+                publish();
+            else
+                dispatcher.BeginInvoke(publish, System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         public void CheckAllIdentifierChange()
@@ -575,10 +598,13 @@ namespace Store.ViewModels.Device
             CommandManager.InvalidateRequerySuggested();
         }
 
-        void AdjustRowsForMode()
+        void AdjustRowsForMode(IList<VerifyIdentifierChange> rows)
         {
             bool parameterMode = _loadMode != 0;
-            foreach (var row in IdentifierChangeItems)
+            if (rows == null)
+                return;
+
+            foreach (var row in rows)
             {
                 if (row == null)
                     continue;
