@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,7 +23,7 @@ namespace Store.ViewModels.Device
         private ICommand _verifyIdentifierChangeCommand;
         private ICommand _identifierChangeChBoxCommand;
         private ICommand _identifierChangeChBoxAllCommand;
-        private List<VerifyIdentifierChange> _identifierChangeItems;
+        private readonly IdentifierChangeItemCollection _identifierChangeItems = new IdentifierChangeItemCollection();
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
@@ -88,10 +90,9 @@ namespace Store.ViewModels.Device
             }
         }
 
-        public List<VerifyIdentifierChange> IdentifierChangeItems
+        public ObservableCollection<VerifyIdentifierChange> IdentifierChangeItems
         {
-            get { return _identifierChangeItems ?? (_identifierChangeItems = new List<VerifyIdentifierChange>()); }
-            set { SetValue(ref _identifierChangeItems, value, () => IdentifierChangeItems); }
+            get { return _identifierChangeItems; }
         }
 
         public List<VerifyIdentifierChange> IdentifierChangeCheckedItems
@@ -213,7 +214,8 @@ namespace Store.ViewModels.Device
             if (file == null)
                 return;
 
-            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            IdentifierChangeCurrent = null;
+            ReplaceIdentifierChangeItems(null);
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
@@ -246,12 +248,15 @@ namespace Store.ViewModels.Device
                     ? new StreamReader(file.OpenRead(), new Encoding1251())
                     : new StreamReader(file.OpenRead());
 
+                List<VerifyIdentifierChange> parsed;
                 using (sr)
                 {
-                    IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
-                    PlainIdentifierText(IdentifierChangeItems);
-                    _badMacCount = CountBadMac(IdentifierChangeItems);
+                    parsed = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    PlainIdentifierText(parsed);
+                    _badMacCount = CountBadMac(parsed);
                 }
+
+                ReplaceIdentifierChangeItems(parsed);
             }
             finally
             {
@@ -340,8 +345,9 @@ namespace Store.ViewModels.Device
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
             {
-                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
-                NotifyPropertyChanged(() => IdentifierChangeItems);
+                var merged = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
+                IdentifierChangeCurrent = null;
+                ReplaceIdentifierChangeItems(merged);
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
                 RefreshVerifyCommand();
@@ -559,9 +565,14 @@ namespace Store.ViewModels.Device
             IdentifierChangeCurrent = null;
             LocalCurrentItem = null;
             IdentifierChangeAllChecked = false;
-            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            ReplaceIdentifierChangeItems(null);
             SetIdentifierChangeResume("");
             RefreshVerifyCommand();
+        }
+
+        void ReplaceIdentifierChangeItems(IEnumerable<VerifyIdentifierChange> rows)
+        {
+            _identifierChangeItems.ReplaceAll(rows);
         }
 
         void RefreshVerifyCommand()
@@ -636,10 +647,12 @@ namespace Store.ViewModels.Device
             return string.Join("; ", left.ToArray());
         }
 
-        static List<VerifyIdentifierChange> MergeVerifyResult(List<VerifyIdentifierChange> current, List<VerifyIdentifierChange> result)
+        static List<VerifyIdentifierChange> MergeVerifyResult(IEnumerable<VerifyIdentifierChange> current, List<VerifyIdentifierChange> result)
         {
+            if (current == null)
+                return new List<VerifyIdentifierChange>();
             if (result == null)
-                return current;
+                return new List<VerifyIdentifierChange>(current);
 
             var byLine = new Dictionary<decimal, VerifyIdentifierChange>();
             foreach (var item in result)
@@ -679,7 +692,7 @@ namespace Store.ViewModels.Device
             _loadMode = 0;
             SetLoadMode(0);
 
-            IdentifierChangeItems = new List<VerifyIdentifierChange>();
+            ReplaceIdentifierChangeItems(null);
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
@@ -689,6 +702,24 @@ namespace Store.ViewModels.Device
             Filter.Clear();
             Filter.AcceptChanges();
             Refresh();
+        }
+
+        sealed class IdentifierChangeItemCollection : ObservableCollection<VerifyIdentifierChange>
+        {
+            public void ReplaceAll(IEnumerable<VerifyIdentifierChange> rows)
+            {
+                CheckReentrancy();
+                Items.Clear();
+                if (rows != null)
+                {
+                    foreach (var row in rows)
+                        Items.Add(row);
+                }
+
+                OnPropertyChanged(new PropertyChangedEventArgs("Count"));
+                OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
         }
     }
 }
