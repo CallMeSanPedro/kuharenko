@@ -24,6 +24,7 @@ namespace Store.ViewModels.Device
         private ICommand _identifierChangeChBoxCommand;
         private ICommand _identifierChangeChBoxAllCommand;
         private readonly IdentifierChangeItemCollection _identifierChangeItems = new IdentifierChangeItemCollection();
+        private bool _identifierChangeGridBound;
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
@@ -90,9 +91,11 @@ namespace Store.ViewModels.Device
             }
         }
 
+        // Пока строк нет, грид получает null. Пустой источник не строит колонки при AutoGenerateColumns.
+        // Когда строки появляются, источник назначается один раз. Проверка дальше меняет только содержимое.
         public ObservableCollection<VerifyIdentifierChange> IdentifierChangeItems
         {
-            get { return _identifierChangeItems; }
+            get { return _identifierChangeGridBound ? _identifierChangeItems : null; }
         }
 
         public List<VerifyIdentifierChange> IdentifierChangeCheckedItems
@@ -326,7 +329,7 @@ namespace Store.ViewModels.Device
         public bool CanVerifyIdentifierChange()
         {
             //return !IsExecuting && IdentifierChangeItems.Any() /*IdentifierChangeItems != null && IdentifierChangeItems.Any(CanSend)*/;
-            return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(row => row != null);
+            return !IsExecuting && _identifierChangeItems.Any(row => row != null);
         }
 
         public void VerifyIdentifierChangeRows()
@@ -339,13 +342,13 @@ namespace Store.ViewModels.Device
             }
 
             var parameters = VerificationParameters();
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, IdentifierChangeItems, parameters, false);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, _identifierChangeItems, parameters, false);
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
             {
-                var merged = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
+                var merged = MergeVerifyResult(_identifierChangeItems, selectCmd.ResultSet);
                 IdentifierChangeCurrent = null;
                 ReplaceIdentifierChangeItems(merged);
                 UpdateIdentifierChangeChecked();
@@ -362,7 +365,7 @@ namespace Store.ViewModels.Device
         public void CheckAllIdentifierChange()
         {
             bool value = IdentifierChangeAllChecked == true;
-            foreach (var row in IdentifierChangeItems.Where(z => z != null && z.CanAddBool))
+            foreach (var row in _identifierChangeItems.Where(z => z != null && z.CanAddBool))
                 row.ChBoxS = value;
 
             UpdateIdentifierChangeChecked();
@@ -371,16 +374,16 @@ namespace Store.ViewModels.Device
         // В документ уходят только строки, которые прошли серверную проверку и отмечены пользователем.
         public void UpdateIdentifierChangeChecked()
         {
-            IdentifierChangeCheckedItems = IdentifierChangeItems
+            IdentifierChangeCheckedItems = _identifierChangeItems
                 .Where(z => z != null && z.ChBoxS && z.IsSuccess)
                 .ToList();
             NotifyPropertyChanged(() => IdentifierChangeCheckedItems);
-            if (IdentifierChangeCurrent == null || !IdentifierChangeItems.Contains(IdentifierChangeCurrent))
+            if (IdentifierChangeCurrent == null || !_identifierChangeItems.Contains(IdentifierChangeCurrent))
                 IdentifierChangeCurrent = IdentifierChangeCheckedItems.FirstOrDefault()
-                                          ?? IdentifierChangeItems.FirstOrDefault(z => z != null);
+                                          ?? _identifierChangeItems.FirstOrDefault(z => z != null);
             PublishDevices();
 
-            var selectable = IdentifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
+            var selectable = _identifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
             if (!selectable.Any() || selectable.All(z => !z.ChBoxS))
                 IdentifierChangeAllChecked = false;
             else if (selectable.All(z => z.ChBoxS))
@@ -395,7 +398,7 @@ namespace Store.ViewModels.Device
         // «Добавить» включается, когда заполнены FileItems, CheckedItems и LocalCurrentItem.
         void PublishDevices()
         {
-            var devices = IdentifierChangeItems.Select(ToDevice).ToList();
+            var devices = _identifierChangeItems.Select(ToDevice).ToList();
             FileItems = devices;
             CheckedItems = new List<StoreDeviceStruct>(devices.Where(z => z != null && z.ChBoxS));
             NotifyPropertyChanged(() => FileItems);
@@ -445,7 +448,7 @@ namespace Store.ViewModels.Device
 
         void RefreshIdentifierChangeResume()
         {
-            int fileRowCount = IdentifierChangeItems.Count;
+            int fileRowCount = _identifierChangeItems.Count;
             if (fileRowCount == 0)
             {
                 SetIdentifierChangeResume("");
@@ -572,7 +575,18 @@ namespace Store.ViewModels.Device
 
         void ReplaceIdentifierChangeItems(IEnumerable<VerifyIdentifierChange> rows)
         {
+            var hadRows = _identifierChangeItems.Count > 0;
             _identifierChangeItems.ReplaceAll(rows);
+            if (!hadRows && _identifierChangeItems.Count > 0)
+                BindIdentifierChangeGrid();
+        }
+
+        void BindIdentifierChangeGrid()
+        {
+            _identifierChangeGridBound = false;
+            NotifyPropertyChanged(() => IdentifierChangeItems);
+            _identifierChangeGridBound = true;
+            NotifyPropertyChanged(() => IdentifierChangeItems);
         }
 
         void RefreshVerifyCommand()
@@ -585,7 +599,7 @@ namespace Store.ViewModels.Device
         void AdjustRowsForMode()
         {
             bool parameterMode = _loadMode != 0;
-            foreach (var row in IdentifierChangeItems)
+            foreach (var row in _identifierChangeItems)
             {
                 if (row == null)
                     continue;
