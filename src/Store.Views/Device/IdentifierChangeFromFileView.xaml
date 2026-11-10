@@ -1,0 +1,205 @@
+<Controls:UserView x:Class="Store.Views.Device.IdentifierChangeFromFileView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:Controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
+    xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+    xmlns:controls="clr-namespace:Store.Views.Controls"
+    xmlns:device="clr-namespace:Store.ViewModels.Device;assembly=Store.ViewModels"
+    xmlns:ownerships="clr-namespace:Store.ViewModels.Ownerships;assembly=Store.ViewModels"
+    xmlns:reference="clr-namespace:Store.ViewModels.Reference;assembly=Store.ViewModels"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    MinViewWidth="1250"
+    MinViewHeight="520"
+    StretchDialog="WidthAndHeight"
+    d:DataContext="{d:DesignInstance device:IdentifierChangeFromFileViewModel}">
+
+    <Controls:UserView.Resources>
+        <Controls:DataContextProxy x:Key="DataContextProxy"/>
+
+        <Controls:DataContextProxy x:Key="OwnershipViewModel">
+            <Controls:DataContextProxy.ViewModel>
+                <ownerships:OwnershipViewModel/>
+            </Controls:DataContextProxy.ViewModel>
+        </Controls:DataContextProxy>
+        <Controls:DataContextProxy x:Key="DeviceConditionViewModel">
+            <Controls:DataContextProxy.ViewModel>
+                <reference:DeviceConditionViewModel/>
+            </Controls:DataContextProxy.ViewModel>
+        </Controls:DataContextProxy>
+        <Controls:DataContextProxy x:Key="EthTechStatRefViewModel">
+            <Controls:DataContextProxy.ViewModel>
+                <reference:EthTechStatRefViewModel/>
+            </Controls:DataContextProxy.ViewModel>
+        </Controls:DataContextProxy>
+
+        <Style x:Key="SeparatorStyle" TargetType="Border">
+            <Setter Property="BorderThickness" Value="1,0,0,0"/>
+            <Setter Property="BorderBrush" Value="#FFC5C5C5"/>
+            <Setter Property="Margin" Value="3,3,2,3"/>
+            <Setter Property="Width" Value="2"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="RowWithErrorStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ChBoxS}" Value="False">
+                    <Setter Property="Background" Value="#FFF2DEDE"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Controls:UserView.Resources>
+
+    <xctk:BusyIndicator x:Name="BusyIndicator"
+                        IsBusy="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IsBusy, Mode=TwoWay}"
+                        BusyContent="{Binding Path=BusyMessage}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+        <Border Style="{StaticResource MainContentBorders}" x:Name="MainBorder" Margin="3" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid Name="Main">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Margin="3" BorderBrush="#FFE0E0E0" BorderThickness="1" CornerRadius="3">
+                    <StackPanel Orientation="Horizontal" Margin="4">
+                        <Button Margin="3"
+                                VerticalAlignment="Center"
+                                Command="{Binding Path=LoadIdentifierChangeCommand}"
+                                ToolTipService.ToolTip="Загрузить файл из папки"
+                                ContentTemplate="{StaticResource IconFromFolderTemplate}"
+                                Style="{StaticResource ButtonChromelessStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <TabControl Grid.Row="1" Margin="3"
+                            SelectedIndex="{Binding Path=LoadModeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                    <TabItem Header="Смена идентификаторов">
+                        <StackPanel Orientation="Horizontal" Margin="3">
+                            <Button Margin="3"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding Path=DownloadIdentifierTemplateCommand}"
+                                    ToolTipService.ToolTip="Скачать шаблон смены идентификаторов"
+                                    Content="{StaticResource IconDownload}"
+                                    ContentTemplate="{StaticResource IconTemplate}"
+                                    Style="{StaticResource ButtonChromelessStyle}"/>
+                        </StackPanel>
+                    </TabItem>
+
+                    <TabItem Header="Смена формы владения">
+                        <StackPanel Margin="6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Margin="3"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding Path=DownloadIdentifierTemplateCommand}"
+                                        ToolTipService.ToolTip="Скачать шаблон с текущим серийным номером"
+                                        Content="{StaticResource IconDownload}"
+                                        ContentTemplate="{StaticResource IconTemplate}"
+                                        Style="{StaticResource ButtonChromelessStyle}"/>
+                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения:"/>
+                                <Controls:ComboBox Margin="3" Width="220" x:Name="Ownership" IsEnabled="False"
+                                                   IsSynchronizedWithCurrentItem="True" SelectedIndex="1"
+                                                   ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
+                                                   SelectedItem="{Binding Path=Ownership, Mode=TwoWay}"/>
+                            </StackPanel>
+
+                            <Border Background="#E8F4FD" BorderBrush="#B6D4FE" BorderThickness="1" CornerRadius="4" Margin="3,8,3,3" Padding="8">
+                                <TextBlock TextWrapping="Wrap" Foreground="#084298">
+                                    <Run FontWeight="SemiBold" Text="Справка: "/>
+                                    <Run Text="Для успешной корректировки: оборудование в одном филиале, статус эксплуатации «у абонента», условие передачи «Аренда», форма владения «Собственность компании»"/>
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <TabItem Header="Смена параметров">
+                        <StackPanel Margin="6" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Margin="3"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding Path=DownloadIdentifierTemplateCommand}"
+                                    ToolTipService.ToolTip="Скачать шаблон с текущим серийным номером"
+                                    Content="{StaticResource IconDownload}"
+                                    ContentTemplate="{StaticResource IconTemplate}"
+                                    Style="{StaticResource ButtonChromelessStyle}"/>
+                            <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние:"/>
+                            <Controls:AutoCompleteComboBox Margin="3" Width="180" x:Name="DeviceCondition"
+                                                           ItemsSourceBinding="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
+                                                           SelectedItemBinding="{Binding Path=DeviceCondition, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <Controls:Label VerticalAlignment="Center" Margin="3,3,3,3" Content="Тех. состояние:"/>
+                            <Controls:AutoCompleteComboBox Margin="3" Width="180" x:Name="EthTechStatRef"
+                                                           ItemsSourceBinding="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
+                                                           SelectedItemBinding="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+
+                <Controls:DataGrid Grid.Row="2"
+                                   Name="cdgIdentifierChange"
+                                   Margin="3"
+                                   IsReadOnly="True"
+                                   AutoGenerateColumns="True"
+                                   ItemsSource="{Binding Path=IdentifierChangeItems, Mode=OneWay}"
+                                   SelectedItem="{Binding Path=IdentifierChangeCurrent, Mode=TwoWay}"
+                                   HiddenColumns="{Binding Path=IgnoreParamList}"
+                                   HorizontalScrollBarVisibility="Auto"
+                                   VerticalScrollBarVisibility="Auto"
+                                   RowStyle="{StaticResource RowWithErrorStyle}"
+                                   MinHeight="326"
+                                   MaxHeight="380"
+                                   MaxColumnWidth="450"
+                                   MaxColumnAutoWidth="400"
+                                   SelectionMode="Single">
+                    <Controls:DataGrid.Columns>
+                        <DataGridTemplateColumn Width="36" IsReadOnly="False" CanUserSort="False">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <ContentControl IsEnabled="{Binding Path=CanAddBool, Mode=OneWay, TargetNullValue=True}">
+                                        <CheckBox IsChecked="{Binding Path=ChBoxS, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  IsThreeState="False"
+                                                  Command="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeChBoxCommand}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Center"
+                                                  Padding="0"
+                                                  ToolTip="Выбор строки для загрузки"/>
+                                    </ContentControl>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                            <DataGridTemplateColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <CheckBox IsThreeState="True"
+                                                          IsChecked="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeAllChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                          Command="{Binding Source={StaticResource DataContextProxy}, Path=DataSource.IdentifierChangeChBoxAllCommand}"
+                                                          Margin="2,1,0,1"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center"
+                                                          Padding="0"/>
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </DataGridTemplateColumn.HeaderStyle>
+                        </DataGridTemplateColumn>
+                    </Controls:DataGrid.Columns>
+                </Controls:DataGrid>
+
+                <Border Grid.Row="4" Margin="3,2,3,3" Padding="6" Background="#FFF5F5F5" Style="{StaticResource MainContentBorders}"
+                        Visibility="{Binding Path=ShowResume, Converter={x:Static controls:BoolToVisibilityConverter.Instance}, TargetNullValue=Collapsed}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontWeight="SemiBold" Text="Резюме: " Margin="0,0,5,0"/>
+                        <TextBlock Text="{Binding Path=ResumeText, Mode=OneWay}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </xctk:BusyIndicator>
+</Controls:UserView>
