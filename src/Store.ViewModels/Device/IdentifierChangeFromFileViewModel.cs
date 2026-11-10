@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,8 +21,7 @@ namespace Store.ViewModels.Device
         private ICommand _verifyIdentifierChangeCommand;
         private ICommand _identifierChangeChBoxCommand;
         private ICommand _identifierChangeChBoxAllCommand;
-        private readonly IdentifierChangeItemCollection _identifierChangeItems = new IdentifierChangeItemCollection();
-        private bool _identifierChangeGridBound;
+        private List<VerifyIdentifierChange> _identifierChangeItems;
         private List<VerifyIdentifierChange> _identifierChangeCheckedItems;
         private VerifyIdentifierChange _identifierChangeCurrent;
         private bool? _identifierChangeAllChecked = true;
@@ -91,11 +88,10 @@ namespace Store.ViewModels.Device
             }
         }
 
-        // Пока строк нет, грид получает null. Пустой источник не строит колонки при AutoGenerateColumns.
-        // Когда строки появляются, источник назначается один раз. Проверка дальше меняет только содержимое.
-        public ObservableCollection<VerifyIdentifierChange> IdentifierChangeItems
+        public List<VerifyIdentifierChange> IdentifierChangeItems
         {
-            get { return _identifierChangeGridBound ? _identifierChangeItems : null; }
+            get { return _identifierChangeItems ?? (_identifierChangeItems = new List<VerifyIdentifierChange>()); }
+            set { SetValue(ref _identifierChangeItems, value, () => IdentifierChangeItems); }
         }
 
         public List<VerifyIdentifierChange> IdentifierChangeCheckedItems
@@ -217,8 +213,7 @@ namespace Store.ViewModels.Device
             if (file == null)
                 return;
 
-            IdentifierChangeCurrent = null;
-            ReplaceIdentifierChangeItems(null);
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
@@ -251,15 +246,12 @@ namespace Store.ViewModels.Device
                     ? new StreamReader(file.OpenRead(), new Encoding1251())
                     : new StreamReader(file.OpenRead());
 
-                List<VerifyIdentifierChange> parsed;
                 using (sr)
                 {
-                    parsed = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
-                    PlainIdentifierText(parsed);
-                    _badMacCount = CountBadMac(parsed);
+                    IdentifierChangeItems = IdentifierChangeFileParser.Parse(sr, SkipFirstRow, MacPattern);
+                    PlainIdentifierText(IdentifierChangeItems);
+                    _badMacCount = CountBadMac(IdentifierChangeItems);
                 }
-
-                ReplaceIdentifierChangeItems(parsed);
             }
             finally
             {
@@ -329,7 +321,7 @@ namespace Store.ViewModels.Device
         public bool CanVerifyIdentifierChange()
         {
             //return !IsExecuting && IdentifierChangeItems.Any() /*IdentifierChangeItems != null && IdentifierChangeItems.Any(CanSend)*/;
-            return !IsExecuting && _identifierChangeItems.Any(row => row != null);
+            return !IsExecuting && IdentifierChangeItems != null && IdentifierChangeItems.Any(row => row != null);
         }
 
         public void VerifyIdentifierChangeRows()
@@ -342,15 +334,14 @@ namespace Store.ViewModels.Device
             }
 
             var parameters = VerificationParameters();
-            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, _identifierChangeItems, parameters, false);
+            var xml = IdentifierChangeXml.Build(Filter.StoreDocumentId, IdentifierChangeItems, parameters, false);
             var selectCmd = Rep.SelectVerifyIdentifierChangeXml<List<VerifyIdentifierChange>>(Filter.StoreDocumentId, xml);
             BusyMessage = "Проверка смены идентификаторов...";
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
             {
-                var merged = MergeVerifyResult(_identifierChangeItems, selectCmd.ResultSet);
-                IdentifierChangeCurrent = null;
-                ReplaceIdentifierChangeItems(merged);
+                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
+                NotifyPropertyChanged(() => IdentifierChangeItems);
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
                 RefreshVerifyCommand();
@@ -365,7 +356,7 @@ namespace Store.ViewModels.Device
         public void CheckAllIdentifierChange()
         {
             bool value = IdentifierChangeAllChecked == true;
-            foreach (var row in _identifierChangeItems.Where(z => z != null && z.CanAddBool))
+            foreach (var row in IdentifierChangeItems.Where(z => z != null && z.CanAddBool))
                 row.ChBoxS = value;
 
             UpdateIdentifierChangeChecked();
@@ -374,16 +365,16 @@ namespace Store.ViewModels.Device
         // В документ уходят только строки, которые прошли серверную проверку и отмечены пользователем.
         public void UpdateIdentifierChangeChecked()
         {
-            IdentifierChangeCheckedItems = _identifierChangeItems
+            IdentifierChangeCheckedItems = IdentifierChangeItems
                 .Where(z => z != null && z.ChBoxS && z.IsSuccess)
                 .ToList();
             NotifyPropertyChanged(() => IdentifierChangeCheckedItems);
-            if (IdentifierChangeCurrent == null || !_identifierChangeItems.Contains(IdentifierChangeCurrent))
+            if (IdentifierChangeCurrent == null || !IdentifierChangeItems.Contains(IdentifierChangeCurrent))
                 IdentifierChangeCurrent = IdentifierChangeCheckedItems.FirstOrDefault()
-                                          ?? _identifierChangeItems.FirstOrDefault(z => z != null);
+                                          ?? IdentifierChangeItems.FirstOrDefault(z => z != null);
             PublishDevices();
 
-            var selectable = _identifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
+            var selectable = IdentifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
             if (!selectable.Any() || selectable.All(z => !z.ChBoxS))
                 IdentifierChangeAllChecked = false;
             else if (selectable.All(z => z.ChBoxS))
@@ -398,7 +389,7 @@ namespace Store.ViewModels.Device
         // «Добавить» включается, когда заполнены FileItems, CheckedItems и LocalCurrentItem.
         void PublishDevices()
         {
-            var devices = _identifierChangeItems.Select(ToDevice).ToList();
+            var devices = IdentifierChangeItems.Select(ToDevice).ToList();
             FileItems = devices;
             CheckedItems = new List<StoreDeviceStruct>(devices.Where(z => z != null && z.ChBoxS));
             NotifyPropertyChanged(() => FileItems);
@@ -448,7 +439,7 @@ namespace Store.ViewModels.Device
 
         void RefreshIdentifierChangeResume()
         {
-            int fileRowCount = _identifierChangeItems.Count;
+            int fileRowCount = IdentifierChangeItems.Count;
             if (fileRowCount == 0)
             {
                 SetIdentifierChangeResume("");
@@ -568,25 +559,9 @@ namespace Store.ViewModels.Device
             IdentifierChangeCurrent = null;
             LocalCurrentItem = null;
             IdentifierChangeAllChecked = false;
-            ReplaceIdentifierChangeItems(null);
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
             SetIdentifierChangeResume("");
             RefreshVerifyCommand();
-        }
-
-        void ReplaceIdentifierChangeItems(IEnumerable<VerifyIdentifierChange> rows)
-        {
-            var hadRows = _identifierChangeItems.Count > 0;
-            _identifierChangeItems.ReplaceAll(rows);
-            if (!hadRows && _identifierChangeItems.Count > 0)
-                BindIdentifierChangeGrid();
-        }
-
-        void BindIdentifierChangeGrid()
-        {
-            _identifierChangeGridBound = false;
-            NotifyPropertyChanged(() => IdentifierChangeItems);
-            _identifierChangeGridBound = true;
-            NotifyPropertyChanged(() => IdentifierChangeItems);
         }
 
         void RefreshVerifyCommand()
@@ -599,7 +574,7 @@ namespace Store.ViewModels.Device
         void AdjustRowsForMode()
         {
             bool parameterMode = _loadMode != 0;
-            foreach (var row in _identifierChangeItems)
+            foreach (var row in IdentifierChangeItems)
             {
                 if (row == null)
                     continue;
@@ -661,12 +636,10 @@ namespace Store.ViewModels.Device
             return string.Join("; ", left.ToArray());
         }
 
-        static List<VerifyIdentifierChange> MergeVerifyResult(IEnumerable<VerifyIdentifierChange> current, List<VerifyIdentifierChange> result)
+        static List<VerifyIdentifierChange> MergeVerifyResult(List<VerifyIdentifierChange> current, List<VerifyIdentifierChange> result)
         {
-            if (current == null)
-                return new List<VerifyIdentifierChange>();
             if (result == null)
-                return new List<VerifyIdentifierChange>(current);
+                return current;
 
             var byLine = new Dictionary<decimal, VerifyIdentifierChange>();
             foreach (var item in result)
@@ -706,7 +679,7 @@ namespace Store.ViewModels.Device
             _loadMode = 0;
             SetLoadMode(0);
 
-            ReplaceIdentifierChangeItems(null);
+            IdentifierChangeItems = new List<VerifyIdentifierChange>();
             IdentifierChangeCheckedItems = new List<VerifyIdentifierChange>();
             FileItems = new List<StoreDeviceStruct>();
             CheckedItems = new List<StoreDeviceStruct>();
@@ -716,24 +689,6 @@ namespace Store.ViewModels.Device
             Filter.Clear();
             Filter.AcceptChanges();
             Refresh();
-        }
-
-        sealed class IdentifierChangeItemCollection : ObservableCollection<VerifyIdentifierChange>
-        {
-            public void ReplaceAll(IEnumerable<VerifyIdentifierChange> rows)
-            {
-                CheckReentrancy();
-                Items.Clear();
-                if (rows != null)
-                {
-                    foreach (var row in rows)
-                        Items.Add(row);
-                }
-
-                OnPropertyChanged(new PropertyChangedEventArgs("Count"));
-                OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-            }
         }
     }
 }
