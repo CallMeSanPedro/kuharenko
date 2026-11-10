@@ -172,10 +172,13 @@ namespace Store.ViewModels.Device
 
         public void DownloadIdentifierTemplate()
         {
+            bool identifiers = _loadMode == 0;
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Filter = "CSV (*.csv)|*.csv",
-                FileName = "Шаблон смены идентификаторов.csv",
+                FileName = identifiers
+                    ? "Шаблон смены идентификаторов.csv"
+                    : "Шаблон серийного номера.csv",
                 DefaultExt = ".csv",
                 AddExtension = true,
                 OverwritePrompt = true
@@ -186,10 +189,15 @@ namespace Store.ViewModels.Device
 
             using (var writer = new StreamWriter(dialog.FileName, false, new Encoding1251()))
             {
-                writer.WriteLine(IdentifierChangeFileParser.ColSn + ";" +
-                                 IdentifierChangeFileParser.ColSnNew + ";" +
-                                 IdentifierChangeFileParser.ColMacNew + ";" +
-                                 IdentifierChangeFileParser.ColPonNew);
+                if (identifiers)
+                {
+                    writer.WriteLine(IdentifierChangeFileParser.ColSn + ";" +
+                                     IdentifierChangeFileParser.ColSnNew + ";" +
+                                     IdentifierChangeFileParser.ColMacNew + ";" +
+                                     IdentifierChangeFileParser.ColPonNew);
+                }
+                else
+                    writer.WriteLine(IdentifierChangeFileParser.ColSn);
             }
         }
 

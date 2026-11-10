@@ -95,6 +95,13 @@
                     <TabItem Header="Смена формы владения">
                         <StackPanel Margin="6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Margin="3"
+                                        VerticalAlignment="Center"
+                                        Command="{Binding Path=DownloadIdentifierTemplateCommand}"
+                                        ToolTipService.ToolTip="Скачать шаблон с текущим серийным номером"
+                                        Content="{StaticResource IconDownload}"
+                                        ContentTemplate="{StaticResource IconTemplate}"
+                                        Style="{StaticResource ButtonChromelessStyle}"/>
                                 <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения:"/>
                                 <Controls:ComboBox Margin="3" Width="220" x:Name="Ownership" IsEnabled="False"
                                                    IsSynchronizedWithCurrentItem="True" SelectedIndex="1"
@@ -113,6 +120,13 @@
 
                     <TabItem Header="Смена параметров">
                         <StackPanel Margin="6" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button Margin="3"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding Path=DownloadIdentifierTemplateCommand}"
+                                    ToolTipService.ToolTip="Скачать шаблон с текущим серийным номером"
+                                    Content="{StaticResource IconDownload}"
+                                    ContentTemplate="{StaticResource IconTemplate}"
+                                    Style="{StaticResource ButtonChromelessStyle}"/>
                             <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние:"/>
                             <Controls:AutoCompleteComboBox Margin="3" Width="180" x:Name="DeviceCondition"
                                                            ItemsSourceBinding="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
