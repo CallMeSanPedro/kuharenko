@@ -340,8 +340,9 @@ namespace Store.ViewModels.Device
             IsBusy = true;
             ExecuteAsync(selectCmd, s =>
             {
-                IdentifierChangeItems = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
-                NotifyPropertyChanged(() => IdentifierChangeItems);
+                var merged = MergeVerifyResult(IdentifierChangeItems, selectCmd.ResultSet);
+                IdentifierChangeCurrent = null;
+                IdentifierChangeItems = merged;
                 UpdateIdentifierChangeChecked();
                 IsBusy = false;
                 RefreshVerifyCommand();
@@ -369,9 +370,10 @@ namespace Store.ViewModels.Device
                 .Where(z => z != null && z.ChBoxS && z.IsSuccess)
                 .ToList();
             NotifyPropertyChanged(() => IdentifierChangeCheckedItems);
+            // Выбирается верхняя строка: выбор строки ниже видимой области прокручивает грид
+            // к ещё не построенной строке, и видимая область остаётся пустой.
             if (IdentifierChangeCurrent == null || !IdentifierChangeItems.Contains(IdentifierChangeCurrent))
-                IdentifierChangeCurrent = IdentifierChangeCheckedItems.FirstOrDefault()
-                                          ?? IdentifierChangeItems.FirstOrDefault(z => z != null);
+                IdentifierChangeCurrent = IdentifierChangeItems.FirstOrDefault(z => z != null);
             PublishDevices();
 
             var selectable = IdentifierChangeItems.Where(z => z != null && z.CanAddBool).ToList();
