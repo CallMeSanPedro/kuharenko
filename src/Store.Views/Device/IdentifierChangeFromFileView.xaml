@@ -10,13 +10,15 @@
     xmlns:device="clr-namespace:Store.ViewModels.Device;assembly=Store.ViewModels"
     xmlns:ownerships="clr-namespace:Store.ViewModels.Ownerships;assembly=Store.ViewModels"
     xmlns:reference="clr-namespace:Store.ViewModels.Reference;assembly=Store.ViewModels"
-    MinViewWidth="600"
-    MinViewHeight="420"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    MinViewWidth="1250"
+    MinViewHeight="520"
     StretchDialog="WidthAndHeight"
     d:DataContext="{d:DesignInstance device:IdentifierChangeFromFileViewModel}">
 
     <Controls:UserView.Resources>
         <Controls:DataContextProxy x:Key="DataContextProxy"/>
+
         <Controls:DataContextProxy x:Key="OwnershipViewModel">
             <Controls:DataContextProxy.ViewModel>
                 <ownerships:OwnershipViewModel/>
@@ -32,6 +34,22 @@
                 <reference:EthTechStatRefViewModel/>
             </Controls:DataContextProxy.ViewModel>
         </Controls:DataContextProxy>
+
+        <Style x:Key="SeparatorStyle" TargetType="Border">
+            <Setter Property="BorderThickness" Value="1,0,0,0"/>
+            <Setter Property="BorderBrush" Value="#FFC5C5C5"/>
+            <Setter Property="Margin" Value="3,3,2,3"/>
+            <Setter Property="Width" Value="2"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="RowWithErrorStyle" TargetType="DataGridRow">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Path=ChBoxS}" Value="False">
+                    <Setter Property="Background" Value="#FFF2DEDE"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Controls:UserView.Resources>
 
     <xctk:BusyIndicator x:Name="BusyIndicator"
@@ -44,68 +62,66 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0" Style="{StaticResource MainContentBorders}" BorderThickness="1" Margin="3" Name="bordertoolbar">
-                    <StackPanel Orientation="Horizontal">
+                <Border Grid.Row="0" Margin="3" BorderBrush="#FFE0E0E0" BorderThickness="1" CornerRadius="3">
+                    <StackPanel Orientation="Horizontal" Margin="4">
                         <Button Margin="3"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Command="{Binding Path=DownloadIdentifierTemplateCommand}"
-                                ToolTipService.ToolTip="Скачать шаблон смены идентификаторов"
-                                ContentTemplate="{StaticResource IconExcelTemplate}"
-                                Style="{StaticResource ButtonChromelessStyle}"/>
-                        <Button Margin="3"
-                                HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Command="{Binding Path=LoadIdentifierChangeCommand}"
-                                ToolTipService.ToolTip="Загрузить файл смены идентификаторов"
+                                ToolTipService.ToolTip="Загрузить файл из папки"
                                 ContentTemplate="{StaticResource IconFromFolderTemplate}"
                                 Style="{StaticResource ButtonChromelessStyle}"/>
-                        <Border Style="{StaticResource SeparatorStyle}"/>
-                        <CheckBox Content="Пропустить первую строку"
-                                  VerticalAlignment="Center"
-                                  IsChecked="{Binding Path=SkipFirstRow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  Margin="1" Padding="4,1,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <TabControl Grid.Row="1" Margin="3"
                             SelectedIndex="{Binding Path=LoadModeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                     <TabItem Header="Смена идентификаторов">
-                        <TextBlock Margin="6" TextWrapping="Wrap"
-                                   Text="Меняются SN, MAC и PON из файла. Форма владения, состояние и тех. состояние на проверку не передаются. Экземпляр должен быть в статусе «на складе» и на складе документа."/>
-                    </TabItem>
-                    <TabItem Header="Смена формы владения">
-                        <StackPanel Margin="3">
-                            <TextBlock Margin="3" TextWrapping="Wrap"
-                                       Text="Форма владения задаётся один раз для всех строк. Состояние и тех. состояние на проверку не передаются. Новые SN, MAC и PON из файла не проверяются. Для «Собственность абонента» нужен статус «у абонента», для остальных форм — статус «на складе» и склад документа."/>
-                            <StackPanel Orientation="Horizontal">
-                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения"/>
-                                <Controls:ComboBox Margin="3" Width="180" x:Name="Ownership"
-                                                   ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
-                                                   SelectedItem="{Binding Path=Ownership, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
-                                                   IsEnabled="{Binding Path=CanSelectOwnerschip}"/>
-                            </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="3">
+                            <Button Margin="3"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding Path=DownloadIdentifierTemplateCommand}"
+                                    ToolTipService.ToolTip="Скачать шаблон смены идентификаторов"
+                                    Content="{StaticResource IconDownload}"
+                                    ContentTemplate="{StaticResource IconTemplate}"
+                                    Style="{StaticResource ButtonChromelessStyle}"/>
                         </StackPanel>
                     </TabItem>
-                    <TabItem Header="Смена состояния и тех. состояния">
-                        <StackPanel Margin="3">
-                            <TextBlock Margin="3" TextWrapping="Wrap"
-                                       Text="Состояние и тех. состояние задаются один раз для всех строк. Форма владения на проверку не передаётся. Новые SN, MAC и PON из файла не проверяются. Экземпляр должен быть в статусе «на складе» и на складе документа."/>
-                            <StackPanel Orientation="Horizontal">
-                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние"/>
-                                <Controls:ComboBox Margin="3" Width="180" x:Name="DeviceCondition"
-                                                   ItemsSource="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
-                                                   SelectedItem="{Binding Path=DeviceCondition, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
-                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Тех. состояние"/>
-                                <Controls:ComboBox Margin="3" Width="180" x:Name="EthTechStatRef"
-                                                   ItemsSource="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
-                                                   SelectedItem="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"
-                                                   IsEnabled="{Binding Path=CanSelectTechStat}"/>
+
+                    <TabItem Header="Смена формы владения">
+                        <StackPanel Margin="6">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения:"/>
+                                <Controls:ComboBox Margin="3" Width="220" x:Name="Ownership" IsEnabled="False"
+                                                   IsSynchronizedWithCurrentItem="True" SelectedIndex="1"
+                                                   ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
+                                                   SelectedItem="{Binding Path=Ownership, Mode=TwoWay}"/>
                             </StackPanel>
+
+                            <Border Background="#E8F4FD" BorderBrush="#B6D4FE" BorderThickness="1" CornerRadius="4" Margin="3,8,3,3" Padding="8">
+                                <TextBlock TextWrapping="Wrap" Foreground="#084298">
+                                    <Run FontWeight="SemiBold" Text="Справка: "/>
+                                    <Run Text="Для успешной корректировки: оборудование в одном филиале, статус эксплуатации «у абонента», условие передачи «Аренда», форма владения «Собственность компании»"/>
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
+
+                    <TabItem Header="Смена параметров">
+                        <StackPanel Margin="6" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние:"/>
+                            <Controls:AutoCompleteComboBox Margin="3" Width="180" x:Name="DeviceCondition"
+                                                           ItemsSourceBinding="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
+                                                           SelectedItemBinding="{Binding Path=DeviceCondition, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <Controls:Label VerticalAlignment="Center" Margin="3,3,3,3" Content="Тех. состояние:"/>
+                            <Controls:AutoCompleteComboBox Margin="3" Width="180" x:Name="EthTechStatRef"
+                                                           ItemsSourceBinding="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
+                                                           SelectedItemBinding="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
                         </StackPanel>
                     </TabItem>
                 </TabControl>
@@ -115,13 +131,16 @@
                                    Margin="3"
                                    IsReadOnly="True"
                                    AutoGenerateColumns="True"
-                                   Reflection="True"
-                                   HiddenColumns="{Binding Path=IgnoreParamList, Mode=OneWay}"
-                                   ItemsSource="{Binding Path=IdentifierChangeItems, Mode=TwoWay}"
+                                   ItemsSource="{Binding Path=IdentifierChangeItems, Mode=OneWay}"
                                    SelectedItem="{Binding Path=IdentifierChangeCurrent, Mode=TwoWay}"
+                                   HiddenColumns="{Binding Path=IgnoreParamList}"
                                    HorizontalScrollBarVisibility="Auto"
                                    VerticalScrollBarVisibility="Auto"
+                                   RowStyle="{StaticResource RowWithErrorStyle}"
                                    MinHeight="326"
+                                   MaxHeight="380"
+                                   MaxColumnWidth="450"
+                                   MaxColumnAutoWidth="400"
                                    SelectionMode="Single">
                     <Controls:DataGrid.Columns>
                         <DataGridTemplateColumn Width="36" IsReadOnly="False" CanUserSort="False">
@@ -159,20 +178,13 @@
                     </Controls:DataGrid.Columns>
                 </Controls:DataGrid>
 
-                <Grid Grid.Row="3" Margin="3"
-                      Visibility="{Binding Path=ShowResume, Converter={x:Static controls:BoolToVisibilityConverter.Instance}, TargetNullValue=Collapsed}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Controls:Label Grid.Column="0" Margin="3" Content="Резюме"/>
-                    <TextBox Grid.Column="1"
-                             Margin="3"
-                             x:Name="result"
-                             Text="{Binding Path=ResumeText, Mode=OneWay}"
-                             AcceptsReturn="True"
-                             IsReadOnly="True"/>
-                </Grid>
+                <Border Grid.Row="4" Margin="3,2,3,3" Padding="6" Background="#FFF5F5F5" Style="{StaticResource MainContentBorders}"
+                        Visibility="{Binding Path=ShowResume, Converter={x:Static controls:BoolToVisibilityConverter.Instance}, TargetNullValue=Collapsed}">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock FontWeight="SemiBold" Text="Резюме: " Margin="0,0,5,0"/>
+                        <TextBlock Text="{Binding Path=ResumeText, Mode=OneWay}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Border>
     </xctk:BusyIndicator>
