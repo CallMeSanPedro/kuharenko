@@ -389,6 +389,8 @@ namespace Store.ViewModels.Device
 
         // Список для грида остаётся VerifyIdentifierChange. Копия в StoreDeviceStruct нужна диалогу:
         // «Добавить» включается, когда заполнены FileItems, CheckedItems и LocalCurrentItem.
+        // LocalCurrentItem всегда верхняя запись: диалог прокручивает грид к текущей записи,
+        // и прокрутка к первой успешной строке ниже видимой области оставляет грид пустым.
         void PublishDevices()
         {
             var devices = IdentifierChangeItems.Select(ToDevice).ToList();
@@ -396,7 +398,7 @@ namespace Store.ViewModels.Device
             CheckedItems = new List<StoreDeviceStruct>(devices.Where(z => z != null && z.ChBoxS));
             NotifyPropertyChanged(() => FileItems);
             NotifyPropertyChanged(() => CheckedItems);
-            LocalCurrentItem = CheckedItems.FirstOrDefault() ?? devices.FirstOrDefault();
+            LocalCurrentItem = devices.FirstOrDefault(z => z != null);
         }
 
         StoreDeviceStruct ToDevice(VerifyIdentifierChange row)
