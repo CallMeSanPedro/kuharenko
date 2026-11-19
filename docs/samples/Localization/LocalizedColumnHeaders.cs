@@ -98,7 +98,7 @@ namespace Store.Views.Localization
                 return;
 
             var property = itemType?.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-            var typeName = property?.DeclaringType?.Name ?? itemType?.Name;
+            var typeName = TypeKey(property?.DeclaringType) ?? TypeKey(itemType);
             if (string.IsNullOrEmpty(typeName))
                 return;
 
@@ -111,6 +111,16 @@ namespace Store.Views.Localization
                 ConverterParameter = fallback
             };
             BindingOperations.SetBinding(column, DataGridColumn.HeaderProperty, binding);
+        }
+
+        private static string TypeKey(Type type)
+        {
+            if (type == null)
+                return null;
+
+            var name = type.Name;
+            var tick = name.IndexOf('`');
+            return tick < 0 ? name : name.Substring(0, tick);
         }
 
         private static string ReadShortName(PropertyInfo property)
