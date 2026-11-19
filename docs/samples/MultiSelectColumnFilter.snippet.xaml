@@ -1,7 +1,9 @@
 <!--
 В шапке только значок. По нажатию открывается список или поле поиска.
 xmlns:controls3 — тот же, что у MultiSelectComboBox.
-Title фильтра — ключ ресурса. Смена языка обновляет подпись.
+Text="{Binding Title}" слушает фильтр. ColumnCheckFilterBehavior подставляет
+ключ колонки (ИмяТипа_ИмяСвойства), поэтому язык меняется и когда в Add
+передан русский ShortName, а не ключ.
 -->
 <DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,7 +16,7 @@ Title фильтра — ключ ресурса. Смена языка обно
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <TextBlock Text="{Binding Title}"
+        <TextBlock Text="{Binding Title, Mode=OneWay}"
                    VerticalAlignment="Center"
                    Margin="0,0,6,0"/>
 

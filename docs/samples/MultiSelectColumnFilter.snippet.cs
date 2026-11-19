@@ -11,6 +11,8 @@ public ColumnHeaderFilter Find(string propertyName) => HeaderFilters.Find(proper
 public TechReservViewModel()
     : base(MainViewModel.Resolve<IRepository<TechReserv, TechReservFilter>>())
 {
+    // Второй аргумент может быть ключом ресурса или русским ShortName.
+    // Шапку всё равно переводит ключ колонки, его берёт ColumnCheckFilterBehavior.
     HeaderFilters.Add(nameof(TechReserv.MarkacommName), "TechReserv_MarkacommName", item => ((TechReserv)item).MarkacommName);
     HeaderFilters.AddText(nameof(TechReserv.SerialNumber), "TechReserv_SerialNumber", item => ((TechReserv)item).SerialNumber);
     HeaderFilters.Changed += (s, e) => ItemsView?.Refresh();

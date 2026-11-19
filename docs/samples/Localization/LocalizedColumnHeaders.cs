@@ -13,7 +13,8 @@ namespace Store.Views.Localization
     /// Заголовки колонок из [Display(ShortName = "...")].
     /// Ключ ресурса: ИмяТипа_ИмяСвойства. ShortName остаётся, если перевода нет.
     /// Смена языка обновляет шапку: Header — привязка к Translation.Instance.
-    /// Фильтр колонки подменяет Header своим ContentControl; его Title переводится отдельно.
+    /// Фильтр колонки подменяет Header своим ContentControl.
+    /// Ключ шапки всё равно передаётся ему через ILocalizedCaption.UseCaption.
     /// </summary>
     public static class LocalizedColumnHeaders
     {
@@ -92,18 +93,25 @@ namespace Store.Views.Localization
         {
             if (column == null || string.IsNullOrEmpty(propertyName))
                 return;
-            if (column.Header is ContentControl)
+
+            string key;
+            string fallback;
+            if (!TryRead(itemType, propertyName, out key, out fallback))
                 return;
+
+            var control = column.Header as ContentControl;
+            if (control != null)
+            {
+                var caption = control.Content as ILocalizedCaption;
+                if (caption != null)
+                    caption.UseCaption(key, fallback);
+                return;
+            }
+
             if (BindingOperations.GetBinding(column, DataGridColumn.HeaderProperty) != null)
                 return;
 
-            var property = itemType?.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
-            var typeName = TypeKey(property?.DeclaringType) ?? TypeKey(itemType);
-            if (string.IsNullOrEmpty(typeName))
-                return;
-
-            var fallback = ReadShortName(property) ?? propertyName;
-            var binding = new Binding("[" + typeName + "_" + propertyName + "]")
+            var binding = new Binding("[" + key + "]")
             {
                 Source = Translation.Instance,
                 Mode = BindingMode.OneWay,
@@ -111,6 +119,28 @@ namespace Store.Views.Localization
                 ConverterParameter = fallback
             };
             BindingOperations.SetBinding(column, DataGridColumn.HeaderProperty, binding);
+        }
+
+        public static bool TryReadCaption(DataGrid grid, string propertyName, out string key, out string fallback)
+        {
+            return TryRead(ItemType(grid), propertyName, out key, out fallback);
+        }
+
+        private static bool TryRead(Type itemType, string propertyName, out string key, out string fallback)
+        {
+            key = null;
+            fallback = null;
+            if (string.IsNullOrEmpty(propertyName))
+                return false;
+
+            var property = itemType?.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            var typeName = TypeKey(property?.DeclaringType) ?? TypeKey(itemType);
+            if (string.IsNullOrEmpty(typeName))
+                return false;
+
+            key = typeName + "_" + propertyName;
+            fallback = ReadShortName(property) ?? propertyName;
+            return true;
         }
 
         private static string TypeKey(Type type)

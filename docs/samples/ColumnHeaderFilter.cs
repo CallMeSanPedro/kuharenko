@@ -36,10 +36,12 @@ namespace Store.Views.Filtering
     /// Данные одного фильтра в шапке колонки.
     /// Пустой выбор и пустая строка поиска не скрывают строки.
     /// </summary>
-    public sealed class ColumnHeaderFilter : INotifyPropertyChanged
+    public sealed class ColumnHeaderFilter : INotifyPropertyChanged, ILocalizedCaption
     {
         private readonly Func<object, string> _read;
         private readonly string _title;
+        private string _captionKey;
+        private string _fallback;
         private IEnumerable<object> _selectedItems;
         private HashSet<string> _selected;
         private string _text = string.Empty;
@@ -49,6 +51,8 @@ namespace Store.Views.Filtering
         {
             PropertyName = propertyName;
             _title = title;
+            _captionKey = title;
+            _fallback = title;
             Mode = mode;
             _read = read;
             Options = new ObservableCollection<object>();
@@ -58,10 +62,32 @@ namespace Store.Views.Filtering
         public string PropertyName { get; }
 
         /// <summary>
-        /// Подпись шапки. Если title — ключ ресурса (TechReserv_SerialNumber), берётся перевод.
-        /// Иначе остаётся переданная строка. Смена языка обновляет привязку {Binding Title}.
+        /// Строка, переданная в Add. Нужна, чтобы найти фильтр, пока шапка уже переведена.
         /// </summary>
-        public string Title => Translation.Instance.Get(_title, _title);
+        public string SourceTitle => _title;
+
+        public string CaptionKey => _captionKey;
+
+        public string CaptionFallback => string.IsNullOrEmpty(_fallback) ? _title : _fallback;
+
+        /// <summary>
+        /// Подпись шапки. Ключ колонки (TechReserv_SerialNumber) подставляет грид.
+        /// Нет ключа — остаётся строка из Add. Смена языка поднимает PropertyChanged(Title).
+        /// </summary>
+        public string Title => Translation.Instance.Get(
+            string.IsNullOrEmpty(_captionKey) ? _title : _captionKey,
+            CaptionFallback);
+
+        public void UseCaption(string key, string fallback)
+        {
+            if (!string.IsNullOrEmpty(key))
+                _captionKey = key;
+            if (!string.IsNullOrEmpty(fallback))
+                _fallback = fallback;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CaptionKey)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CaptionFallback)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Title)));
+        }
 
         public ColumnFilterMode Mode { get; }
 
@@ -232,7 +258,9 @@ namespace Store.Views.Filtering
 
             foreach (var filter in _filters.Values)
             {
-                if (string.Equals(filter.Title, title, StringComparison.CurrentCulture))
+                if (string.Equals(filter.SourceTitle, title, StringComparison.CurrentCulture)
+                    || string.Equals(filter.Title, title, StringComparison.CurrentCulture)
+                    || string.Equals(filter.CaptionFallback, title, StringComparison.CurrentCulture))
                     return filter;
             }
 
