@@ -6,11 +6,11 @@
 В колонку ShortName попадает Display.ShortName, а если его нет — Display.Name.
 Свойства с AutoGenerateField = false пропускаются.
 
-Запуск из каталога моделей (или корня решения):
+На Windows скрипт запускается через PowerShell, Python не нужен:
 
-    python collect_display_keys.py C:\\src\\Store -o display-keys.csv
+    powershell -ExecutionPolicy Bypass -File collect_display_keys.ps1 -Path C:\\src\\Store -English Strings.en.resx -Output display-keys.csv
 
-Уже готовый английский подставляется из resx, пустые ячейки English остаются на перевод:
+Тот же сбор, если Python уже стоит:
 
     python collect_display_keys.py C:\\src\\Store --english Strings.en.resx -o display-keys.csv
 
