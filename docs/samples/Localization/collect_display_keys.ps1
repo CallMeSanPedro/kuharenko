@@ -11,6 +11,9 @@ CSV is UTF-8 with BOM, separator semicolon, so Excel opens the columns.
 
     powershell -ExecutionPolicy Bypass -File collect_display_keys.ps1 -Path C:\src\Store -English C:\src\Store\Strings.en.resx -Output display-keys.csv
 
+Without -Path the script scans its own folder and writes display-keys.csv next to itself.
+The console prints Scan progress immediately. A double-clicked window stays open until Enter.
+
 Empty English cells are the translations still to add to both resx files.
 #>
 param(
@@ -668,25 +671,46 @@ function Test-SkippedPath([string]$fullName) {
     return $false
 }
 
+function Add-CsFiles([string]$dir, $list) {
+    foreach ($entry in [System.IO.Directory]::EnumerateFileSystemEntries($dir)) {
+        $name = [System.IO.Path]::GetFileName($entry)
+        if ($script:SkipDirs -contains $name) { continue }
+        if ([System.IO.Directory]::Exists($entry)) {
+            Add-CsFiles $entry $list
+            continue
+        }
+        if (-not $name.EndsWith(".cs")) { continue }
+        if ($name.EndsWith(".Designer.cs") -or $name.EndsWith(".g.cs")) { continue }
+        [void]$list.Add($entry)
+    }
+}
+
 function Read-ModelFiles([string]$root) {
     $rows = New-Object System.Collections.Generic.List[object]
     $item = Get-Item -LiteralPath $root
+    $files = New-Object System.Collections.Generic.List[string]
     if ($item.PSIsContainer) {
-        $files = Get-ChildItem -LiteralPath $item.FullName -Recurse -File -Filter *.cs
         $base = $item.FullName
+        Write-Host ("Listing cs: " + $base)
+        Add-CsFiles $item.FullName $files
     }
     else {
-        $files = @($item)
         $base = Split-Path -Parent $item.FullName
+        [void]$files.Add($item.FullName)
     }
-    foreach ($file in $files) {
-        if (Test-SkippedPath $file.FullName) { continue }
-        if ($file.Name.EndsWith(".Designer.cs") -or $file.Name.EndsWith(".g.cs")) { continue }
-        $text = [System.IO.File]::ReadAllText($file.FullName)
+    Write-Host ("cs files: " + $files.Count)
+    $seen = 0
+    foreach ($full in $files) {
+        $seen++
+        if (($seen % 25) -eq 0) { Write-Host ("read " + $seen + "/" + $files.Count) }
+        $text = [System.IO.File]::ReadAllText($full)
+        if ($text.IndexOf("Display", [System.StringComparison]::Ordinal) -lt 0) { continue }
+        $name = [System.IO.Path]::GetFileName($full)
+        Write-Host ("Display: " + $name)
         $text = Remove-Preprocessor $text
         $found = Read-SourceRows $text
         foreach ($row in $found) {
-            $row.File = Get-RelativePath $file.FullName $base
+            $row.File = Get-RelativePath $full $base
             [void]$rows.Add($row)
         }
     }
@@ -866,10 +890,20 @@ public interface IRow
 
 if ($SelfTest) { Invoke-SelfTest }
 
-if ($null -eq $Path -or $Path.Count -eq 0) {
-    Write-Host (T 0x443,0x43a,0x430,0x436,0x438,0x442,0x435,0x20,0x43a,0x430,0x442,0x430,0x43b,0x43e,0x433,0x20,0x441,0x20,0x43c,0x43e,0x434,0x435,0x43b,0x44f,0x43c,0x438,0x3a,0x20,0x2d,0x50,0x61,0x74,0x68,0x20,0x43,0x3a,0x5c,0x73,0x72,0x63,0x5c,0x53,0x74,0x6f,0x72,0x65)
-    exit 2
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+if ([string]::IsNullOrWhiteSpace($scriptDir)) { $scriptDir = (Get-Location).Path }
+if (-not $PSBoundParameters.ContainsKey("Output")) {
+    $Output = Join-Path $scriptDir "display-keys.csv"
 }
+if ($null -eq $Path -or $Path.Count -eq 0) {
+    $Path = @($scriptDir)
+    Write-Host ("No -Path, scan the script folder: " + $scriptDir)
+}
+
+$Output = [System.IO.Path]::GetFullPath($Output)
+Write-Host ("CSV: " + $Output)
 
 $englishMap = Read-Resx $English
 $all = New-Object System.Collections.Generic.List[object]
@@ -890,5 +924,16 @@ foreach ($row in $sorted) {
     if ([string]::IsNullOrEmpty($row.English)) { $missing++ }
 }
 Write-CsvFile $Output $sorted
-Write-Host ((T 0x421,0x43e,0x431,0x440,0x430,0x43d,0x43e,0x20,0x7b,0x30,0x7d,0x2e,0x20,0x411,0x435,0x437,0x20,0x43f,0x435,0x440,0x435,0x432,0x43e,0x434,0x430,0x3a,0x20,0x7b,0x31,0x7d,0x2e,0x20,0x424,0x430,0x439,0x43b,0x3a,0x20,0x7b,0x32,0x7d) -f $sorted.Count, $missing, $Output)
+Write-Host ("Collected {0}. Empty English: {1}." -f $sorted.Count, $missing)
+Write-Host ("CSV: " + $Output)
+if ($env:OS -eq "Windows_NT") {
+    try {
+        $parentId = (Get-CimInstance Win32_Process -Filter "ProcessId=$PID" -ErrorAction Stop).ParentProcessId
+        $parentName = (Get-Process -Id $parentId -ErrorAction Stop).ProcessName
+        if ($parentName -eq "explorer") {
+            Write-Host "Press Enter to close."
+            [void](Read-Host)
+        }
+    } catch {}
+}
 exit 0
