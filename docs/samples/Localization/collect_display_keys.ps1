@@ -1,16 +1,17 @@
 ﻿<#
-Собрать ключи колонок из [Display] по файлам моделей.
-Ключ такой же, как у LocalizedColumnHeaders: ИмяКласса_ИмяСвойства.
-В колонку ShortName попадает Display.ShortName, а если его нет — Display.Name.
-Свойства с AutoGenerateField = false пропускаются.
+Collect column keys from [Display] on model files.
+Key: ClassName_PropertyName. Caption is ShortName, or Name when ShortName is empty.
+AutoGenerateField = false is skipped.
 
-CSV в кодировке UTF-8 с BOM, разделитель «;», чтобы Excel на русской Windows открыл колонки.
+The file is ASCII on purpose. Windows PowerShell 5.1 on a Russian system
+reads a UTF-8 script without a BOM as Windows-1251 and then fails to parse it.
+Russian text is built at runtime from character codes.
 
-Запуск:
+CSV is UTF-8 with BOM, separator semicolon, so Excel opens the columns.
 
     powershell -ExecutionPolicy Bypass -File collect_display_keys.ps1 -Path C:\src\Store -English C:\src\Store\Strings.en.resx -Output display-keys.csv
 
-Пустая ячейка English — перевод, который ещё нужно вписать в оба resx.
+Empty English cells are the translations still to add to both resx files.
 #>
 param(
     [string[]]$Path,
@@ -20,6 +21,13 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+function T {
+    param([int[]]$Code)
+    $sb = New-Object System.Text.StringBuilder
+    foreach ($c in $Code) { [void]$sb.Append([char]$c) }
+    return $sb.ToString()
+}
 
 $script:TypeWords = @("class", "struct", "interface", "enum", "record")
 $script:Modifiers = @(
@@ -688,7 +696,7 @@ function Read-ModelFiles([string]$root) {
 function Read-Resx([string]$path) {
     $values = @{}
     if ([string]::IsNullOrWhiteSpace($path) -or -not (Test-Path -LiteralPath $path)) {
-        if (-not [string]::IsNullOrWhiteSpace($path)) { Write-Host ("нет resx: " + $path) }
+        if (-not [string]::IsNullOrWhiteSpace($path)) { Write-Host ((T 0x43d,0x435,0x442,0x20,0x72,0x65,0x73,0x78,0x3a,0x20) + $path) }
         return $values
     }
     $xml = New-Object System.Xml.XmlDocument
@@ -738,13 +746,25 @@ function Write-DuplicateWarnings($rows) {
     }
     foreach ($key in ($seen.Keys | Sort-Object)) {
         if ($seen[$key].Count -gt 1) {
-            Write-Host ("один ключ в нескольких файлах: {0} ({1})" -f $key, ($seen[$key] -join ", "))
+            $dup = T 0x43e,0x434,0x438,0x43d,0x20,0x43a,0x43b,0x44e,0x447,0x20,0x432,0x20,0x43d,0x435,0x441,0x43a,0x43e,0x43b,0x44c,0x43a,0x438,0x445,0x20,0x444,0x430,0x439,0x43b,0x430,0x445
+            Write-Host ("{0}: {1} ({2})" -f $dup, $key, ($seen[$key] -join ", "))
         }
     }
 }
 
 function Invoke-SelfTest {
-    $sample = @'
+    $stroka = T 0x421,0x442,0x440,0x43e,0x43a,0x430
+    $serial = T 0x421,0x435,0x440,0x438,0x439,0x43d,0x44b,0x439,0x20,0x43d,0x43e,0x43c,0x435,0x440
+    $imya = T 0x418,0x43c,0x44f
+    $imyaFull = T 0x418,0x43c,0x44f,0x2c,0x20,0x43f,0x43e,0x43b,0x43d,0x43e,0x435
+    $metod = T 0x41c,0x435,0x442,0x43e,0x434
+    $nested = T 0x412,0x43b,0x43e,0x436,0x435,0x43d,0x43d,0x44b,0x439,0x20,0x442,0x438,0x43f
+    $vnutri = T 0x412,0x43d,0x443,0x442,0x440,0x438
+    $obob = T 0x41e,0x431,0x43e,0x431,0x449,0x435,0x43d,0x438,0x435
+    $seria = T 0x421,0x435,0x440,0x438,0x44f
+    $onlyName = T 0x422,0x43e,0x43b,0x44c,0x43a,0x43e,0x20,0x438,0x43c,0x44f
+    $fromIface = T 0x418,0x437,0x20,0x438,0x43d,0x442,0x435,0x440,0x444,0x435,0x439,0x441,0x430
+    $sample = @"
 namespace Store.Device.Models
 {
     public class VerifyIdentifierChange
@@ -752,47 +772,47 @@ namespace Store.Device.Models
         [Display(AutoGenerateField = false)]
         public bool ChBoxS { get; set; }
 
-        // [Display(ShortName = "Из комментария")]
+        // [Display(ShortName = "ignored")]
         public string Ignored { get; set; }
 
-        [Display(Name = "Строка", Description = "Строка")]
+        [Display(Name = "$stroka", Description = "$stroka")]
         public override decimal? LineNo { get; set; }
 
-        [Display(Name = "Серийный номер", ShortName = "Серийный номер", Description = "Серийный номер")]
+        [Display(Name = "$serial", ShortName = "$serial", Description = "$serial")]
         public override string SerialNumber { get; set; }
 
         [Display(
-            Name = "Имя",
-            ShortName = "Имя, полное")]
+            Name = "$imya",
+            ShortName = "$imyaFull")]
         public string Title { get; set; }
 
-        [Display(ShortName = "Метод")]
+        [Display(ShortName = "$metod")]
         public void Run() { }
 
-        [Display(ShortName = "Вложенный тип")]
+        [Display(ShortName = "$nested")]
         public class Inner
         {
-            [Display(ShortName = "Внутри")]
+            [Display(ShortName = "$vnutri")]
             public string Name { get; set; }
         }
     }
 
     public class Box<T>
     {
-        [Display(ShortName = "Обобщение")]
+        [Display(ShortName = "$obob")]
         public string Value { get; set; }
     }
 }
-'@
+"@
     $rows = Read-SourceRows $sample
     $got = @{}
     foreach ($row in $rows) { $got[$row.Key] = $row.ShortName }
     $expected = @{
-        "VerifyIdentifierChange_LineNo" = "Строка"
-        "VerifyIdentifierChange_SerialNumber" = "Серийный номер"
-        "VerifyIdentifierChange_Title" = "Имя, полное"
-        "Inner_Name" = "Внутри"
-        "Box_Value" = "Обобщение"
+        "VerifyIdentifierChange_LineNo" = $stroka
+        "VerifyIdentifierChange_SerialNumber" = $serial
+        "VerifyIdentifierChange_Title" = $imyaFull
+        "Inner_Name" = $vnutri
+        "Box_Value" = $obob
     }
     foreach ($key in $expected.Keys) {
         if ($got[$key] -ne $expected[$key]) {
@@ -805,7 +825,7 @@ namespace Store.Device.Models
         exit 1
     }
 
-    $extra = @'
+    $extra = @"
 namespace Store.Models;
 
 public class AfterMethod
@@ -816,25 +836,26 @@ public class AfterMethod
         values[0] = 1;
     }
 
-    [Display(ShortName = @"Серия ""A""")]
+    [Display(ShortName = @"$seria ""A""")]
     public string Serial { get; set; }
 
     [Display(
-        // комментарий
-        Name = "Только имя")]
+        // comment
+        Name = "$onlyName")]
     public int Count { get; set; }
 }
 
 public interface IRow
 {
-    [System.ComponentModel.DataAnnotations.DisplayAttribute(ShortName = "Из интерфейса")]
+    [System.ComponentModel.DataAnnotations.DisplayAttribute(ShortName = "$fromIface")]
     string Title { get; set; }
 }
-'@
+"@
     $rows = Read-SourceRows $extra
     $got = @{}
     foreach ($row in $rows) { $got[$row.Key] = $row.ShortName }
-    if ($got["AfterMethod_Serial"] -ne 'Серия "A"' -or $got["AfterMethod_Count"] -ne "Только имя" -or $got["IRow_Title"] -ne "Из интерфейса" -or $got.Count -ne 3) {
+    $seriaA = $seria + ' "A"'
+    if ($got["AfterMethod_Serial"] -ne $seriaA -or $got["AfterMethod_Count"] -ne $onlyName -or $got["IRow_Title"] -ne $fromIface -or $got.Count -ne 3) {
         Write-Host "self-test extra failed"
         foreach ($key in $got.Keys) { Write-Host ($key + " = " + $got[$key]) }
         exit 1
@@ -846,7 +867,7 @@ public interface IRow
 if ($SelfTest) { Invoke-SelfTest }
 
 if ($null -eq $Path -or $Path.Count -eq 0) {
-    Write-Host "укажите каталог с моделями: -Path C:\src\Store"
+    Write-Host (T 0x443,0x43a,0x430,0x436,0x438,0x442,0x435,0x20,0x43a,0x430,0x442,0x430,0x43b,0x43e,0x433,0x20,0x441,0x20,0x43c,0x43e,0x434,0x435,0x43b,0x44f,0x43c,0x438,0x3a,0x20,0x2d,0x50,0x61,0x74,0x68,0x20,0x43,0x3a,0x5c,0x73,0x72,0x63,0x5c,0x53,0x74,0x6f,0x72,0x65)
     exit 2
 }
 
@@ -854,7 +875,7 @@ $englishMap = Read-Resx $English
 $all = New-Object System.Collections.Generic.List[object]
 foreach ($root in $Path) {
     if (-not (Test-Path -LiteralPath $root)) {
-        Write-Host ("нет пути: " + $root)
+        Write-Host ((T 0x43d,0x435,0x442,0x20,0x43f,0x443,0x442,0x438,0x3a,0x20) + $root)
         exit 2
     }
     $found = Read-ModelFiles $root
@@ -869,5 +890,5 @@ foreach ($row in $sorted) {
     if ([string]::IsNullOrEmpty($row.English)) { $missing++ }
 }
 Write-CsvFile $Output $sorted
-Write-Host ("Собрано {0}. Без перевода: {1}. Файл: {2}" -f $sorted.Count, $missing, $Output)
+Write-Host ((T 0x421,0x43e,0x431,0x440,0x430,0x43d,0x43e,0x20,0x7b,0x30,0x7d,0x2e,0x20,0x411,0x435,0x437,0x20,0x43f,0x435,0x440,0x435,0x432,0x43e,0x434,0x430,0x3a,0x20,0x7b,0x31,0x7d,0x2e,0x20,0x424,0x430,0x439,0x43b,0x3a,0x20,0x7b,0x32,0x7d) -f $sorted.Count, $missing, $Output)
 exit 0
