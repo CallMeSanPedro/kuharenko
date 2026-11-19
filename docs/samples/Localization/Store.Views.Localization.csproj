@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Store.Views.Localization</RootNamespace>
+    <AssemblyName>Store.Views.Localization</AssemblyName>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="**/*.snippet.cs" />
+    <Compile Remove="LocalizedColumnHeaders.cs" />
+    <Compile Remove="TranslateFallbackConverter.cs" />
+    <Compile Remove="TranslationCheck/**" />
+  </ItemGroup>
+</Project>

@@ -4,7 +4,9 @@ Text — то, что видит пользователь.
 Tag — результат конвертера по коду статуса, не по строке на экране.
 Коды в StatusToneConverter замените на фактические значения поля.
 -->
-<DataGridTemplateColumn Header="Состояние" Width="120">
+<DataGridTemplateColumn xmlns:loc="clr-namespace:Store.Views.Localization"
+                        Header="{Binding [Column_Condition], Source={x:Static loc:Translation.Instance}, FallbackValue=Состояние, TargetNullValue=Состояние}"
+                        Width="120">
     <DataGridTemplateColumn.CellTemplate>
         <DataTemplate>
             <Border Style="{DynamicResource StatusBadge}"
@@ -15,7 +17,9 @@ Tag — результат конвертера по коду статуса, н
     </DataGridTemplateColumn.CellTemplate>
 </DataGridTemplateColumn>
 
-<DataGridTemplateColumn Header="Статус эксплуатации" Width="150">
+<DataGridTemplateColumn xmlns:loc="clr-namespace:Store.Views.Localization"
+                        Header="{Binding [Column_OperationStatus], Source={x:Static loc:Translation.Instance}, FallbackValue=Статус эксплуатации, TargetNullValue=Статус эксплуатации}"
+                        Width="150">
     <DataGridTemplateColumn.CellTemplate>
         <DataTemplate>
             <Border Style="{DynamicResource StatusBadge}"

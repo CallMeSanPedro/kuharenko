@@ -1,0 +1,11 @@
+<!--
+На грид, который сам создаёт колонки. Сборка Store.Views.
+xmlns:loc="clr-namespace:Store.Views.Localization"
+
+Ключ: ИмяТипа_ИмяСвойства, например VerifyIdentifierChange_SerialNumber.
+Нет ключа — на шапке остаётся Display.ShortName.
+-->
+<DataGrid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:loc="clr-namespace:Store.Views.Localization"
+          loc:LocalizedColumnHeaders.IsEnabled="True"
+          AutoGenerateColumns="True"/>

@@ -1,29 +1,42 @@
 <!--
 Кнопка меню шапки. Колонка 3, не внутри левого или правого StackPanel.
 Вкладки, которым не хватает места, листаются стрелками внутри своей колонки.
+Рядом со стилем — язык. xmlns:loc="clr-namespace:Store.Views.Localization"
 Полная разметка: MainView.Header.snippet.xaml
 -->
 <Menu Grid.Column="3"
+      xmlns:loc="clr-namespace:Store.Views.Localization"
       Style="{StaticResource HeaderHamburgerMenu}"
       VerticalAlignment="Center">
     <MenuItem Style="{StaticResource HeaderHamburgerItem}">
-        <MenuItem Header="Выбор стиля"
+        <MenuItem Header="{Binding [Menu_Theme], Source={x:Static loc:Translation.Instance}, FallbackValue=Выбор стиля, TargetNullValue=Выбор стиля}"
                   Style="{StaticResource HeaderDropdownMenuItem}">
-            <MenuItem Header="По умолчанию (Default)"
+            <MenuItem Header="{Binding [Theme_Default], Source={x:Static loc:Translation.Instance}, FallbackValue=По умолчанию, TargetNullValue=По умолчанию}"
                       Tag="Default"
                       Click="ThemeMenuItem_OnClick"
                       Style="{StaticResource HeaderDropdownMenuItem}"/>
-            <MenuItem Header="Современный (Modern)"
+            <MenuItem Header="{Binding [Theme_Modern], Source={x:Static loc:Translation.Instance}, FallbackValue=Современный, TargetNullValue=Современный}"
                       Tag="Modern"
                       Click="ThemeMenuItem_OnClick"
                       Style="{StaticResource HeaderDropdownMenuItem}"/>
-            <MenuItem Header="Контрастный (Contrast)"
+            <MenuItem Header="{Binding [Theme_Contrast], Source={x:Static loc:Translation.Instance}, FallbackValue=Контрастный, TargetNullValue=Контрастный}"
                       Tag="Contrast"
                       Click="ThemeMenuItem_OnClick"
                       Style="{StaticResource HeaderDropdownMenuItem}"/>
-            <MenuItem Header="Старый исходный (Legacy)"
+            <MenuItem Header="{Binding [Theme_Legacy], Source={x:Static loc:Translation.Instance}, FallbackValue=Старый исходный, TargetNullValue=Старый исходный}"
                       Tag="Legacy"
                       Click="ThemeMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
+        </MenuItem>
+        <MenuItem Header="{Binding [Menu_Language], Source={x:Static loc:Translation.Instance}, FallbackValue=Язык, TargetNullValue=Язык}"
+                  Style="{StaticResource HeaderDropdownMenuItem}">
+            <MenuItem Header="{Binding [Language_Russian], Source={x:Static loc:Translation.Instance}, FallbackValue=Русский, TargetNullValue=Русский}"
+                      Tag="ru"
+                      Click="LanguageMenuItem_OnClick"
+                      Style="{StaticResource HeaderDropdownMenuItem}"/>
+            <MenuItem Header="{Binding [Language_English], Source={x:Static loc:Translation.Instance}, FallbackValue=Английский, TargetNullValue=Английский}"
+                      Tag="en"
+                      Click="LanguageMenuItem_OnClick"
                       Style="{StaticResource HeaderDropdownMenuItem}"/>
         </MenuItem>
     </MenuItem>

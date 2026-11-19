@@ -1,8 +1,13 @@
 <!--
 В шапке только значок. По нажатию открывается список или поле поиска.
 xmlns:controls3 — тот же, что у MultiSelectComboBox.
+Title фильтра — ключ ресурса. Смена языка обновляет подпись.
 -->
-<DataTemplate x:Key="ColumnFilterHeaderTemplate">
+<DataTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:loc="clr-namespace:Store.Views.Localization"
+              xmlns:controls3="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
+              x:Key="ColumnFilterHeaderTemplate">
     <Grid MinHeight="28">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -22,7 +27,7 @@ xmlns:controls3 — тот же, что у MultiSelectComboBox.
                       Background="Transparent"
                       Cursor="Hand"
                       VerticalAlignment="Center"
-                      ToolTip="Фильтр">
+                      ToolTip="{Binding [Column_Filter], Source={x:Static loc:Translation.Instance}, FallbackValue=Фильтр, TargetNullValue=Фильтр}">
             <Path Data="M 0,0 L 10,0 L 6.2,4.6 L 6.2,9 L 3.8,9 L 3.8,4.6 Z"
                   Width="10"
                   Height="9"

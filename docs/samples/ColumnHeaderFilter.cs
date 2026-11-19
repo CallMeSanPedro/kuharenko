@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using DatumNode.Models;
+using Store.Views.Localization;
 
 namespace Store.Views.Filtering
 {
@@ -38,6 +39,7 @@ namespace Store.Views.Filtering
     public sealed class ColumnHeaderFilter : INotifyPropertyChanged
     {
         private readonly Func<object, string> _read;
+        private readonly string _title;
         private IEnumerable<object> _selectedItems;
         private HashSet<string> _selected;
         private string _text = string.Empty;
@@ -46,17 +48,28 @@ namespace Store.Views.Filtering
         public ColumnHeaderFilter(string propertyName, string title, Func<object, string> read, ColumnFilterMode mode)
         {
             PropertyName = propertyName;
-            Title = title;
+            _title = title;
             Mode = mode;
             _read = read;
             Options = new ObservableCollection<object>();
+            Translation.Instance.PropertyChanged += OnLanguageChanged;
         }
 
         public string PropertyName { get; }
 
-        public string Title { get; }
+        /// <summary>
+        /// Подпись шапки. Если title — ключ ресурса (TechReserv_SerialNumber), берётся перевод.
+        /// Иначе остаётся переданная строка. Смена языка обновляет привязку {Binding Title}.
+        /// </summary>
+        public string Title => Translation.Instance.Get(_title, _title);
 
         public ColumnFilterMode Mode { get; }
+
+        private void OnLanguageChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "Item[]" || string.IsNullOrEmpty(e.PropertyName))
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Title)));
+        }
 
         public bool IsCheckList => Mode == ColumnFilterMode.CheckList;
 
