@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="IdentifierChange_Open" xml:space="preserve">
+    <value>Смена серийных номеров из файла</value>
+  </data>
+  <data name="IdentifierChange_Title" xml:space="preserve">
+    <value>Загрузка и проверка смены серийных номеров</value>
+  </data>
+  <data name="IdentifierChange_Add" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="IdentifierChange_Close" xml:space="preserve">
+    <value>Закрыть</value>
+  </data>
+  <data name="IdentifierChange_LoadFile" xml:space="preserve">
+    <value>Загрузить файл из папки</value>
+  </data>
+  <data name="IdentifierChange_TabIdentifiers" xml:space="preserve">
+    <value>Смена идентификаторов</value>
+  </data>
+  <data name="IdentifierChange_DownloadIdentifiers" xml:space="preserve">
+    <value>Скачать шаблон смены идентификаторов</value>
+  </data>
+  <data name="IdentifierChange_TabOwnership" xml:space="preserve">
+    <value>Смена формы владения</value>
+  </data>
+  <data name="IdentifierChange_DownloadSerial" xml:space="preserve">
+    <value>Скачать шаблон с текущим серийным номером</value>
+  </data>
+  <data name="IdentifierChange_Ownership" xml:space="preserve">
+    <value>Форма владения:</value>
+  </data>
+  <data name="IdentifierChange_HelpTitle" xml:space="preserve">
+    <value>Справка: </value>
+  </data>
+  <data name="IdentifierChange_Help" xml:space="preserve">
+    <value>Для успешной корректировки: оборудование в одном филиале, статус эксплуатации «у абонента», условие передачи «Аренда», форма владения «Собственность компании»</value>
+  </data>
+  <data name="IdentifierChange_TabParameters" xml:space="preserve">
+    <value>Смена параметров</value>
+  </data>
+  <data name="IdentifierChange_Condition" xml:space="preserve">
+    <value>Состояние:</value>
+  </data>
+  <data name="IdentifierChange_TechStatus" xml:space="preserve">
+    <value>Тех. состояние:</value>
+  </data>
+  <data name="IdentifierChange_SelectRow" xml:space="preserve">
+    <value>Выбор строки для загрузки</value>
+  </data>
+  <data name="IdentifierChange_Resume" xml:space="preserve">
+    <value>Резюме: </value>
+  </data>
+  <data name="IdentifierChange_TemplateIdentifiers" xml:space="preserve">
+    <value>Шаблон смены идентификаторов.csv</value>
+  </data>
+  <data name="IdentifierChange_TemplateSerial" xml:space="preserve">
+    <value>Шаблон серийного номера.csv</value>
+  </data>
+  <data name="IdentifierChange_ResumeRead" xml:space="preserve">
+    <value>Считано записей из файла: {0}</value>
+  </data>
+  <data name="IdentifierChange_BadMac" xml:space="preserve">
+    <value>Неверный mac-адрес: {0}</value>
+  </data>
+  <data name="IdentifierChange_ResumeRejected" xml:space="preserve">
+    <value>Отсев: {0}</value>
+  </data>
+  <data name="IdentifierChange_ResumeLoad" xml:space="preserve">
+    <value>Будет загружено: {0}</value>
+  </data>
+</root>
