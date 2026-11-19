@@ -5,11 +5,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Store.Views.Controls"
         xmlns:converters1="clr-namespace:Store.Views.Converters"
+        xmlns:props="clr-namespace:Store.ViewModels.Properties;assembly=Store.ViewModels"
         Margin="1"
         Style="{StaticResource ButtonChromelessStyle}"
         ContentTemplate="{StaticResource IconFromFolderTemplate}"
         Command="{Binding Path=DialogCommand}"
         CommandParameter="{StaticResource IdentifierChangeFromFile}"
         Visibility="{Binding Path=Filter.CanAddFromFile, Converter={x:Static controls:BoolToVisibilityConverter.Instance}}"
-        ToolTipService.ToolTip="Смена серийных номеров из файла"
+        ToolTipService.ToolTip="{x:Static props:Resources.IdentifierChange_Open}"
         IsEnabled="{Binding Path=Owner.UserPrivList, Converter={x:Static converters1:PrivilegesToBool.Instance}, ConverterParameter='StoreDeviceView.AddIdentifierChange'}"/>

@@ -8,6 +8,7 @@
     xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:controls="clr-namespace:Store.Views.Controls"
     xmlns:device="clr-namespace:Store.ViewModels.Device;assembly=Store.ViewModels"
+    xmlns:props="clr-namespace:Store.ViewModels.Properties;assembly=Store.ViewModels"
     xmlns:ownerships="clr-namespace:Store.ViewModels.Ownerships;assembly=Store.ViewModels"
     xmlns:reference="clr-namespace:Store.ViewModels.Reference;assembly=Store.ViewModels"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
@@ -72,7 +73,7 @@
                         <Button Margin="3"
                                 VerticalAlignment="Center"
                                 Command="{Binding Path=LoadIdentifierChangeCommand}"
-                                ToolTipService.ToolTip="Загрузить файл из папки"
+                                ToolTipService.ToolTip="{x:Static props:Resources.IdentifierChange_LoadFile}"
                                 ContentTemplate="{StaticResource IconFromFolderTemplate}"
                                 Style="{StaticResource ButtonChromelessStyle}"/>
                     </StackPanel>
@@ -80,29 +81,29 @@
 
                 <TabControl Grid.Row="1" Margin="3"
                             SelectedIndex="{Binding Path=LoadModeIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                    <TabItem Header="Смена идентификаторов">
+                    <TabItem Header="{x:Static props:Resources.IdentifierChange_TabIdentifiers}">
                         <StackPanel Orientation="Horizontal" Margin="3">
                             <Button Margin="3"
                                     VerticalAlignment="Center"
                                     Command="{Binding Path=DownloadIdentifierTemplateCommand}"
-                                    ToolTipService.ToolTip="Скачать шаблон смены идентификаторов"
+                                    ToolTipService.ToolTip="{x:Static props:Resources.IdentifierChange_DownloadIdentifiers}"
                                     Content="{StaticResource IconDownload}"
                                     ContentTemplate="{StaticResource IconTemplate}"
                                     Style="{StaticResource ButtonChromelessStyle}"/>
                         </StackPanel>
                     </TabItem>
 
-                    <TabItem Header="Смена формы владения">
+                    <TabItem Header="{x:Static props:Resources.IdentifierChange_TabOwnership}">
                         <StackPanel Margin="6">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Margin="3"
                                         VerticalAlignment="Center"
                                         Command="{Binding Path=DownloadIdentifierTemplateCommand}"
-                                        ToolTipService.ToolTip="Скачать шаблон с текущим серийным номером"
+                                        ToolTipService.ToolTip="{x:Static props:Resources.IdentifierChange_DownloadSerial}"
                                         Content="{StaticResource IconDownload}"
                                         ContentTemplate="{StaticResource IconTemplate}"
                                         Style="{StaticResource ButtonChromelessStyle}"/>
-                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="Форма владения:"/>
+                                <Controls:Label VerticalAlignment="Center" Margin="3" Content="{x:Static props:Resources.IdentifierChange_Ownership}"/>
                                 <Controls:ComboBox Margin="3" Width="220" x:Name="Ownership" IsEnabled="False"
                                                    IsSynchronizedWithCurrentItem="True" SelectedIndex="1"
                                                    ItemsSource="{Binding Source={StaticResource OwnershipViewModel}, Path=ViewModel.ItemsView}"
@@ -111,28 +112,28 @@
 
                             <Border Background="#E8F4FD" BorderBrush="#B6D4FE" BorderThickness="1" CornerRadius="4" Margin="3,8,3,3" Padding="8">
                                 <TextBlock TextWrapping="Wrap" Foreground="#084298">
-                                    <Run FontWeight="SemiBold" Text="Справка: "/>
-                                    <Run Text="Для успешной корректировки: оборудование в одном филиале, статус эксплуатации «у абонента», условие передачи «Аренда», форма владения «Собственность компании»"/>
+                                    <Run FontWeight="SemiBold" Text="{x:Static props:Resources.IdentifierChange_HelpTitle}"/>
+                                    <Run Text="{x:Static props:Resources.IdentifierChange_Help}"/>
                                 </TextBlock>
                             </Border>
                         </StackPanel>
                     </TabItem>
 
-                    <TabItem Header="Смена параметров">
+                    <TabItem Header="{x:Static props:Resources.IdentifierChange_TabParameters}">
                         <StackPanel Margin="6" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Margin="3"
                                     VerticalAlignment="Center"
                                     Command="{Binding Path=DownloadIdentifierTemplateCommand}"
-                                    ToolTipService.ToolTip="Скачать шаблон с текущим серийным номером"
+                                    ToolTipService.ToolTip="{x:Static props:Resources.IdentifierChange_DownloadSerial}"
                                     Content="{StaticResource IconDownload}"
                                     ContentTemplate="{StaticResource IconTemplate}"
                                     Style="{StaticResource ButtonChromelessStyle}"/>
-                            <Controls:Label VerticalAlignment="Center" Margin="3" Content="Состояние:"/>
+                            <Controls:Label VerticalAlignment="Center" Margin="3" Content="{x:Static props:Resources.IdentifierChange_Condition}"/>
                             <Controls:AutoCompleteComboBox Margin="3" Width="180" x:Name="DeviceCondition"
                                                            ItemsSourceBinding="{Binding Source={StaticResource DeviceConditionViewModel}, Path=ViewModel.ItemsView}"
                                                            SelectedItemBinding="{Binding Path=DeviceCondition, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
 
-                            <Controls:Label VerticalAlignment="Center" Margin="3,3,3,3" Content="Тех. состояние:"/>
+                            <Controls:Label VerticalAlignment="Center" Margin="3,3,3,3" Content="{x:Static props:Resources.IdentifierChange_TechStatus}"/>
                             <Controls:AutoCompleteComboBox Margin="3" Width="180" x:Name="EthTechStatRef"
                                                            ItemsSourceBinding="{Binding Source={StaticResource EthTechStatRefViewModel}, Path=ViewModel.ItemsView}"
                                                            SelectedItemBinding="{Binding Path=EthTechStatRef, Mode=TwoWay, ValidatesOnExceptions=true, NotifyOnValidationError=true, UpdateSourceTrigger=PropertyChanged}"/>
@@ -167,7 +168,7 @@
                                                   HorizontalAlignment="Center"
                                                   VerticalAlignment="Center"
                                                   Padding="0"
-                                                  ToolTip="Выбор строки для загрузки"/>
+                                                  ToolTip="{x:Static props:Resources.IdentifierChange_SelectRow}"/>
                                     </ContentControl>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -195,7 +196,7 @@
                 <Border Grid.Row="4" Margin="3,2,3,3" Padding="6" Background="#FFF5F5F5" Style="{StaticResource MainContentBorders}"
                         Visibility="{Binding Path=ShowResume, Converter={x:Static controls:BoolToVisibilityConverter.Instance}, TargetNullValue=Collapsed}">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock FontWeight="SemiBold" Text="Резюме: " Margin="0,0,5,0"/>
+                        <TextBlock FontWeight="SemiBold" Text="{x:Static props:Resources.IdentifierChange_Resume}" Margin="0,0,5,0"/>
                         <TextBlock Text="{Binding Path=ResumeText, Mode=OneWay}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                 </Border>

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Store.Device.Models;
+using Store.ViewModels.Properties;
 
 // Usings для DelegateCommand, DependsOn, Encoding1251, ExportToExcel, Messenger, NotificationMessageAction
 // и MainViewModel скопировать из AddDeviceFromFileViewModel.
@@ -177,8 +178,8 @@ namespace Store.ViewModels.Device
             {
                 Filter = "CSV (*.csv)|*.csv",
                 FileName = identifiers
-                    ? "Шаблон смены идентификаторов.csv"
-                    : "Шаблон серийного номера.csv",
+                    ? Resources.IdentifierChange_TemplateIdentifiers
+                    : Resources.IdentifierChange_TemplateSerial,
                 DefaultExt = ".csv",
                 AddExtension = true,
                 OverwritePrompt = true
@@ -461,12 +462,12 @@ namespace Store.ViewModels.Device
             int addRowCount = IdentifierChangeCheckedItems.Count;
             int siftingCount = fileRowCount - addRowCount;
 
-            var text = "Считано записей из файла: " + fileRowCount;
+            var text = string.Format(Resources.IdentifierChange_ResumeRead, fileRowCount);
             if (_badMacCount > 0)
-                text += "\nНе верный mac-адрес: " + _badMacCount;
+                text += "\n" + string.Format(Resources.IdentifierChange_BadMac, _badMacCount);
             if (siftingCount > 0)
-                text += "\nОтсев: " + siftingCount;
-            text += "\nБудет загружено: " + addRowCount;
+                text += "\n" + string.Format(Resources.IdentifierChange_ResumeRejected, siftingCount);
+            text += "\n" + string.Format(Resources.IdentifierChange_ResumeLoad, addRowCount);
 
             SetIdentifierChangeResume(text);
         }
