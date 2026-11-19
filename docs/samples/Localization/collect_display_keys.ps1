@@ -15,6 +15,7 @@ Without -Path the script scans its own folder and writes display-keys.csv next t
 The console prints Scan progress immediately. A double-clicked window stays open until Enter.
 
 Empty English cells are the translations still to add to both resx files.
+After the CSV is filled, write it back with fill_strings_resx.ps1.
 #>
 param(
     [string[]]$Path,
