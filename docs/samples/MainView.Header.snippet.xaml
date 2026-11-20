@@ -3,6 +3,8 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
 
 Локальный Style HeaderMenuTabControl удалить: его голый TabPanel перекрывает стрелки.
 Нужны ContentPageStyles.xaml и HeaderTabScroll.cs (сборка Store.Views).
+Пункт «Язык» и подписи вкладок идут через Translation. Код клика: LanguageMenu.snippet.cs.
+После входа, до Show: LanguagePreference.Apply(login).
 
 Пока вкладки влезают, они по центру и без стрелок.
 Если не влезают, слева и справа появляются стрелки и листают пункты по одному.
@@ -14,6 +16,7 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
       xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
       xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
       xmlns:input="clr-namespace:System.Windows.Input;assembly=DatumNode.Controls"
+      xmlns:loc="clr-namespace:Store.Views.Localization"
       x:Name="StackPanel"
       Background="{StaticResource HeaderBarBg}"
       Height="52">
@@ -54,11 +57,11 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
                                       CommandParameter="{Binding ElementName=LinksBorder, Path=SelectedItem.Tag}"/>
             </b:EventTrigger>
         </b:Interaction.Triggers>
-        <TabItem Header="Склад" Tag="{StaticResource EquipMasterViewModel}"/>
-        <TabItem Header="Справочники" Tag="{StaticResource StoreReferenceListMasterDetailViewModel}"/>
-        <TabItem Header="Отчёты" Tag="{StaticResource StoreReportsListViewModel}"/>
-        <TabItem Header="Интеграция" Tag="{StaticResource OebsCommandsViewModel}" Visibility="{Binding Path=CanMenuOebs, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
-        <TabItem Header="Аудит" Tag="{StaticResource AuditViewModel}" Visibility="{Binding Path=CanMenuAudit, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
+        <TabItem Header="{Binding [Menu_Warehouse], Source={x:Static loc:Translation.Instance}, FallbackValue=Склад, TargetNullValue=Склад}" Tag="{StaticResource EquipMasterViewModel}"/>
+        <TabItem Header="{Binding [Menu_References], Source={x:Static loc:Translation.Instance}, FallbackValue=Справочники, TargetNullValue=Справочники}" Tag="{StaticResource StoreReferenceListMasterDetailViewModel}"/>
+        <TabItem Header="{Binding [Menu_Reports], Source={x:Static loc:Translation.Instance}, FallbackValue=Отчёты, TargetNullValue=Отчёты}" Tag="{StaticResource StoreReportsListViewModel}"/>
+        <TabItem Header="{Binding [Menu_Integration], Source={x:Static loc:Translation.Instance}, FallbackValue=Интеграция, TargetNullValue=Интеграция}" Tag="{StaticResource OebsCommandsViewModel}" Visibility="{Binding Path=CanMenuOebs, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
+        <TabItem Header="{Binding [Menu_Audit], Source={x:Static loc:Translation.Instance}, FallbackValue=Аудит, TargetNullValue=Аудит}" Tag="{StaticResource AuditViewModel}" Visibility="{Binding Path=CanMenuAudit, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>
     </TabControl>
 
     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,8,0">
@@ -66,7 +69,9 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
         <TextBlock x:Name="UserLabel" VerticalAlignment="Center" Style="{StaticResource LinksMainMenuStyle}" Foreground="{StaticResource HeaderBarText}" Text="{Binding Path=User, TargetNullValue=Не авторизован}"/>
         <Button Style="{StaticResource ButtonAccentStyle}" Content="{StaticResource IconHelps}" ContentTemplate="{StaticResource IconTemplate}" Background="Transparent" BorderThickness="0" IsEnabled="False" Margin="10,0,0,0" VerticalAlignment="Center"/>
         <TextBlock x:Name="label1" Style="{StaticResource LinksMainMenuStyle}">
-            <Hyperlink x:Name="HbInstrBtn" FontWeight="Normal" TextDecorations="None" TargetName="_blank" Foreground="{StaticResource HeaderBarText}" Click="Hyperlink1_OnClick">Помощь</Hyperlink>
+            <Hyperlink x:Name="HbInstrBtn" FontWeight="Normal" TextDecorations="None" TargetName="_blank" Foreground="{StaticResource HeaderBarText}" Click="Hyperlink1_OnClick">
+                <Run Text="{Binding [Menu_Help], Source={x:Static loc:Translation.Instance}, Mode=OneWay, FallbackValue=Помощь, TargetNullValue=Помощь}"/>
+            </Hyperlink>
         </TextBlock>
         <TextBlock x:Name="InfoLabel" FontSize="11" Opacity="0.8" Foreground="{StaticResource HeaderBarText}" Margin="10,0,0,0" Visibility="Hidden" VerticalAlignment="Center" ToolTipService.ToolTip="{Binding Path=LastRequests}" MouseLeftButtonUp="InfoLabel_MouseLeftButtonUp"/>
         <TextBlock x:Name="label2" Margin="16,0,0,0" Style="{StaticResource LinksMainMenuStyle}">
@@ -78,23 +83,34 @@ MainView.xaml, шапка. Вставить вместо корневого Grid
           Style="{StaticResource HeaderHamburgerMenu}"
           VerticalAlignment="Center">
         <MenuItem Style="{StaticResource HeaderHamburgerItem}">
-            <MenuItem Header="Выбор стиля"
+            <MenuItem Header="{Binding [Menu_Theme], Source={x:Static loc:Translation.Instance}, FallbackValue=Выбор стиля, TargetNullValue=Выбор стиля}"
                       Style="{StaticResource HeaderDropdownMenuItem}">
-                <MenuItem Header="По умолчанию (Default)"
+                <MenuItem Header="{Binding [Theme_Default], Source={x:Static loc:Translation.Instance}, FallbackValue=По умолчанию, TargetNullValue=По умолчанию}"
                           Tag="Default"
                           Click="ThemeMenuItem_OnClick"
                           Style="{StaticResource HeaderDropdownMenuItem}"/>
-                <MenuItem Header="Современный (Modern)"
+                <MenuItem Header="{Binding [Theme_Modern], Source={x:Static loc:Translation.Instance}, FallbackValue=Современный, TargetNullValue=Современный}"
                           Tag="Modern"
                           Click="ThemeMenuItem_OnClick"
                           Style="{StaticResource HeaderDropdownMenuItem}"/>
-                <MenuItem Header="Контрастный (Contrast)"
+                <MenuItem Header="{Binding [Theme_Contrast], Source={x:Static loc:Translation.Instance}, FallbackValue=Контрастный, TargetNullValue=Контрастный}"
                           Tag="Contrast"
                           Click="ThemeMenuItem_OnClick"
                           Style="{StaticResource HeaderDropdownMenuItem}"/>
-                <MenuItem Header="Старый исходный (Legacy)"
+                <MenuItem Header="{Binding [Theme_Legacy], Source={x:Static loc:Translation.Instance}, FallbackValue=Старый исходный, TargetNullValue=Старый исходный}"
                           Tag="Legacy"
                           Click="ThemeMenuItem_OnClick"
+                          Style="{StaticResource HeaderDropdownMenuItem}"/>
+            </MenuItem>
+            <MenuItem Header="{Binding [Menu_Language], Source={x:Static loc:Translation.Instance}, FallbackValue=Язык, TargetNullValue=Язык}"
+                      Style="{StaticResource HeaderDropdownMenuItem}">
+                <MenuItem Header="{Binding [Language_Russian], Source={x:Static loc:Translation.Instance}, FallbackValue=Русский, TargetNullValue=Русский}"
+                          Tag="ru"
+                          Click="LanguageMenuItem_OnClick"
+                          Style="{StaticResource HeaderDropdownMenuItem}"/>
+                <MenuItem Header="{Binding [Language_English], Source={x:Static loc:Translation.Instance}, FallbackValue=Английский, TargetNullValue=Английский}"
+                          Tag="en"
+                          Click="LanguageMenuItem_OnClick"
                           Style="{StaticResource HeaderDropdownMenuItem}"/>
             </MenuItem>
         </MenuItem>

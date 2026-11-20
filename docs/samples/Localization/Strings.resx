@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Menu_Warehouse" xml:space="preserve"><value>Склад</value></data>
+  <data name="Menu_References" xml:space="preserve"><value>Справочники</value></data>
+  <data name="Menu_Reports" xml:space="preserve"><value>Отчёты</value></data>
+  <data name="Menu_Integration" xml:space="preserve"><value>Интеграция</value></data>
+  <data name="Menu_Audit" xml:space="preserve"><value>Аудит</value></data>
+  <data name="Menu_Theme" xml:space="preserve"><value>Выбор стиля</value></data>
+  <data name="Theme_Default" xml:space="preserve"><value>По умолчанию</value></data>
+  <data name="Theme_Modern" xml:space="preserve"><value>Современный</value></data>
+  <data name="Theme_Contrast" xml:space="preserve"><value>Контрастный</value></data>
+  <data name="Theme_Legacy" xml:space="preserve"><value>Старый исходный</value></data>
+  <data name="Menu_Language" xml:space="preserve"><value>Язык</value></data>
+  <data name="Language_Russian" xml:space="preserve"><value>Русский</value></data>
+  <data name="Language_English" xml:space="preserve"><value>Английский</value></data>
+  <data name="Menu_Help" xml:space="preserve"><value>Помощь</value></data>
+  <data name="Column_Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Column_Apply" xml:space="preserve"><value>Найти</value></data>
+  <data name="Column_Condition" xml:space="preserve"><value>Состояние</value></data>
+  <data name="Column_OperationStatus" xml:space="preserve"><value>Статус эксплуатации</value></data>
+  <data name="TechReserv_MarkacommName" xml:space="preserve"><value>Модель</value></data>
+  <data name="TechReserv_SerialNumber" xml:space="preserve"><value>Серийный номер</value></data>
+  <data name="VerifyIdentifierChange_LineNo" xml:space="preserve"><value>Строка</value></data>
+  <data name="VerifyIdentifierChange_SerialNumber" xml:space="preserve"><value>Серийный номер</value></data>
+  <data name="VerifyIdentifierChange_MacAddress" xml:space="preserve"><value>MAC адрес</value></data>
+  <data name="VerifyIdentifierChange_PonSerial" xml:space="preserve"><value>PON номер</value></data>
+  <data name="VerifyIdentifierChange_NewSerialNumber" xml:space="preserve"><value>Новый серийный номер</value></data>
+  <data name="VerifyIdentifierChange_NewMacAddress" xml:space="preserve"><value>Новый MAC</value></data>
+  <data name="VerifyIdentifierChange_NewPonSerial" xml:space="preserve"><value>Новый PON</value></data>
+  <data name="VerifyIdentifierChange_CommId" xml:space="preserve"><value>Карточка</value></data>
+  <data name="VerifyIdentifierChange_CardMacAddress" xml:space="preserve"><value>MAC на карточке</value></data>
+  <data name="VerifyIdentifierChange_CardPonSerial" xml:space="preserve"><value>PON на карточке</value></data>
+  <data name="VerifyIdentifierChange_VerifyStatusStr" xml:space="preserve"><value>Результат проверки</value></data>
+</root>
