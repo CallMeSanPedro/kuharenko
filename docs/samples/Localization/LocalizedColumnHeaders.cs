@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Store.Views.Filtering;
+using Store.ViewModels.Filtering;
 
 namespace Store.Views.Localization
 {

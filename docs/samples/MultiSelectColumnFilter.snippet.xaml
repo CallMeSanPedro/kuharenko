@@ -68,7 +68,18 @@ Text="{Binding Title}" слушает фильтр. ColumnCheckFilterBehavior п
                     <TextBox MinWidth="180"
                         Height="28"
                         Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                        Visibility="{Binding IsText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
+                        Visibility="{Binding ShowsText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding ApplyCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button MinWidth="72"
+                        Height="28"
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Left"
+                        Content="{Binding [Column_Apply], Source={x:Static loc:Translation.Instance}, FallbackValue=Найти, TargetNullValue=Найти}"
+                        Command="{Binding ApplyCommand}"
+                        Visibility="{Binding IsServerText, Converter={x:Static controls3:BooleanToVisibilityConverter.Instance}}" />
                 </StackPanel>
             </Border>
         </Popup>

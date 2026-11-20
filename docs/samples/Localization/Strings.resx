@@ -19,6 +19,7 @@
   <data name="Language_English" xml:space="preserve"><value>Английский</value></data>
   <data name="Menu_Help" xml:space="preserve"><value>Помощь</value></data>
   <data name="Column_Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Column_Apply" xml:space="preserve"><value>Найти</value></data>
   <data name="Column_Condition" xml:space="preserve"><value>Состояние</value></data>
   <data name="Column_OperationStatus" xml:space="preserve"><value>Статус эксплуатации</value></data>
   <data name="TechReserv_MarkacommName" xml:space="preserve"><value>Модель</value></data>
