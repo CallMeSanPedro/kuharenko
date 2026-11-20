@@ -5,8 +5,10 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using DatumNode.Models;
-using Store.Views.Localization;
 
+// Файл собирается проектом модели представления, не проектом View.
+// View ссылается на модель, модель на View не ссылается.
+// ColumnCheckFilterBehavior остаётся во View: он сам подставляет перевод в Title.
 namespace Store.Views.Filtering
 {
     public interface IColumnHeaderFilterHost
@@ -36,12 +38,13 @@ namespace Store.Views.Filtering
     /// Данные одного фильтра в шапке колонки.
     /// Пустой выбор и пустая строка поиска не скрывают строки.
     /// </summary>
-    public sealed class ColumnHeaderFilter : INotifyPropertyChanged, ILocalizedCaption
+    public sealed class ColumnHeaderFilter : INotifyPropertyChanged
     {
         private readonly Func<object, string> _read;
         private readonly string _title;
         private string _captionKey;
         private string _fallback;
+        private string _display;
         private IEnumerable<object> _selectedItems;
         private HashSet<string> _selected;
         private string _text = string.Empty;
@@ -56,7 +59,6 @@ namespace Store.Views.Filtering
             Mode = mode;
             _read = read;
             Options = new ObservableCollection<object>();
-            Translation.Instance.PropertyChanged += OnLanguageChanged;
         }
 
         public string PropertyName { get; }
@@ -71,12 +73,10 @@ namespace Store.Views.Filtering
         public string CaptionFallback => string.IsNullOrEmpty(_fallback) ? _title : _fallback;
 
         /// <summary>
-        /// Подпись шапки. Ключ колонки (TechReserv_SerialNumber) подставляет грид.
-        /// Нет ключа — остаётся строка из Add. Смена языка поднимает PropertyChanged(Title).
+        /// Подпись шапки. Текст сюда кладёт View уже переведённым.
+        /// Пока View не поставил перевод, видна строка из Add.
         /// </summary>
-        public string Title => Translation.Instance.Get(
-            string.IsNullOrEmpty(_captionKey) ? _title : _captionKey,
-            CaptionFallback);
+        public string Title => string.IsNullOrEmpty(_display) ? _title : _display;
 
         public void UseCaption(string key, string fallback)
         {
@@ -86,16 +86,18 @@ namespace Store.Views.Filtering
                 _fallback = fallback;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CaptionKey)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CaptionFallback)));
+        }
+
+        public void SetTitle(string text)
+        {
+            var next = string.IsNullOrEmpty(text) ? _title : text;
+            if (_display == next)
+                return;
+            _display = next;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Title)));
         }
 
         public ColumnFilterMode Mode { get; }
-
-        private void OnLanguageChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == "Item[]" || string.IsNullOrEmpty(e.PropertyName))
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Title)));
-        }
 
         public bool IsCheckList => Mode == ColumnFilterMode.CheckList;
 

@@ -177,19 +177,28 @@ namespace Store.Views.Filtering
             string key;
             string fallback;
             if (TryReadHeaderBinding(column, out key, out fallback))
-            {
                 filter.UseCaption(key, fallback);
-                return;
+            else
+            {
+                // Шапка уже заменена фильтром, привязки больше нет.
+                // Ключ, который есть в ресурсах, оставляем. Русский ShortName заменяем ключом колонки.
+                var current = filter.CaptionKey;
+                if (string.IsNullOrEmpty(current) || Translation.Instance[current] == null)
+                {
+                    if (LocalizedColumnHeaders.TryReadCaption(grid, column.SortMemberPath, out key, out fallback))
+                        filter.UseCaption(key, fallback);
+                }
             }
 
-            // Шапка уже заменена фильтром, привязки больше нет.
-            // Ключ, который есть в ресурсах, оставляем. Русский ShortName заменяем ключом колонки.
-            var current = filter.CaptionKey;
-            if (!string.IsNullOrEmpty(current) && Translation.Instance[current] != null)
-                return;
+            ApplyTitle(filter);
+        }
 
-            if (LocalizedColumnHeaders.TryReadCaption(grid, column.SortMemberPath, out key, out fallback))
-                filter.UseCaption(key, fallback);
+        private static void ApplyTitle(ColumnHeaderFilter filter)
+        {
+            var key = filter.CaptionKey;
+            var fallback = filter.CaptionFallback;
+            var text = string.IsNullOrEmpty(key) ? fallback : Translation.Instance.Get(key, fallback);
+            filter.SetTitle(text);
         }
 
         private static bool TryReadHeaderBinding(DataGridColumn column, out string key, out string fallback)

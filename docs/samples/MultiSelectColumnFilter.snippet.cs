@@ -1,3 +1,5 @@
+// ColumnHeaderFilter.cs лежит в проекте модели представления.
+// Во View остаётся только ColumnCheckFilterBehavior.
 // Модель экрана: class TechReservViewModel : ItemsViewModel<...>, IColumnHeaderFilterHost
 // Базовые ItemsViewModel и DataGrid не меняются.
 // В шапку попадают только колонки, которые сюда добавлены.

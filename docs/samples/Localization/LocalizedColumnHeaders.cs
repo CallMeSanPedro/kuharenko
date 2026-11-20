@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Store.Views.Filtering;
 
 namespace Store.Views.Localization
 {
@@ -14,7 +15,7 @@ namespace Store.Views.Localization
     /// Ключ ресурса: ИмяТипа_ИмяСвойства. ShortName остаётся, если перевода нет.
     /// Смена языка обновляет шапку: Header — привязка к Translation.Instance.
     /// Фильтр колонки подменяет Header своим ContentControl.
-    /// Ключ шапки всё равно передаётся ему через ILocalizedCaption.UseCaption.
+    /// Ключ шапки передаётся в ColumnHeaderFilter.UseCaption, перевод пишет View.
     /// </summary>
     public static class LocalizedColumnHeaders
     {
@@ -102,9 +103,9 @@ namespace Store.Views.Localization
             var control = column.Header as ContentControl;
             if (control != null)
             {
-                var caption = control.Content as ILocalizedCaption;
-                if (caption != null)
-                    caption.UseCaption(key, fallback);
+                var filter = control.Content as ColumnHeaderFilter;
+                if (filter != null)
+                    filter.UseCaption(key, fallback);
                 return;
             }
 

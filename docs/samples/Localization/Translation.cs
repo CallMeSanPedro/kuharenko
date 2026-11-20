@@ -61,12 +61,4 @@ namespace Store.Views.Localization
             return _resources.GetString(key, _culture);
         }
     }
-
-    /// <summary>
-    /// Шапка фильтра. Ей передают ключ колонки, чтобы подпись менялась вместе с языком.
-    /// </summary>
-    public interface ILocalizedCaption
-    {
-        void UseCaption(string key, string fallback);
-    }
 }
