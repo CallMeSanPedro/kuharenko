@@ -1,0 +1,224 @@
+﻿<controls:UserView x:Class="Store.Views.Main.EquipMasterView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="clr-namespace:DatumNode.Controls;assembly=DatumNode.Controls"
+    xmlns:input="clr-namespace:System.Windows.Input;assembly=DatumNode.Controls"
+                xmlns:tree="clr-namespace:Store.ViewModels.Tree;assembly=Store.ViewModels"
+                mc:Ignorable="d"
+    d:DesignHeight="300" d:DesignWidth="400">
+
+	<controls:UserView.Resources>
+
+        <controls:DataContextProxy x:Key="EthLinkHistViewModel" >
+            <controls:DataContextProxy.ViewModel>
+                <tree:EthLinkHistViewModel />
+            </controls:DataContextProxy.ViewModel>
+        </controls:DataContextProxy>
+
+        <!--<converters:EthTreeObjToImageConverter x:Key="EthTreeObjToImageConverter"/>-->
+        
+        <!--<Style TargetType="ListBox" x:Name="HorizontalListBox">
+			<Setter Property="ItemsPanel">
+				<Setter.Value>
+					<ItemsPanelTemplate>
+						<VirtualizingStackPanel Orientation="Horizontal"                                            
+                                            CanHorizontallyScroll="False" 
+                                            CanVerticallyScroll="False"/>
+					</ItemsPanelTemplate>
+				</Setter.Value>
+			</Setter>
+			<Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+			<Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+		</Style>-->
+	</controls:UserView.Resources>
+
+	
+	<Grid Background="White">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"></RowDefinition>
+			<RowDefinition Height="auto"></RowDefinition>
+		</Grid.RowDefinitions>
+
+		<Grid  x:Name="LayoutRoot" Background="Transparent" Grid.Row="0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition x:Name="MasterCol" Width="260">
+					<ColumnDefinition.Style>
+						<Style TargetType="ColumnDefinition">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=Master, Path=Visibility}" Value="Collapsed">
+									<Setter Property="Width" Value="0"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ColumnDefinition.Style>
+				</ColumnDefinition>
+				<ColumnDefinition x:Name="SplitterCol" Width="Auto">
+					<ColumnDefinition.Style>
+						<Style TargetType="ColumnDefinition">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=Master, Path=Visibility}" Value="Collapsed">
+									<Setter Property="Width" Value="0"/>
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ColumnDefinition.Style>
+				</ColumnDefinition>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+
+            <Border x:Name="Master" Grid.Column="0" Grid.Row="0"
+                    Background="{DynamicResource Sidebar.Bg}"
+                    BorderBrush="{DynamicResource Sidebar.Border}"
+                    BorderThickness="0,0,1,0"
+                    Padding="0" Margin="0">
+				<controls:DataContentPresenter   Content="{Binding Path=MasterViewModel}" VerticalAlignment="Stretch"/>
+			</Border>
+
+            <GridSplitter Grid.Column="1" x:Name="GridSplitter" HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                          Background="{DynamicResource Sidebar.Border}" Margin="0" ShowsPreview="True" Width="4"
+                          Cursor="SizeWE"
+                          Visibility="{Binding ElementName=Master, Path=Visibility}"/>
+            <!--</Expander>-->
+			<!--<TextBlock Grid.Column="1" Grid.Row="0" Width="5" Visibility="{Binding Path=Visibility, ElementName=GridSplitter, Converter={StaticResource InvertVisibilityConverter}}"></TextBlock>-->
+
+
+            <Border Style="{DynamicResource MainContentBorders}"  Grid.Column="2" Grid.Row="0" Margin="0,3,3,3">
+            <Grid  Visibility="{Binding Path=MasterViewModel.HasDetail, Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="auto"/>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="auto"/>
+					</Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/> 
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Row="0" Visibility="{Binding Path=Visibility, Source={x:Reference CheckBox}}">
+						<Grid.RowDefinitions>
+							<RowDefinition></RowDefinition>
+							<RowDefinition></RowDefinition>
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition />
+						</Grid.ColumnDefinitions>
+                        <!--<CheckBox Grid.Row="0" Grid.Column="0"  CommandTarget="{Binding ElementName=Master}" 
+                                  x:Name="CheckBox" Content="{Binding Path=MasterViewModel.CurrentText}" 
+                                  IsChecked="True" Visibility="{Binding Path=MasterViewModel.HasDetail, 
+                            Converter={x:Static controls:BooleanToVisibilityConverter.Instance}}"/>-->
+                        <controls:NavigationButton Grid.Row="0" x:Name="CheckBox" IsChecked="True" Margin="3"
+                                                   Visibility="{Binding Path=MasterViewModel.HasDetail, Converter={x:Static controls:NullToVisibilityConverter.Instance}}"
+                                                   HorizontalAlignment="Left"
+                                                   HorizontalContentAlignment="Left"
+                                                   FontWeight="SemiBold"
+                                                   Target="{Binding ElementName=Master}"
+                                                   Content="{Binding IsChecked, RelativeSource={RelativeSource Self}}">
+                            <controls:NavigationButton.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBlock FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <!-- Развернуто: свернуть -->
+                                                <Setter Property="Text" Value="◀"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding}" Value="False">
+                                                        <!-- Свернуто: развернуть -->
+                                                        <Setter Property="Text" Value="▶"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </controls:NavigationButton.ContentTemplate>
+                        </controls:NavigationButton>
+
+                        <!--<TextBlock Text=""></TextBlock>-->
+                        <!--<WrapPanel  Grid.Row="0" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="Collapsed">
+                            <Button Margin="0"   x:Name="AddToTabs" Command="{Binding Path=MasterViewModel.AddLinkCommand}" ToolTipService.ToolTip="Добавить в закладки" Visibility="Visible">
+                                <Image Margin="0" HorizontalAlignment="Right" Source="/Store.Views;component/Images/AddToTabs.png" Width="16" Height="16" />                                                                
+                            </Button>
+                            <Button Margin="0"  x:Name="RefreshContent" Command="{Binding Path=DetailViewModel.RefreshCommand}" ToolTipService.ToolTip="Обновить содержимое">
+                                <Image Margin="0" HorizontalAlignment="Right" Source="/Store.Views;component/Images/RefreshContent.png" Width="16" Height="16" />
+                            </Button>
+                            <Button Margin="0"   x:Name="NewWindow" Command="{Binding Path=MasterViewModel.OpenCommand}" ToolTipService.ToolTip="Открыть в новом окне" Visibility="Visible">
+                                <Image Margin="0" HorizontalAlignment="Right" Source="/Store.Views;component/Images/NewWindow.png" Width="16" Height="16" />
+                            </Button>
+                        </WrapPanel>-->
+                        <Border Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0">
+						</Border>
+
+						<!--<Line Stroke="Black" Grid.Row="1" Grid.ColumnSpan="2" StrokeDashArray="4 1 2 1" StrokeThickness="1" ></Line>-->
+					</Grid>
+                    <!--<ScrollViewer Grid.Row="1" BorderThickness="0" Padding="0" Margin="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">-->
+                    <controls:DataContentPresenter  Grid.Row="1" Margin="1"  Content="{Binding Path=DetailViewModel}"/>
+                    <!--</ScrollViewer>-->
+                    <!--<ContentControl  Visibility="{Binding ElementName=LB, Path=Items, Converter={StaticResource BoolToVisibilityConverter}}"  >-->
+					<!--Visibility="{Binding Path=MasterViewModel.Filter.ShowLink, Converter={StaticResource BoolToVisibilityConverter}}"-->
+
+					<!--</ContentControl>-->
+				</Grid>
+			</Border>
+
+
+            <!--<Views:DataContentPresenter Grid.Column="2" Margin="3" Content="{Binding Path=DetailViewModel}"/>-->
+        </Grid>
+        <Border  Grid.Row="1"  Margin="3,0,3,3" Padding="0"			
+				>
+
+            <!--<ListBox x:Name="LB"  Grid.Row="1"  BorderBrush="Transparent"   SelectionMode="Single"  Style="{StaticResource HorizontalListBox}"
+						 
+					 ItemsSource="{  Binding Source={StaticResource EthLinkHistViewModel}, 
+                                                Path=ViewModel.ItemsView
+                                             }"
+					 SelectedItem="{
+													Binding Path=MasterViewModel.Filter.EthLinkHist, Mode=TwoWay,ValidatesOnExceptions=True, NotifyOnValidationError=True
+								   }" 
+					  windows:BindingHelper.UpdateSourceOnChange="True" 
+					  Views:ComboBox.Mode="AsyncEager">
+
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel   Orientation="Horizontal" ToolTipService.ToolTip="{Binding Path=Name}">
+                            <controls:CustomContextMenuService.ContextMenu >
+                                <controls:CustomContextMenu>
+                                    <controls:CustomMenuItem Header="Открыть в новом окне" Command="{Binding Source={StaticResource EthLinkHistViewModel}, 
+                                                    Path=ViewModel.OpenCommand}" CommandParameter="{Binding}" Visibility="Collapsed">>
+                                        <controls:CustomMenuItem.Icon>
+                                            <Image Source="/Ltu;component/Images/Select.png"/>
+                                        </controls:CustomMenuItem.Icon>
+                                    </controls:CustomMenuItem>
+                                    <controls:CustomMenuItem Header="Найти в дереве" Command="{Binding Source={StaticResource EthLinkHistViewModel}, 
+                                                    Path=ViewModel.FindLinkCommand}" CommandParameter="{Binding}" Visibility="Collapsed">
+                                        <controls:CustomMenuItem.Icon>
+                                            <Image Source="/Ltu;component/Images/Find_16x16.png"/>
+                                        </controls:CustomMenuItem.Icon>
+                                    </controls:CustomMenuItem>
+                                    <controls:CustomMenuItem Header="Удалить" Command="{Binding Source={StaticResource EthLinkHistViewModel}, 
+                                                    Path=ViewModel.DelLinkCommand}" CommandParameter="{Binding}">
+                                        <controls:CustomMenuItem.Icon>
+                                            <Image Source="/Ltu;component/Images/Delete_16x16.png"/>
+                                        </controls:CustomMenuItem.Icon>
+                                    </controls:CustomMenuItem>
+                                    <controls:CustomMenuItem Header="Удалить другие" Command="{Binding Source={StaticResource EthLinkHistViewModel}, 
+                                                    Path=ViewModel.DelAllBLinkCommand}" CommandParameter="{Binding}">
+                                        <controls:CustomMenuItem.Icon>
+                                            <Image Source="/Ltu;component/Images/Delete_16x16.png"/>
+                                        </controls:CustomMenuItem.Icon>
+                                    </controls:CustomMenuItem>
+                                </controls:CustomContextMenu>
+                            </controls:CustomContextMenuService.ContextMenu>
+                            <StackPanel Orientation="Horizontal" Margin="1" >
+                                <Image Height="17" Width="17" Source="{Binding Path=IdForImage, Converter={StaticResource EthTreeObjToImageConverter}}"/>
+                                <TextBlock  TextWrapping="NoWrap" Margin="1" MaxWidth="120" Text="{Binding Path=Name}"></TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>-->
+        </Border>
+    </Grid>
+	<!--</Grid>-->
+</controls:UserView>
+ 
