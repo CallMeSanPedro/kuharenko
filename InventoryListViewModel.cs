@@ -271,14 +271,29 @@ namespace Store.ViewModels.Device
 
             var filter = new StoreDeviceFilter
             {
-                Uzel = Filter.Uzel,
+                Uzel = row.InfouzelKod ?? Filter.Uzel,
                 TreeIsParent = true,
                 Mode = null,
                 MasterStoreDocumentId = null,
                 StoreType = _storeType,
                 DevicePageSize = SerialPreviewLimit,
                 ResponsibleName = row.ResponsibleName,
-                EquipMarkaName = row.MarkacommName
+                EquipMarkaName = row.MarkacommName,
+                ExploitStatus = new Store.Models.Reference.ExploitStatus
+                {
+                    ExploitStatusId = row.ExploitStatusId,
+                    ExploitStatusName = row.ExploitStatusName
+                },
+                DeviceCondition = new Store.Models.Reference.DeviceCondition
+                {
+                    DevConditionId = row.DeviceConditionId,
+                    DevConditionName = row.Condition
+                },
+                EthTechStat = new Store.Models.Reference.EthTechStatRef
+                {
+                    SosttechKod = row.EthTechStat?.SosttechKod,
+                    SosttechName = row.SosttechName
+                }
             };
             filter.AcceptChanges();
 

@@ -58,6 +58,14 @@
     <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#1B3F6F"/>
     <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#1B3F6F"/>
 
+    <!-- Вкладки шапки (HeaderMenuTabItem) -->
+    <SolidColorBrush x:Key="HeaderTab.IdleForeground" Color="#C7D2E8"/>
+    <SolidColorBrush x:Key="HeaderTab.HoverForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HeaderTab.HoverBackground" Color="#1E4E94"/>
+    <SolidColorBrush x:Key="HeaderTab.SelectedForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HeaderTab.SelectedBackground" Color="Transparent"/>
+    <SolidColorBrush x:Key="HeaderTab.SelectedUnderline" Color="#FFFFFF"/>
+
     <!-- Таблицы -->
     <SolidColorBrush x:Key="DataGrid.HeaderBg" Color="#F8FAFC"/>
     <SolidColorBrush x:Key="DataGrid.SelectedRowBg" Color="#E8F1FB"/>

@@ -54,6 +54,14 @@
     <SolidColorBrush x:Key="Tab.SelectedForeground" Color="#0066CC"/>
     <SolidColorBrush x:Key="Tab.SelectedUnderline" Color="#0066CC"/>
 
+    <!-- Вкладки шапки (HeaderMenuTabItem) -->
+    <SolidColorBrush x:Key="HeaderTab.IdleForeground" Color="#D1D5DB"/>
+    <SolidColorBrush x:Key="HeaderTab.HoverForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HeaderTab.HoverBackground" Color="#3B485A"/>
+    <SolidColorBrush x:Key="HeaderTab.SelectedForeground" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="HeaderTab.SelectedBackground" Color="Transparent"/>
+    <SolidColorBrush x:Key="HeaderTab.SelectedUnderline" Color="#FFFFFF"/>
+
     <!-- Таблицы (стандартные цвета сетки ERP) -->
     <SolidColorBrush x:Key="DataGrid.HeaderBg" Color="#E4E4E4"/>
     <SolidColorBrush x:Key="DataGrid.SelectedRowBg" Color="#CDE6F7"/>
